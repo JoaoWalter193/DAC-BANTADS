@@ -1,0 +1,35 @@
+<div class="gerentes-dashboard">
+  <h2>Dashboard de Gerentes</h2>
+
+  <div class="actions">
+    <button type="button" (click)="adicionarGerente()">Adicionar Novo Gerente</button>
+  </div>
+
+  <br>
+  
+  <table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+      <tr>
+        <th>Nome do Gerente</th>
+        <th>Qtd. Clientes</th>
+        <th>Total Saldo Positivo</th>
+        <th>Total Saldo Negativo</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let gerente of gerentes">
+        <td>{{ gerente.nome }}</td>
+        <td>{{ gerente.clientes.length }}</td>
+        <td>{{ totalSaldoPositivo(gerente) | currency:'BRL' }}</td>
+        <td>{{ totalSaldoNegativo(gerente) | currency:'BRL' }}</td>
+        <td>
+          <button type="button" (click)="verDetalhes(gerente)">Ver Detalhes</button>
+        </td>
+      </tr>
+      <tr *ngIf="gerentes.length === 0">
+        <td colspan="5">Nenhum gerente cadastrado.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
