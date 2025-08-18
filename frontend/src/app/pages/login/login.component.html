@@ -1,0 +1,43 @@
+<div class="tela-login">
+  <div class="login-container">
+    <h1>DinDin Invest</h1>
+    <h2><b>Acesse sua conta:</b></h2>
+
+    <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+      <mat-form-field appearance="outline">
+        <mat-label>Conta</mat-label>
+        <input matInput type="text" inputmode="numeric" formControlName="account">
+
+        <mat-error *ngIf="loginForm.get('account')?.hasError('required')">
+          O número da conta é obrigatório.
+        </mat-error>
+        <mat-error *ngIf="loginForm.get('account')?.hasError('pattern')">
+          A conta deve conter apenas números.
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Senha</mat-label>
+        <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" required>
+
+        <!-- esconder/mostrar senha -->
+        <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
+          <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+        </button>
+
+        <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+          A senha é obrigatória.
+        </mat-error>
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" type="submit" [disabled]="loginForm.invalid">
+        Acessar Conta
+      </button>
+    </form>
+
+    <div class="to-cadastro">
+      <span>Não tem uma conta? <a routerLink="/cadastro">Abra já a sua!</a></span>
+    </div>
+  </div>
+</div>

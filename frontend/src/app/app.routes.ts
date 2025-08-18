@@ -1,10 +1,15 @@
 import { Routes } from '@angular/router';
+import { LoginComponent } from './pages/login/login.component';
 import { TelaAdministradorComponent } from './pages/tela-administrador/tela-administrador.component';
 import { GerentesComponent } from './pages/tela-administrador/gerentes/gerentes.component';
 import { HomeCliente } from './pages/home-cliente/home-cliente';
 
 export const routes: Routes = [
   {
+    path: "",
+    component: LoginComponent,
+  },
+    {
     path: 'tela-administrador',
     component: TelaAdministradorComponent,
     children: [
@@ -18,4 +23,4 @@ export const routes: Routes = [
     path: 'home-cliente',
     component: HomeCliente
   }
-];
+]
