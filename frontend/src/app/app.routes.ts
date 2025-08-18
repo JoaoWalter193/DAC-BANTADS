@@ -9,6 +9,11 @@ export const routes: Routes = [
     path: "",
     component: LoginComponent,
   },
+  {
+        path: 'cadastro',
+        component: TelaAutocadastroComponent
+    },
+  
     {
     path: 'tela-administrador',
     component: TelaAdministradorComponent,
