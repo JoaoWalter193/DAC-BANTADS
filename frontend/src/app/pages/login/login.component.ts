@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -21,13 +22,15 @@ import { MatIconModule } from '@angular/material/icon';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
+
 export class LoginComponent {
   loginForm: FormGroup;
   hidePassword = true;
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private authService: AuthService,
   ) {
     this.loginForm = this.fb.group({
       //validação e para só receber numeros na conta
@@ -42,15 +45,12 @@ export class LoginComponent {
     //mock de login localStorage
     if (account === '12345' && password === '123456') {
       const userData = {
-        id: '456',
+        id: '111',
         nome: 'Cliente 1',
         account: account,
-        token: 'asd-asd-asd'
       };
+      this.authService.login(userData);
 
-      localStorage.setItem('currentUser', JSON.stringify(userData));
-      alert('Login realizado com sucesso!');
-      this.router.navigate(['/tela-cliente']);
     } else {
       alert('Número da conta ou senha inválidos.');
     }
