@@ -42,15 +42,27 @@ export class LoginComponent {
   onSubmit(): void {
     const { account, password } = this.loginForm.value;
 
+    let userData: any = null;
+
     //mock de login localStorage
-    if (account === '12345' && password === '123456') {
-      const userData = {
+    if (account === '11111' && password === 'cliente') {
+      userData = {
         id: '111',
         nome: 'Cliente 1',
         account: account,
+        role: 'CLIENTE'
       };
-      this.authService.login(userData);
+    } else if (account === '99999' && password === 'admin') {
+      userData = {
+        id: '999',
+        nome: 'Gerente 1',
+        account: account,
+        role: 'GERENTE'
+      };
+    }
 
+      if (userData) {
+        this.authService.login(userData);
     } else {
       alert('Número da conta ou senha inválidos.');
     }

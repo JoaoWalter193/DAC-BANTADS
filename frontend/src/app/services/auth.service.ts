@@ -11,8 +11,13 @@ export class AuthService {
   // login-logout com localStorage
   login(userData: any): void {
     localStorage.setItem('currentUser', JSON.stringify(userData));
-    this.router.navigate(['/tela-cliente']);
     alert('Login realizado com sucesso!');
+
+    if (userData.role === 'GERENTE') {
+      this.router.navigate(['/tela-administrador']);
+    } else if (userData.role === 'CLIENTE') {
+      this.router.navigate(['/home-cliente']);
+    }
   }
 
   logout(): void {
