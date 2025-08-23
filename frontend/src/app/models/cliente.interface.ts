@@ -5,6 +5,7 @@ export interface ClienteInterface {
   nome: string;
   email: string;
   endereco: Endereco;
-  telefone: number;
   salario: number;
+  status: 'aprovado' | 'rejeitado' | 'pendente';
+  dataSolicitacao: Date;
 }
