@@ -34,37 +34,55 @@ export class LoginComponent {
   ) {
     this.loginForm = this.fb.group({
       //validação e para só receber numeros na conta
-      account: ['', [Validators.required, Validators.pattern(/^[0-9]+$/)]],
+      email: ['', [Validators.required]],
       password: ['', [Validators.required]]
     });
   }
 
   onSubmit(): void {
-    const { account, password } = this.loginForm.value;
+    const { email, password } = this.loginForm.value;
 
     let userData: any = null;
 
     //mock de login localStorage
-    if (account === '11111' && password === 'cliente') {
+    if (email === 'cli1@bantads.com.br' && password === 'tads') {
       userData = {
-        id: '111',
-        nome: 'Cliente 1',
-        account: account,
-        role: 'CLIENTE'
+        cpf: '12912861012',
+        nome: 'Catharyna',
+        email: email,
+        role: 'CLIENTE',
+        salario: 10000,
+        endereco: "rua da catharyna"
       };
-    } else if (account === '99999' && password === 'admin') {
+    } else if (email === 'cli2@bantads.com.br' && password === 'tads') {
       userData = {
-        id: '999',
-        nome: 'Gerente 1',
-        account: account,
+        cpf: '09506382000',
+        nome: 'Cleuddônio',
+        email: email,
+        role: 'CLIENTE',
+        salario: 20000,
+        endereco: "rua do cleuddonio"
+      };
+    } else if (email === 'ger1@bantads.com.br' && password === 'tads') {
+      userData = {
+        cpf: '98574307084',
+        nome: 'Geniéve',
+        email: email,
         role: 'GERENTE'
+      };
+    } else if (email === 'adm1@bantads.com.br' && password === 'tads') {
+      userData = {
+        cpf: '40501740066',
+        nome: 'Adamântio',
+        email: email,
+        role: 'ADMIN'
       };
     }
 
       if (userData) {
         this.authService.login(userData);
     } else {
-      alert('Número da conta ou senha inválidos.');
+      alert('Email ou senha inválidos.');
     }
   }
 }
