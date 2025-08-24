@@ -7,6 +7,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../services/auth.service';
+import { MockService } from '../../services/mock.service';
+import { Conta, UserSession } from '../../models';
 
 @Component({
   selector: 'app-login',
@@ -29,58 +31,40 @@ export class LoginComponent {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router,
     private authService: AuthService,
+    private mockService: MockService
   ) {
     this.loginForm = this.fb.group({
-      //validação e para só receber numeros na conta
-      email: ['', [Validators.required]],
+      account: ['', [Validators.required]],
       password: ['', [Validators.required]]
     });
   }
 
   onSubmit(): void {
-    const { email, password } = this.loginForm.value;
-
-    let userData: any = null;
-
-    //mock de login localStorage
-    if (email === 'cli1@bantads.com.br' && password === 'tads') {
-      userData = {
-        cpf: '12912861012',
-        nome: 'Catharyna',
-        email: email,
-        role: 'CLIENTE',
-        salario: 10000,
-        endereco: "rua da catharyna"
-      };
-    } else if (email === 'cli2@bantads.com.br' && password === 'tads') {
-      userData = {
-        cpf: '09506382000',
-        nome: 'Cleuddônio',
-        email: email,
-        role: 'CLIENTE',
-        salario: 20000,
-        endereco: "rua do cleuddonio"
-      };
-    } else if (email === 'ger1@bantads.com.br' && password === 'tads') {
-      userData = {
-        cpf: '98574307084',
-        nome: 'Geniéve',
-        email: email,
-        role: 'GERENTE'
-      };
-    } else if (email === 'adm1@bantads.com.br' && password === 'tads') {
-      userData = {
-        cpf: '40501740066',
-        nome: 'Adamântio',
-        email: email,
-        role: 'ADMIN'
-      };
+    if (this.loginForm.invalid) {
+      return;
     }
 
-      if (userData) {
-        this.authService.login(userData);
+    const { account, password } = this.loginForm.value;
+
+    // usa o mockservice para encontrar o user
+    const userFound = this.mockService.findUserByCredentials(account, password);
+
+    if (userFound) {
+      let conta: Conta | undefined;
+
+      // if user = cliete, busca a conta dele pelo cpf
+      if (userFound.role === 'CLIENTE') {
+        conta = this.mockService.findContaByClienteCpf(userFound.cpf);
+      }
+
+      // monta o objeto do login
+      const userSession: UserSession = {
+        user: userFound,
+        conta: conta
+      };
+      this.authService.login(userSession);
+
     } else {
       alert('Email ou senha inválidos.');
     }
