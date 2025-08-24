@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
+import { UserSession } from '../models';
 
 @Injectable({
   providedIn: 'root'
@@ -9,15 +10,22 @@ export class AuthService {
   constructor(private router: Router) { }
 
   // login-logout com localStorage
-  login(userData: any): void {
-    localStorage.setItem('currentUser', JSON.stringify(userData));
+  login(userSession: UserSession): void {
+    localStorage.setItem('currentUser', JSON.stringify(userSession));
     alert('Login realizado com sucesso!');
 
-    if (userData.role === 'GERENTE') {
+    const role = userSession.user.role;
+
+    if (role === 'GERENTE') {
       this.router.navigate(['/tela-administrador']);
-    } else if (userData.role === 'CLIENTE') {
+    } else if (role === 'CLIENTE') {
       this.router.navigate(['/home-cliente']);
     }
+  }
+
+  getUserSession(): UserSession | null {
+    const session = localStorage.getItem('currentUser');
+    return session ? JSON.parse(session) : null;
   }
 
   logout(): void {
