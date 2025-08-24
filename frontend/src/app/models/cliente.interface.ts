@@ -1,10 +1,12 @@
-import { EnderecoInterface as Endereco } from './endereco.interface';
+import { Endereco } from './endereco.interface';
 
-export interface ClienteInterface {
+export interface Cliente {
   cpf: string;
   nome: string;
   email: string;
   endereco: Endereco;
   telefone: number;
   salario: number;
+  role: 'CLIENTE';
+  senha: string // somente para testes
 }
