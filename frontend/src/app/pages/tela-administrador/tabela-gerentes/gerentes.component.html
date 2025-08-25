@@ -1,12 +1,4 @@
 <div class="gerentes-dashboard">
-  <h2>Dashboard de Gerentes</h2>
-
-  <div class="actions">
-    <button type="button" (click)="adicionarGerente()">Adicionar Novo Gerente</button>
-  </div>
-
-  <br>
-  
   <table border="1" cellpadding="5" cellspacing="0">
     <thead>
       <tr>
@@ -21,10 +13,16 @@
       <tr *ngFor="let gerente of gerentes">
         <td>{{ gerente.nome }}</td>
         <td>{{ gerente.clientes.length }}</td>
-        <td>{{ totalSaldoPositivo(gerente) | currency:'BRL' }}</td>
-        <td>{{ totalSaldoNegativo(gerente) | currency:'BRL' }}</td>
+        <td>{{ totalSaldoPositivo(gerente) | currency : "BRL" }}</td>
+        <td>{{ totalSaldoNegativo(gerente) | currency : "BRL" }}</td>
         <td>
-          <button type="button" (click)="verDetalhes(gerente)">Ver Detalhes</button>
+          <button
+            class="botaoDetalhes"
+            type="button"
+            (click)="verDetalhes(gerente)"
+          >
+            Ver Detalhes
+          </button>
         </td>
       </tr>
       <tr *ngIf="gerentes.length === 0">
