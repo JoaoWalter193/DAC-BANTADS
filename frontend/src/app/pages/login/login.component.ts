@@ -7,6 +7,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../services/auth.service';
+import { MockService } from '../../services/mock.service';
+import { Conta, UserSession } from '../../models';
 
 @Component({
   selector: 'app-login',
@@ -29,42 +31,42 @@ export class LoginComponent {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router,
     private authService: AuthService,
+    private mockService: MockService
   ) {
     this.loginForm = this.fb.group({
-      //validação e para só receber numeros na conta
-      account: ['', [Validators.required, Validators.pattern(/^[0-9]+$/)]],
+      account: ['', [Validators.required]],
       password: ['', [Validators.required]]
     });
   }
 
   onSubmit(): void {
-    const { account, password } = this.loginForm.value;
-
-    let userData: any = null;
-
-    //mock de login localStorage
-    if (account === '11111' && password === 'cliente') {
-      userData = {
-        id: '111',
-        nome: 'Cliente 1',
-        account: account,
-        role: 'CLIENTE'
-      };
-    } else if (account === '99999' && password === 'admin') {
-      userData = {
-        id: '999',
-        nome: 'Gerente 1',
-        account: account,
-        role: 'GERENTE'
-      };
+    if (this.loginForm.invalid) {
+      return;
     }
 
-      if (userData) {
-        this.authService.login(userData);
+    const { account, password } = this.loginForm.value;
+
+    // usa o mockservice para encontrar o user
+    const userFound = this.mockService.findUserByCredentials(account, password);
+
+    if (userFound) {
+      let conta: Conta | undefined;
+
+      // if user = cliete, busca a conta dele pelo cpf
+      if (userFound.role === 'CLIENTE') {
+        conta = this.mockService.findContaByClienteCpf(userFound.cpf);
+      }
+
+      // monta o objeto do login
+      const userSession: UserSession = {
+        user: userFound,
+        conta: conta
+      };
+      this.authService.login(userSession);
+
     } else {
-      alert('Número da conta ou senha inválidos.');
+      alert('Email ou senha inválidos.');
     }
   }
 }

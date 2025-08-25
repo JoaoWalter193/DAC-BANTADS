@@ -12,7 +12,7 @@
           aria-label="Ícone de 'wallet'"
           fontIcon="wallet"
         ></mat-icon>
-        <span>{{ cliente.saldo | currency : "BRL" : "symbol" : "1.2-2" }}</span>
+        <span>{{ conta.saldo | currency : "BRL" : "symbol" : "1.2-2" }}</span>
       </div>
     </div>
 
@@ -44,9 +44,10 @@
             class="valor-input"
             type="number"
             placeholder="Insira um valor"
+            [(ngModel)]="valor"
           />
           <div class="acao-btn">
-            <button class="enviar-btn">Enviar</button>
+            <button class="enviar-btn" (click)="realizarSaque()">Enviar</button>
           </div>
         </div>
       </div>
@@ -66,9 +67,10 @@
             class="valor-input"
             type="number"
             placeholder="Insira um valor"
+            [(ngModel)]="valor"
           />
           <div class="acao-btn">
-            <button class="enviar-btn">Enviar</button>
+            <button class="enviar-btn" (click)="realizarDeposito()">Enviar</button>
           </div>
         </div>
       </div>
