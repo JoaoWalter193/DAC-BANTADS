@@ -20,13 +20,14 @@
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0",
+    "tslib": "^2.8.1",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^19.2.4",
     "@angular/cli": "^19.2.4",
     "@angular/compiler-cli": "^19.2.0",
+    "@types/bonjour": "^3.5.13",
     "@types/jasmine": "~5.1.0",
     "jasmine-core": "~5.6.0",
     "karma": "~6.4.0",
