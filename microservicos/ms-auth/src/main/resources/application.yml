@@ -1,0 +1,59 @@
+server:
+    port: 8280
+
+spring:
+    application:
+        name: ms-auth
+
+    data:
+        mongodb:
+            uri: ${SPRING_DATA_MONGODB_URI}
+
+    security:
+        oauth2:
+            resourceserver:
+                jwt:
+                    issuer-uri: BANTADS-AUTH-API
+
+jwt:
+  public:
+    key: |
+        -----BEGIN PRIVATE KEY-----
+        MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCcySiPTfajoUPy
+        Ds7gh18XMOzapcKqmd+WNq7vsQiYe5nac6gpea3bLzEw8y1IEZ8zdQZTCJr2MKlT
+        vgDdbnT1LW4+XpJr2As7fiOuHB+Twdy4dUz90MTFtN8xV/AnCXIDCOoWHZ5VzBKO
+        wAWlInI2GzAUWS4cgCWXVDxXyiTMDFvSVzCCIHOdSaD+BlaNxiP8rn+QYB1SknEk
+        pQvJJakN5du0UUONgIZBDEhTC/xTV+xKHaJTUeEKog5MkWMdBtip63eTOnNg4xzq
+        PbWFMjaamLTceGT+R0QVw+4x14wCSNouFR9HGdrn9TGEDD3HZznaBq9zcC+L/DuL
+        bYiRTihTAgMBAAECggEAJROE3e6n5qYaNUG/NmWM3SUavdH5KPLeZt1jnRcWW0jP
+        Z1N2buhxbqXIUjUPfj18kmSYLEaarqFvSXhjJ/oY+mnV6jXfFlWuwlDgCypnZT+w
+        /IXwwQz/m2lcZoTPK8wWBBW1lalHai6qLMvICfcNXzIquoUkXGUJfrHS20fYT9A1
+        jc+h7gIwRfJ+TU6sNwpkSEmyGiENW4Ry9SPvS7T+8myPDYxpNDLMDO4FeDdLY8kG
+        V0YgIO2D0MRVYD4qYW/ZReiwxBzc1bMjtCSajb7iYqYzXzJgGoTkqQUvFZTWb7HQ
+        9bxLcwDYtclnfHn12roRijDUWF99aJEQ7WYCFkJuMQKBgQDPrJbjusdRXaD91Y8A
+        pgeffuiibl/jdUwKspwVG/SCsvy+JYYW8HScD1P3yoVkXk61zoYmosPm9EDiTpPD
+        QgkFHLJnYnGBztWcVvafuJA+RxrM313Qx3k9zCvDCl1P6m095BqDz56jG0aBZE5a
+        QnTWL35tdIPcS+EjTtkyERIrJwKBgQDBRRVOono7UjZtDCu5DXY+rIUbFEWLjeQ1
+        Md0EjssnwJJ4JGRRtBKu5e7Z7aNPD462GRGx84aICmr7OIGHajvsXbeMhtnopDCy
+        LMsWa9hQHKQ6bL0H9ZMAeXeG2dfLO01HQqg6SO2P5cFVJLTUzoU7dNeA6Ra29CWk
+        RVGUX7fE9QKBgAk1Y/NxIslu12aqA49JzWi7HeGl90aEuvx2cwlUlgD9ostjqpB1
+        1RXecCC6sDOFIwRYxgYMjZc+GWpvhYnQ8clyPk7rRJE29K3cBU+LxYmdaYjQFr7d
+        OXkOBpq9aOnUQUfPR4W0vRoKaZPvOLIz5C5jKL39vqMUEkWYh3T64M1dAoGBAKg/
+        V5ko4Hebzj2IBtgF3BYbYZR9RT2DvFKCogFBvaFRhzCHnb1yoYEYMaINucktpfLo
+        R/s+ILN1PkSMoFYeKSRPQWZYToKzzKCPVgyivaCgDme+GaFAK0SSeXcvVSha659J
+        a+Gxcv196ZwRZEqNrnZf9OsH/vot+EbVAXvFB9mxAoGBALAfslG8wJZMyWBQH52y
+        LYiuhsZx2JyNytcNo5+avnLQgAK6MfRz4PGLNGuCP8Jc1vDvW3IYlrqGfp1Yk/2M
+        F9sXcvtenCr8jXbq17e49nXZ9D1UUmHBXgGlkPu4hXiNImTqLLnIs15P0nR0PK3S
+        7fhAUvbZtmNyg++jRur6t2Oq
+        -----END PRIVATE KEY-----
+  private:
+    key: |
+        -----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnMkoj032o6FD8g7O4Idf
+        FzDs2qXCqpnfljau77EImHuZ2nOoKXmt2y8xMPMtSBGfM3UGUwia9jCpU74A3W50
+        9S1uPl6Sa9gLO34jrhwfk8HcuHVM/dDExbTfMVfwJwlyAwjqFh2eVcwSjsAFpSJy
+        NhswFFkuHIAll1Q8V8okzAxb0lcwgiBznUmg/gZWjcYj/K5/kGAdUpJxJKULySWp
+        DeXbtFFDjYCGQQxIUwv8U1fsSh2iU1HhCqIOTJFjHQbYqet3kzpzYOMc6j21hTI2
+        mpi03Hhk/kdEFcPuMdeMAkjaLhUfRxna5/UxhAw9x2c52gavc3Avi/w7i22IkU4o
+        UwIDAQAB
+        -----END PUBLIC KEY-----
