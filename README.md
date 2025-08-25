@@ -24,4 +24,5 @@ Para rodar este projeto é necessário alguns softwares:
  - 5432 : PostgreSQL
  - 27017 : MongoDB
  - 12345 : Adminer(Gerenciador Web de SQL)
+ - 1010: microserviço de gerente
 

@@ -1,4 +1,4 @@
-import { ClienteInterface as Cliente } from './cliente.interface';
+import { Cliente } from './cliente.interface';
 
 export interface Conta {
   cliente: Cliente;
@@ -6,4 +6,5 @@ export interface Conta {
   dataCriacao: string;
   saldo: number;
   limite: number;
+  nomeGerente: string;
 }

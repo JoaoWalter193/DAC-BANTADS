@@ -1,6 +1,6 @@
 import { TipoEndereco } from '../enums/tipo-endereco';
 
-export interface EnderecoInterface {
+export interface Endereco {
   TipoEndereco: TipoEndereco;
   logradouro: string;
   numero: number;
