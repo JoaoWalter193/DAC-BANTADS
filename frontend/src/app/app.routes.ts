@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './pages/login/login.component';
 import { TelaAdministradorComponent } from './pages/tela-administrador/tela-administrador.component';
+
 import { GerentesComponent } from './pages/tela-administrador/tabela-gerentes/gerentes.component';
 import { HomeCliente } from './pages/home-cliente/home-cliente';
 import { TelaAutocadastroComponent } from './pages/tela-autocadastro/tela-autocadastro.component';
@@ -17,6 +18,7 @@ export const routes: Routes = [
   },
 
   {
+
     path: 'tela-administrador',
     component: TelaAdministradorComponent,
     children: [
