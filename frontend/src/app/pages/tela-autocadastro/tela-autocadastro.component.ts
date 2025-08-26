@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { TipoEndereco } from '../../enums/tipo-endereco';
-import { ClienteInterface } from '../../models/cliente.interface';
+import { Cliente } from '../../models/cliente.interface';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -12,7 +11,6 @@ import { RouterLink } from '@angular/router';
   styleUrl: './tela-autocadastro.component.css',
 })
 export class TelaAutocadastroComponent {
-  TipoEndereco = TipoEndereco;
 
   cliente = {
     cpf: '',
@@ -20,7 +18,6 @@ export class TelaAutocadastroComponent {
     email: '',
     salario: 0,
     endereco: {
-      TipoEndereco: TipoEndereco.rua,
       logradouro: '',
       numero: 0,
       complemento: '',
@@ -92,13 +89,12 @@ export class TelaAutocadastroComponent {
     this.carregando = true;
 
     setTimeout(() => {
-      const clienteCompleto: ClienteInterface = {
+      const clienteCompleto: Cliente = {
         cpf: cpfNumerico,
         nome: this.cliente.nome,
         email: this.cliente.email,
         salario: this.cliente.salario,
         endereco: {
-          TipoEndereco: this.cliente.endereco.TipoEndereco,
           logradouro: this.cliente.endereco.logradouro,
           numero: this.cliente.endereco.numero,
           complemento: this.cliente.endereco.complemento,
@@ -108,6 +104,8 @@ export class TelaAutocadastroComponent {
         },
         status: 'pendente',
         dataSolicitacao: new Date(),
+        role: 'CLIENTE',
+        senha: '',
       };
 
       this.salvarCliente(clienteCompleto);
@@ -149,13 +147,13 @@ export class TelaAutocadastroComponent {
     return clientes.some((cliente) => cliente.cpf === cpf);
   }
 
-  salvarCliente(cliente: ClienteInterface): void {
+  salvarCliente(cliente: Cliente): void {
     const clientes = this.obterClientes();
     clientes.push(cliente);
     localStorage.setItem('clientes_bantads', JSON.stringify(clientes));
   }
 
-  obterClientes(): ClienteInterface[] {
+  obterClientes(): Cliente[] {
     const clientesJSON = localStorage.getItem('clientes_bantads');
     return clientesJSON ? JSON.parse(clientesJSON) : [];
   }
@@ -177,7 +175,6 @@ export class TelaAutocadastroComponent {
       email: '',
       salario: 0,
       endereco: {
-        TipoEndereco: TipoEndereco.rua,
         logradouro: '',
         numero: 0,
         complemento: '',

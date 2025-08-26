@@ -65,12 +65,6 @@
                 <label>Estado *</label>
                 <input type="text" name="estado" id="estado" class="input" [(ngModel)]="cliente.endereco.estado"
                     required maxlength="2" placeholder="SP">
-
-                <label>Tipo de Endereço</label>
-                <select name="tipoEndereco" id="tipoEndereco" class="input" [(ngModel)]="cliente.endereco.TipoEndereco">
-                    <option [value]="TipoEndereco.rua">Rua</option>
-                    <option [value]="TipoEndereco.avenida">Avenida</option>
-                </select>
             </form>
 
             <button id="botao" (click)="onSubmit()" [disabled]="carregando">
