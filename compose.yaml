@@ -20,6 +20,10 @@ services:
       - ~/.m2:/root/.m2
     ports: 
       - 8080:8080
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/DAC
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=senha
 
   ms-gerente:
     image: maven:3.8.4-openjdk-17-slim
@@ -28,21 +32,25 @@ services:
     volumes:
       - ./microservicos/msgerente/:/app
       - ~/.m2:/root/.m2
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/DAC
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=senha
     ports: 
       - 8081:8080
     environment:
 
   ms-auth:
-    image: maven:3.8.4-openjdk-17-slim
-    working_dir: /app
-    command: "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.devtools.restart.enabled=true -Dspring-boot.run.profiles=dev'"
-    volumes:
-      - ./microservicos/ms-auth/:/app
-      - ~/.m2:/root/.m2
-    ports:
-      - 8082:8080
-    environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:senha@mongodb:27018/bantads?authSource=admin
+      image: maven:3.8.4-openjdk-17-slim
+      working_dir: /app
+      command: "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.devtools.restart.enabled=true -Dspring-boot.run.profiles=dev'"
+      volumes:
+        - ./microservicos/ms-auth/:/app
+        - ~/.m2:/root/.m2
+      ports:
+        - 8082:8080
+      env_file:
+        - ./auth.env
 
 # Bancos de dados
   postgres:
