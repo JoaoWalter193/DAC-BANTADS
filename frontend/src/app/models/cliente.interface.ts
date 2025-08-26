@@ -5,8 +5,9 @@ export interface Cliente {
   nome: string;
   email: string;
   endereco: Endereco;
-  telefone: number;
   salario: number;
+  status: 'aprovado' | 'rejeitado' | 'pendente';
+  dataSolicitacao: Date;
   role: 'CLIENTE';
   senha: string // somente para testes
 }

@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Admin, Cliente, Conta, Gerente, Endereco } from '../models';
-import { TipoEndereco } from '../enums/tipo-endereco';
 
 @Injectable({
   providedIn: 'root'
@@ -15,9 +14,7 @@ export class MockService {
       email: 'cli1@bantads.com.br',
       role: 'CLIENTE',
       salario: 10000,
-      telefone: 43912345678,
       endereco: {
-        TipoEndereco: TipoEndereco.avenida,
         logradouro: "Avenida da Catharyna",
         numero: 1,
         complemento: "apto 712",
@@ -25,6 +22,8 @@ export class MockService {
         estado: "PR",
         CEP: "80000-001"
       },
+      status: 'aprovado',
+      dataSolicitacao: new Date('2023-01-01'),
       senha: "tads"
     },
     {
@@ -33,9 +32,7 @@ export class MockService {
       email: 'cli2@bantads.com.br',
       role: 'CLIENTE',
       salario: 20000,
-      telefone: 41945671234,
       endereco: {
-        TipoEndereco: TipoEndereco.rua,
         logradouro: "Rua do Cleuddonio",
         numero: 2,
         complemento: "casa",
@@ -43,6 +40,8 @@ export class MockService {
         estado: "PR",
         CEP: "80000-002"
       },
+      status: 'aprovado',
+      dataSolicitacao: new Date('2023-01-02'),
       senha: "tads"
     }
   ];

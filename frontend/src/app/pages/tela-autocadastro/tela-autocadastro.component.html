@@ -12,43 +12,65 @@
 
                 <div id="descricao">
                     <p>Já tem um cadastro?</p>
-                    <a routerLink="">Faça login.</a>
+                    <a routerLink="/">Faça login.</a>
                 </div>
             </div>
         </div>
 
         <div id="centro">
-            >
+
         </div>
 
         <div class="subcontainer" id="direita">
-            <form id="cadastro">
-                <label>Nome Completo</label>
-                <input type="text" name="nome" id="nome" class="input">
-                
-                <label>CPF</label>
-                <input type="text" name="cpf" id="cpf" class="input">
-                
-                <label>E-mail</label>
-                <input type="text" name="email" id="email" class="input">
-                
-                <label>Salário</label>
-                <input type="text" name="salario" id="salario" class="input">
-                
-                <label>CEP</label>
-                <input type="text" name="CEP" id="cep" class="input">
-                
-                <label>Cidade</label>
-                <input type="text" name="cidade" id="cidade" class="input">
-                
-                <label>Estado</label>
-                <input type="text" name="estado" id="estado" class="input">
+            <div *ngIf="mensagem" [class]="tipoMensagem === 'sucesso' ? 'mensagem-sucesso' : 'mensagem-erro'"
+                class="mensagem">
+                {{ mensagem }}
+            </div>
 
-                <label>Endereço</label>
-                <input type="text" name="endereco" id="endereco" class="input">
+            <form id="cadastro" (ngSubmit)="onSubmit()">
+                <label>Nome Completo *</label>
+                <input type="text" name="nome" id="nome" class="input" [(ngModel)]="cliente.nome" required>
+
+                <label>CPF *</label>
+                <input type="text" name="cpf" id="cpf" class="input" [(ngModel)]="cliente.cpf"
+                    (input)="formatarCPF($event)" required placeholder="000.000.000-00" maxlength="14">
+
+                <label>E-mail *</label>
+                <input type="email" name="email" id="email" class="input" [(ngModel)]="cliente.email" required>
+
+                <label>Salário *</label>
+                <input type="number" name="salario" id="salario" class="input" [(ngModel)]="cliente.salario" required
+                    min="0">
+
+                <label>CEP *</label>
+                <input type="text" name="CEP" id="cep" class="input" [(ngModel)]="cliente.endereco.CEP"
+                    (input)="formatarCEP($event)" required placeholder="00000-000" maxlength="9">
+
+                <label>Logradouro *</label>
+                <input type="text" name="logradouro" id="logradouro" class="input"
+                    [(ngModel)]="cliente.endereco.logradouro" required>
+
+                <label>Número *</label>
+                <input type="number" name="numero" id="numero" class="input" [(ngModel)]="cliente.endereco.numero"
+                    required min="0">
+
+                <label>Complemento</label>
+                <input type="text" name="complemento" id="complemento" class="input"
+                    [(ngModel)]="cliente.endereco.complemento">
+
+                <label>Cidade *</label>
+                <input type="text" name="cidade" id="cidade" class="input" [(ngModel)]="cliente.endereco.cidade"
+                    required>
+
+                <label>Estado *</label>
+                <input type="text" name="estado" id="estado" class="input" [(ngModel)]="cliente.endereco.estado"
+                    required maxlength="2" placeholder="SP">
             </form>
 
-            <button id="botao">Cadastrar</button>
+            <button id="botao" (click)="onSubmit()" [disabled]="carregando">
+                {{ carregando ? 'Processando...' : 'Cadastrar' }}
+                <span *ngIf="carregando" class="loading"></span>
+            </button>
         </div>
     </div>
 </div>
