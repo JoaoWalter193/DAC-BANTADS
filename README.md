@@ -22,7 +22,8 @@ Para rodar este projeto é necessário alguns softwares:
 
  - 80 : Front-end
  - 8081 : ms-gerente
- - 8082 : ms-cliente
+ - 8082 : ms-auth
+ - 8083 : ms-cliente
  - 5432 : PostgreSQL
  - 27017 : MongoDB
  - 12345 : Adminer(Gerenciador Web de SQL)
