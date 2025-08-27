@@ -21,19 +21,21 @@ services:
     ports: 
       - 8080:8080
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/DAC
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/DAC
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=senha
 
   ms-gerente:
     image: maven:3.8.4-openjdk-17-slim
-    working_dir: /app
-    command: "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.devtools.restart.enabled=true -Dspring-boot.run.profiles=dev'"
+    depends_on:
+      - postgres
+    working_dir: /app     
+    command: "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.devtools.restart.enabled=true' -Dspring-boot.run.profiles=dev"
     volumes:
-      - ./microservicos/msgerente/:/app
+      - ./microservicos/Msgerente/:/app
       - ~/.m2:/root/.m2
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/DAC
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/DAC
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=senha
     ports: 
