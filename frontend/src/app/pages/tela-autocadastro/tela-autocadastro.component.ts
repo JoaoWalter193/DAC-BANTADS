@@ -301,7 +301,10 @@ export class TelaAutocadastroComponent implements AfterViewInit {
 
   CPFJaCadastrado(cpf: string): boolean {
     const clientes = this.obterClientes();
-    return clientes.some((cliente) => cliente.cpf === cpf);
+
+    return clientes.some((cliente) => {
+      cliente.cpf === cpf
+    });
   }
 
   salvarCliente(cliente: Cliente): void {
