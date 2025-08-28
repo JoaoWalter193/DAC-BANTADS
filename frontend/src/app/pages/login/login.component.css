@@ -1,0 +1,72 @@
+.tela-login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  background-image: linear-gradient(130deg, #f0f2f5, #d6e0ff);
+  font-family: 'Poppins', sans-serif;
+}
+
+.login-container {
+  background-color: white;
+  padding: 40px 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.login-container h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.login-container h2 {
+  font-size: 18px;
+  font-weight: 400;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-form mat-form-field {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.login-form button {
+  height: 50px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.to-cadastro {
+  margin-top: 30px;
+  font-size: 14px;
+  color: #555;
+}
+
+.to-cadastro a {
+  color: #2F48E0;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.to-cadastro a:hover {
+  text-decoration: underline;
+}

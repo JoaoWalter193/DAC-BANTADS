@@ -1,0 +1,84 @@
+services:
+ 
+  frontend:
+    image: node:20-alpine
+    working_dir: /home/app
+    ports:
+      - "80:4200"
+    command: sh -c "npm install -g @angular/cli@19.2.4 && npm install --legacy-peer-deps && ng serve --host 0.0.0.0 --poll=2000 --port 4200 --disable-host-check"
+    volumes:
+      - ./frontend:/home/app
+      - /home/app/node_modules  
+
+# Microsserviços
+  ms-conta:
+    image: maven:3.8.4-openjdk-17-slim
+    working_dir: /app
+    command: "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.devtools.restart.enabled=true -Dspring-boot.run.profiles=dev'"
+    volumes:
+      - ./microservicos/Msconta/:/app
+      - ~/.m2:/root/.m2
+    ports: 
+      - 8080:8080
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/DAC
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=senha
+
+  ms-gerente:
+    image: maven:3.8.4-openjdk-17-slim
+    working_dir: /app
+    command: "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.devtools.restart.enabled=true -Dspring-boot.run.profiles=dev'"
+    volumes:
+      - ./microservicos/msgerente/:/app
+      - ~/.m2:/root/.m2
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/DAC
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=senha
+    ports: 
+      - 8081:8080
+
+  ms-auth:
+      image: maven:3.8.4-openjdk-17-slim
+      working_dir: /app
+      command: "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.devtools.restart.enabled=true -Dspring-boot.run.profiles=dev'"
+      volumes:
+        - ./microservicos/ms-auth/:/app
+        - ~/.m2:/root/.m2
+      ports:
+        - 8082:8080
+      env_file:
+        - ./auth.env
+
+# Bancos de dados
+  postgres:
+    image: postgres:15.5
+    environment:
+      POSTGRES_DB: DAC
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: senha
+    volumes:
+      - ./bancoDeDados/postgres/:/docker-entrypoint-initdb.d/
+    ports:
+      - 5432:5432
+
+  mongodb:
+    image: mongodb/mongodb-community-server:6.0-ubi8
+    environment:
+      - MONGODB_INITDB_ROOT_USERNAME=mongodb
+      - MONGODB_INITDB_ROOT_PASSWORD=senha
+    volumes:
+      - bantads:/data/db
+    ports:
+      - 27018:27017
+
+#gerenciador do postgres via web
+  adminer:
+    image: adminer
+    ports:
+      - 12345:8080
+
+volumes:
+  bantads:
+    driver: local

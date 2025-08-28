@@ -1,0 +1,23 @@
+server:
+    port: 8280
+
+spring:
+    application:
+        name: ms-auth
+
+    data:
+        mongodb:
+            uri: ${SPRING_DATA_MONGODB_URI}
+
+    security:
+        oauth2:
+            resourceserver:
+                jwt:
+                    issuer-uri: BANTADS-AUTH-API
+
+jwt:
+  private:
+    key: ${JWT_PRIVATE_KEY}
+        
+  public:
+    key: ${JWT_PUBLIC_KEY}
