@@ -18,4 +18,4 @@ microservicos/ms-auth/target/classes/msauth/ms_auth/entities/Role.class
 microservicos/ms-auth/target/classes/msauth/ms_auth/entities/UsuarioEntity.class
 microservicos/ms-auth/target/classes/msauth/ms_auth/repositories/UsuarioRepository.class
 microservicos/ms-auth/target/test-classes/msauth/ms_auth/MsAuthApplicationTests.class
-
+microservicos/APIGateway/.env
