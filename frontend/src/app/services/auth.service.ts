@@ -28,6 +28,21 @@ export class AuthService {
     return session ? JSON.parse(session) : null;
   }
 
+  // buscar usuário logado para usar em outros componentes
+  getUsuarioLogado() {
+    const session = this.getUserSession();
+    return session ? session.user : null;
+  }
+
+  // atualizar sessao depois de editar perfil de cliente
+  updateSession(clienteAtualizado: any): void {
+    const session = this.getUserSession();
+    if (session) {
+      session.user = clienteAtualizado;
+      localStorage.setItem('currentUser', JSON.stringify(session))
+    }
+  }
+
   logout(): void {
     localStorage.removeItem('currentUser');
     this.router.navigate(['']);

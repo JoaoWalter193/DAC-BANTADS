@@ -103,4 +103,26 @@ export class MockService {
   findContaByClienteCpf(cpf: string): Conta | undefined {
     return this.contas.find(c => c.cliente.cpf === cpf);
   }
+
+  findClienteByCpf(cpf: string): Cliente | undefined {
+    return this.clientes.find(c => c.cpf === cpf)
+  }
+
+
+  getClientes(): Cliente[] {
+    return this.clientes;
+  }
+
+  updateCliente(cliente: Cliente): Cliente | null {
+    const index = this.clientes.findIndex(c => c.cpf === cliente.cpf);
+
+    if (index !== -1) {
+      this.clientes[index] = { ...this.clientes[index], ...cliente };
+      console.log("Cliente atualizado: ", this.clientes[index]);
+      return this.clientes[index];
+    }
+
+    console.error("Cliente " + cliente.cpf + " não encontrado");
+    return null;
+  }
 }
