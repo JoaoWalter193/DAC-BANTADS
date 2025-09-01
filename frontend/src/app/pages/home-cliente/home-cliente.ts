@@ -15,24 +15,14 @@ import { Conta } from '../../models';
   styleUrl: './home-cliente.css',
 })
 export class HomeCliente implements OnInit {
-  conta: Conta | null = null;
+  cliente: any;
+  conta: any;
   operacaoAtiva: 'saque' | 'deposito' | 'transferencia' | '' = '';
-  valorSaque: number | null = null;
-  valorDeposito: number | null = null;
-
-  mensagem: string | null = null;
-  tipoMensagem: 'sucesso' | 'erro' | null = null;
-
-  constructor(private contaService: ContaService) {}
-
-  ngOnInit(): void {
-    this.conta = this.contaService.getConta();
-  }
+  valor: number | null = null;
 
   expandirOperacao(
     operacao: 'saque' | 'deposito' | 'transferencia' | '' = ''
   ): void {
-    this.limparMensagem();
     if (this.operacaoAtiva === operacao) {
       this.operacaoAtiva = '';
     } else {
@@ -40,48 +30,44 @@ export class HomeCliente implements OnInit {
     }
   }
 
+  constructor(private contaService: ContaService) {}
+
+  ngOnInit(): void {
+    this.conta = this.contaService.getConta();
+  }
+
   realizarSaque(): void {
-    if (!this.valorSaque || this.valorSaque <= 0) {
-      this.mostrarMensagem('Por favor, insira um valor válido.', 'erro');
+    if (!this.valor) {
+      alert('Por favor, insira um valor válido.');
       return;
     }
 
     try {
-      const contaAtualizada = this.contaService.sacar(this.valorSaque);
-      this.conta = contaAtualizada;
-      this.valorSaque = null;
+      this.contaService.sacar(this.valor);
+      this.conta.saldo -= this.valor;
+      this.valor = null;
 
-      this.mostrarMensagem('Saque realizado com sucesso!', 'sucesso');
+      alert('Saque realizado com sucesso!');
     } catch (error: any) {
-      this.mostrarMensagem(error.message, 'erro');
+      alert(error.message);
     }
   }
 
   realizarDeposito(): void {
-    if (!this.valorDeposito || this.valorDeposito <= 0) {
-      this.mostrarMensagem('Por favor, insira um valor válido.', 'erro');
+    if (!this.valor) {
+      alert('Por favor, insira um valor válido.');
       return;
     }
 
     try {
-      this.contaService.depositar(this.valorDeposito);
-      this.conta = this.contaService.getConta();
-      this.valorDeposito = null;
+      this.contaService.depositar(this.valor);
+      this.conta.saldo += this.valor;
+      this.valor = null;
 
-      this.mostrarMensagem('Depósito realizado com sucesso!', 'sucesso');
+      alert('Deposito realizado com sucesso!');
     } catch (error: any) {
-      this.mostrarMensagem(error.message, 'erro');
+      alert(error.message);
     }
-  }
-
-  private mostrarMensagem(texto: string, tipo: 'sucesso' | 'erro') {
-    this.mensagem = texto;
-    this.tipoMensagem = tipo;
-  }
-
-  private limparMensagem() {
-    this.mensagem = null;
-    this.tipoMensagem = null;
   }
 
 }
