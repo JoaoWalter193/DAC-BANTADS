@@ -6,7 +6,9 @@
     <div class="gerentes-dashboard">
       <h3>Gerentes</h3>
       <div class="actions">
-        <button class="botao-add" type="button">Adicionar Novo Gerente</button>
+        <button class="botao-add" type="button">
+          <a routerLink="/cadastro-gerente">Adicionar Novo Gerente</a>
+        </button>
       </div>
 
       <app-gerentes></app-gerentes>
@@ -16,6 +18,9 @@
       <h3>Todos Clientes</h3>
 
       <app-clientes></app-clientes>
+
+      <h3>Clientes para aprovação</h3>
+      <app-aprovar-cliente/>
     </div>
   </div>
 </section>

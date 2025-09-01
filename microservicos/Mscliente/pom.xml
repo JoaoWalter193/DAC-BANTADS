@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -8,11 +8,11 @@
 		<version>4.0.0-M1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>MSconta</groupId>
-	<artifactId>Msconta</artifactId>
+	<groupId>MScliente</groupId>
+	<artifactId>Mscliente</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Msconta</name>
-	<description>MicroServico de Contas</description>
+	<name>Mscliente</name>
+	<description>MicroServico de Cliente</description>
 	<url/>
 	<licenses>
 		<license/>

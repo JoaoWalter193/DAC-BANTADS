@@ -21,23 +21,42 @@ services:
     ports: 
       - 8080:8080
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/DAC
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/DAC
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=senha
 
   ms-gerente:
     image: maven:3.8.4-openjdk-17-slim
-    working_dir: /app
-    command: "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.devtools.restart.enabled=true -Dspring-boot.run.profiles=dev'"
+    depends_on:
+      - postgres
+    working_dir: /app     
+    command: "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.devtools.restart.enabled=true' -Dspring-boot.run.profiles=dev"
     volumes:
-      - ./microservicos/msgerente/:/app
+      - ./microservicos/Msgerente/:/app
       - ~/.m2:/root/.m2
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/DAC
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=senha
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/DAC
+      - SPRING_DATASOURCE_USERNAME=dbGerente
+      - SPRING_DATASOURCE_PASSWORD=dbGerente
     ports: 
       - 8081:8080
+
+  ms-cliente:
+    image: maven:3.8.4-openjdk-17-slim
+    depends_on:
+      - postgres
+    working_dir: /app     
+    command: "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.devtools.restart.enabled=true' -Dspring-boot.run.profiles=dev"
+    volumes:
+      - ./microservicos/Mscliente/:/app
+      - ~/.m2:/root/.m2
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/DAC
+      - SPRING_DATASOURCE_USERNAME=dbCliente
+      - SPRING_DATASOURCE_PASSWORD=dbClienteCUD
+    ports: 
+      - 8083:8080
+
 
   ms-auth:
       image: maven:3.8.4-openjdk-17-slim

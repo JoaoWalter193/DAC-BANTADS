@@ -47,9 +47,52 @@ email VARCHAR(100) NOT NULL,
 senha TEXT NOT NULL,
 salario DECIMAL(7,2) NOT NULL,
 endereco VARCHAR(100) NOT NULL
+status VARCHAR (9) NOT NULL  -- APROVADO / REJEITADO / ESPERANDO
 );
 
--- Schema Conta 
+-- Schema ContaCUD
+
+CREATE TABLE dbContaCUD.conta(
+cpfCliente VARCHAR(11),
+nomeCliente VARCHAR(100),
+numConta VARCHAR(4),
+saldo DECIMAL(8,2),
+cpfGerente VARCHAR(11),
+nomeGerente VARCHAR(100),
+dataCriacao DATE
+);
+
+CREATE TABLE dbContaCUD.movimentacao (
+dataHora TIMESTAMP,
+tipo VARCHAR(15),
+clienteOrigemNome VARCHAR(100),
+clienteOrigemCpf VARCHAR(11),
+clienteDestinoNome VARCHAR(100),
+clienteDestinoCpf VARCHAR(100),
+valor DECIMAL(8,2)
+);
+
+-- Schema ContaR
+
+CREATE TABLE dbContaR.conta(
+cpfCliente VARCHAR(11),
+nomeCliente VARCHAR(100),
+numConta VARCHAR(4),
+saldo DECIMAL(8,2),
+cpfGerente VARCHAR(11),
+nomeGerente VARCHAR(100),
+dataCriacao DATE
+);
+
+CREATE TABLE dbContaR.movimentacao (
+dataHora TIMESTAMP,
+tipo VARCHAR(15),
+clienteOrigemNome VARCHAR(100),
+clienteOrigemCpf VARCHAR(11),
+clienteDestinoNome VARCHAR(100),
+clienteDestinoCpf VARCHAR(100),
+valor DECIMAL(8,2)
+);
 
 
 -- Schema gerente 
