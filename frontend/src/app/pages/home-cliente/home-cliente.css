@@ -1,14 +1,5 @@
 /* Section - container */
-.container {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  gap: 2rem;
-  height: 100vh;
-  padding-top: 3rem;
-  padding-inline: 15%;
-  background-color: #eeeff1;
-}
+
 
 /* Botões */
 .voltar-btn,
@@ -50,6 +41,7 @@
 
 .saldo-content,
 .info-extrato,
+.info-perfil,
 .op {
   background-color: #ffffff;
   border-radius: 0.25rem;
