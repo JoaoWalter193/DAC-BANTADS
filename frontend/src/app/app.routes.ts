@@ -5,6 +5,7 @@ import { GerentesComponent } from './pages/tela-administrador/tabela-gerentes/ge
 import { HomeCliente } from './pages/home-cliente/home-cliente';
 import { TelaAutocadastroComponent } from './pages/tela-autocadastro/tela-autocadastro.component';
 import { ClientesComponent } from './pages/tela-administrador/tabela-clientes/clientes.component';
+import { PerfilClienteComponent } from './pages/perfil-cliente/perfil-cliente.component';
 
 export const routes: Routes = [
   {
@@ -35,4 +36,8 @@ export const routes: Routes = [
     path: 'home-cliente',
     component: HomeCliente,
   },
+  {
+    path: 'perfil',
+    component: PerfilClienteComponent
+  }
 ];
