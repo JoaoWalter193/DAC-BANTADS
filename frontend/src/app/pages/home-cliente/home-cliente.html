@@ -1,5 +1,5 @@
 <app-navbar></app-navbar>
-<section class="container" *ngIf="conta">
+<section class="container">
   <div class="section-content">
     <h2>Informações</h2>
 
@@ -44,14 +44,10 @@
             class="valor-input"
             type="number"
             placeholder="Insira um valor"
-            [(ngModel)]="valorSaque"
+            [(ngModel)]="valor"
           />
           <div class="acao-btn">
             <button class="enviar-btn" (click)="realizarSaque()">Enviar</button>
-          </div>
-          <div *ngIf="mensagem && operacaoAtiva == 'saque'" class="mensagem-operacao"
-            [ngClass]="{ 'sucesso': tipoMensagem === 'sucesso', 'erro': tipoMensagem === 'erro' }">
-            {{ mensagem }}
           </div>
         </div>
       </div>
@@ -71,14 +67,10 @@
             class="valor-input"
             type="number"
             placeholder="Insira um valor"
-            [(ngModel)]="valorDeposito"
+            [(ngModel)]="valor"
           />
           <div class="acao-btn">
             <button class="enviar-btn" (click)="realizarDeposito()">Enviar</button>
-          </div>
-          <div *ngIf="mensagem && operacaoAtiva == 'deposito'" class="mensagem-operacao"
-            [ngClass]="{ 'sucesso': tipoMensagem === 'sucesso', 'erro': tipoMensagem === 'erro' }">
-            {{ mensagem }}
           </div>
         </div>
       </div>
