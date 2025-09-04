@@ -1,6 +1,9 @@
 server:
     port: 8280
 
+
+
+
 spring:
     application:
         name: ms-auth
@@ -8,7 +11,6 @@ spring:
     data:
         mongodb:
             uri: ${SPRING_DATA_MONGODB_URI}
-
     security:
         oauth2:
             resourceserver:
@@ -21,3 +23,11 @@ jwt:
         
   public:
     key: ${JWT_PUBLIC_KEY}
+
+
+rabbitmq:
+  host: rabbitmq
+  port: 5672
+  user: guest
+  password: guest
+  connection-name-prefix: ms-auth-app
