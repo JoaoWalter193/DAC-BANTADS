@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Admin, Cliente, Conta, Gerente, Endereco } from '../models';
 
+const LS_CHAVE = 'contaCliente';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -66,30 +68,40 @@ export class MockService {
     }
   ];
 
-  private contas: Conta[] = [
-    {
-      numeroConta: '1291',
-      cliente: this.clientes[0],
-      saldo: 800.00,
-      limite: 5000.00,
-      nomeGerente: 'Geniéve',
-      dataCriacao: '2000-01-01'
-    },
-    {
-      numeroConta: '0950',
-      cliente: this.clientes[1],
-      saldo: -10000.00,
-      limite: 10000.00,
-      nomeGerente: 'Geniéve',
-      dataCriacao: '1990-10-10'
-    }
-  ];
+  private getContasBase(): Conta[] {
+    return [
+      {
+        numeroConta: '1291',
+        cliente: this.clientes[0],
+        saldo: 800.00,
+        limite: 5000.00,
+        nomeGerente: 'Geniéve',
+        dataCriacao: '2000-01-01'
+      },
+      {
+        numeroConta: '0950',
+        cliente: this.clientes[1],
+        saldo: -10000.00,
+        limite: 10000.00,
+        nomeGerente: 'Geniéve',
+        dataCriacao: '1990-10-10'
+      }
+    ];
+  }
 
-  constructor() { }
+  constructor() {
+    this.initLocalStorage();
+  }
+
+  private initLocalStorage(): void {
+    if (!localStorage.getItem(LS_CHAVE)) {
+      localStorage.setItem(LS_CHAVE, JSON.stringify(this.getContasBase()));
+    }
+  }
 
   // junta todos os usuarios (clientes estão separados de gerente e admin)
   // em uma lista allUsers pra buscar pelo email de login
-  findUserByCredentials(email: string, password: string): Cliente | Gerente | Admin | undefined {
+  autenticarUsuario(email: string, password: string): Cliente | Gerente | Admin | undefined {
     const allUsers = [...this.clientes, ...this.gerentes, ...this.admins];
     const user = allUsers.find(u => u.email === email);
 
@@ -100,14 +112,31 @@ export class MockService {
   }
 
   // busca de uma conta pelo CPF do cliente
-  findContaByClienteCpf(cpf: string): Conta | undefined {
-    return this.contas.find(c => c.cliente.cpf === cpf);
+  findContaCpf(cpf: string): Conta | undefined {
+    const contas: Conta[] = JSON.parse(localStorage.getItem(LS_CHAVE) || '[]');
+    return contas.find(c => c.cliente.cpf === cpf);
   }
 
-  findClienteByCpf(cpf: string): Cliente | undefined {
+  // salva conta atualizada no LS
+  updateConta(contaAtualizada: Conta): void {
+    let contas: Conta[] = JSON.parse(localStorage.getItem(LS_CHAVE) || '[]');
+    const index = contas.findIndex(c => c.numeroConta === contaAtualizada.numeroConta);
+    if (index !== -1) {
+      contas[index] = contaAtualizada;
+      localStorage.setItem(LS_CHAVE, JSON.stringify(contas));
+    }
+  }
+
+  // NOVO: Função útil para testes, para restaurar os dados originais.
+  resetMockData(): void {
+    localStorage.removeItem(LS_CHAVE);
+    this.initLocalStorage();
+    alert('Dados do mock restaurados para os valores iniciais!');
+  }
+
+  findClienteCpf(cpf: string): Cliente | undefined {
     return this.clientes.find(c => c.cpf === cpf)
   }
-
 
   getClientes(): Cliente[] {
     return this.clientes;
