@@ -71,7 +71,7 @@ export class MockService {
   private getContasBase(): Conta[] {
     return [
       {
-        numeroConta: '1291',
+        numeroConta: '1111',
         cliente: this.clientes[0],
         saldo: 800.00,
         limite: 5000.00,
@@ -79,7 +79,7 @@ export class MockService {
         dataCriacao: '2000-01-01'
       },
       {
-        numeroConta: '0950',
+        numeroConta: '2222',
         cliente: this.clientes[1],
         saldo: -10000.00,
         limite: 10000.00,
@@ -115,6 +115,11 @@ export class MockService {
   findContaCpf(cpf: string): Conta | undefined {
     const contas: Conta[] = JSON.parse(localStorage.getItem(LS_CHAVE) || '[]');
     return contas.find(c => c.cliente.cpf === cpf);
+  }
+
+  findContaNumero(numeroConta: string): Conta | undefined {
+    const contas: Conta[] = JSON.parse(localStorage.getItem(LS_CHAVE) || '[]');
+    return contas.find(c => c.numeroConta === numeroConta);
   }
 
   // salva conta atualizada no LS
