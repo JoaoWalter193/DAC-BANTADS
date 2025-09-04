@@ -32,6 +32,7 @@ export class HomeCliente implements OnInit {
   expandirOperacao(
     operacao: 'saque' | 'deposito' | 'transferencia' | '' = ''
   ): void {
+    this.limparMensagem();
     if (this.operacaoAtiva === operacao) {
       this.operacaoAtiva = '';
     } else {
