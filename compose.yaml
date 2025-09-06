@@ -10,9 +10,27 @@ services:
       - ./frontend:/home/app
       - /home/app/node_modules  
 
-# Microsserviços
+# APIGateway
+  apigateway:
+    image: node:20-alpine
+    depends_on:
+      - ms-conta
+      - ms-cliente
+      - ms-gerente
+      - ms-auth
+    working_dir: /app
+    command: sh -c "npm install && npm start"
+    volumes:
+      - ./microservicos/APIGateway/:/app
+    ports:
+      - 3000:3000
+
+
+# Microsserviços (back)
   ms-conta:
     image: maven:3.8.4-openjdk-17-slim
+    depends_on:
+      - postgres
     working_dir: /app
     command: "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.devtools.restart.enabled=true -Dspring-boot.run.profiles=dev'"
     volumes:
@@ -36,7 +54,7 @@ services:
       - ~/.m2:/root/.m2
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/DAC
-      - SPRING_DATASOURCE_USERNAME=dbGerente
+      - SPRING_DATASOURCE_USERNAME=dbgerente
       - SPRING_DATASOURCE_PASSWORD=dbGerente
     ports: 
       - 8081:8080
@@ -60,6 +78,8 @@ services:
 
   ms-auth:
       image: maven:3.8.4-openjdk-17-slim
+      depends_on:
+        - mongodb
       working_dir: /app
       command: "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.devtools.restart.enabled=true -Dspring-boot.run.profiles=dev'"
       volumes:
@@ -70,9 +90,23 @@ services:
       env_file:
         - ./auth.env
 
+# RABBITMQ
+      
+  rabbitmq:
+    image: rabbitmq:3.13.7-management
+    working_dir: /app
+    volumes:
+      - ./microservicos/RabbitMQ:/app
+    ports:
+      - 5672:5672
+      - 8085:15672
+
+
 # Bancos de dados
   postgres:
     image: postgres:15.5
+    depends_on:
+      - rabbitmq
     environment:
       POSTGRES_DB: DAC
       POSTGRES_USER: postgres

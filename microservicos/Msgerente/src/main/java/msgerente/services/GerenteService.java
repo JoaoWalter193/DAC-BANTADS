@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import msgerente.producer.RabbitMQProducer;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,7 +17,12 @@ import java.util.stream.Collectors;
 public class GerenteService {
 
     @Autowired
+    RabbitMQProducer rabbitMQProducer;
+
+    @Autowired
     GerenteRepository gerenteRepository;
+
+    private String teste = "Teste 123";
 
     public ResponseEntity<List<Gerente>> listarGerentes() {
         List<Gerente> listaTemp = gerenteRepository.findAll();
@@ -65,5 +71,6 @@ public class GerenteService {
             throw new RuntimeException("Gerente não encontrado");
         }
     }
+
 
 }
