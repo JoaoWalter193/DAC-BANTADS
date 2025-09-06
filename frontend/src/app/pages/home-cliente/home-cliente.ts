@@ -19,6 +19,8 @@ export class HomeCliente implements OnInit {
   operacaoAtiva: 'saque' | 'deposito' | 'transferencia' | '' = '';
   valorSaque: number | null = null;
   valorDeposito: number | null = null;
+  valorTransferencia: number | null = null;
+  contaDestino: string | null = null;
 
   mensagem: string | null = null;
   tipoMensagem: 'sucesso' | 'erro' | null = null;
@@ -69,6 +71,23 @@ export class HomeCliente implements OnInit {
       this.valorDeposito = null;
 
       this.mostrarMensagem('Depósito realizado com sucesso!', 'sucesso');
+    } catch (error: any) {
+      this.mostrarMensagem(error.message, 'erro');
+    }
+  }
+
+  realizarTransferencia(): void {
+    if (!this.valorTransferencia || !this.contaDestino) {
+      this.mostrarMensagem('Por favor, insira o valor e o numero da conta destino.', 'erro');
+      return;
+    }
+
+    try {
+      const contaAtualizada = this.contaService.transferir(this.valorTransferencia, this.contaDestino);
+      this.conta = contaAtualizada;
+      this.mostrarMensagem('Transferência realizada com sucesso!', 'sucesso');
+      this.valorTransferencia = null;
+      this.contaDestino = null;
     } catch (error: any) {
       this.mostrarMensagem(error.message, 'erro');
     }

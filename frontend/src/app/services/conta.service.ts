@@ -107,5 +107,47 @@ export class ContaService {
     return conta;
   }
 
-  transferir(valor: number) {}
+  transferir(valor: number, numeroContaDestino: string): Conta {
+    const session = this.authService.getUserSession();
+    if (!session) {
+      throw new Error('Sessão expirada.');
+    }
+    if (!numeroContaDestino) {
+      throw new Error('Por favor, insira o numero da conta a receber.');
+    }
+    if (valor <= 0) {
+      throw new Error('Por favor, insira um valor válido.');
+    }
+
+    // buscar origem e destino
+    const contaOrigem = this.mockService.findContaCpf(session.user.cpf);
+    const contaDestino = this.mockService.findContaNumero(numeroContaDestino);
+
+    if (!contaOrigem) {
+      throw new Error('Sessão expirada.');
+    }
+    if (!contaDestino) {
+      throw new Error('A conta informada nao existe.');
+    }
+    if (contaOrigem.numeroConta === contaDestino.numeroConta) {
+      throw new Error('Você deve informar uma conta diferente.');
+    }
+
+    // valida saldo
+    const saldoDisponivel = contaOrigem.saldo + contaOrigem.limite;
+    if (valor > saldoDisponivel) {
+      throw new Error('Saldo insuficiente para a transação.');
+    }
+
+    // atualiza as contas
+    contaOrigem.saldo -= valor;
+    contaDestino.saldo += valor;
+    this.mockService.updateConta(contaOrigem);
+    this.mockService.updateConta(contaDestino);
+
+    session.conta = contaOrigem;
+    localStorage.setItem('currentUser', JSON.stringify(session));
+
+    return contaOrigem;
+  }
 }

@@ -54,7 +54,7 @@
           <div class="acao-btn">
             <button class="enviar-btn" (click)="realizarSaque()">Enviar</button>
           </div>
-                    <div *ngIf="mensagem && operacaoAtiva == 'saque'" class="mensagem-operacao"
+          <div *ngIf="mensagem && operacaoAtiva == 'saque'" class="mensagem-operacao"
             [ngClass]="{ 'sucesso': tipoMensagem === 'sucesso', 'erro': tipoMensagem === 'erro' }">
             {{ mensagem }}
           </div>
@@ -81,7 +81,7 @@
           <div class="acao-btn">
             <button class="enviar-btn" (click)="realizarDeposito()">Enviar</button>
           </div>
-                    <div *ngIf="mensagem && operacaoAtiva == 'deposito'" class="mensagem-operacao"
+          <div *ngIf="mensagem && operacaoAtiva == 'deposito'" class="mensagem-operacao"
             [ngClass]="{ 'sucesso': tipoMensagem === 'sucesso', 'erro': tipoMensagem === 'erro' }">
             {{ mensagem }}
           </div>
@@ -106,9 +106,20 @@
             class="valor-input"
             type="number"
             placeholder="Insira um valor"
+            [(ngModel)]="valorTransferencia"
+          />
+          <input
+            class="valor-input"
+            type="text"
+            placeholder="Conta de destino"
+            [(ngModel)]="contaDestino"
           />
           <div class="acao-btn">
-            <button class="enviar-btn">Enviar</button>
+            <button class="enviar-btn" (click)="realizarTransferencia()">Enviar</button>
+          </div>
+          <div *ngIf="mensagem && operacaoAtiva == 'transferencia'" class="mensagem-operacao"
+            [ngClass]="{ 'sucesso': tipoMensagem === 'sucesso', 'erro': tipoMensagem === 'erro' }">
+            {{ mensagem }}
           </div>
         </div>
       </div>
