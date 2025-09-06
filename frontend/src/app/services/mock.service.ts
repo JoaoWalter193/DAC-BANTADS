@@ -17,13 +17,15 @@ export class MockService {
       role: 'CLIENTE',
       salario: 10000,
       endereco: {
-        logradouro: "Avenida da Catharyna",
+        tipo: "Avenida",
+        logradouro: "da Catharyna",
         numero: 1,
         complemento: "apto 712",
         cidade: "Curitiba",
         estado: "PR",
         CEP: "80000-001"
       },
+      telefone: "41999999999",
       status: 'aprovado',
       dataSolicitacao: new Date('2023-01-01'),
       senha: "tads"
@@ -35,13 +37,15 @@ export class MockService {
       role: 'CLIENTE',
       salario: 20000,
       endereco: {
-        logradouro: "Rua do Cleuddonio",
+        tipo: "Rua",
+        logradouro: "do Cleuddonio",
         numero: 2,
         complemento: "casa",
         cidade: "Curitiba",
         estado: "PR",
         CEP: "80000-002"
       },
+      telefone: "41988888888",
       status: 'aprovado',
       dataSolicitacao: new Date('2023-01-02'),
       senha: "tads"
