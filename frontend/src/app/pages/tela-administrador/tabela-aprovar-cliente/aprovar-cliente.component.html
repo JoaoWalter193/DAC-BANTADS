@@ -13,9 +13,9 @@
     <tbody>
       <tr *ngFor="let cliente of clientes">
         <td>{{ cliente.nome }}</td>
-        <td>{{ cliente.cpf }}</td>
-        <td>{{ limite | currency : "BRL" }}</td>
-        <td>{{ cliente.salario | currency : "BRL" }}</td>
+        <td>{{ cliente.cpf | formatarCpf }}</td>
+        <td>{{ calcularLimite(cliente.salario) | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"}}</td>
+        <td>{{ cliente.salario | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"}}</td>
         <td>{{ cliente.email }}</td>
         <td>
           <button class="botaoDetalhes" (click)="aprovar(cliente.cpf)" type="button">Aprovar</button>

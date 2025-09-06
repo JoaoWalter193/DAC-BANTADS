@@ -34,16 +34,24 @@
                 <label>E-mail *</label>
                 <input type="email" formControlName="email" name="email" id="email" class="input" required>
 
+                <label>Telefone *</label>
+                <input type="text" formControlName="telefone" name="telefone" id="telefone" class="input" required
+                    placeholder="(00) 00000-0000" (input)="formatarTelefone($event)" maxlength="15">
+
                 <label>CPF *</label>
                 <input type="text" formControlName="cpf" name="cpf" id="cpf" class="input" (input)="formatarCPF($event)"
                     required placeholder="000.000.000-00" maxlength="14">
 
                 <label>Salário *</label>
-                <input type="text" formControlName="salario" name="salario" id="salario" class="input" (input)="formatarSalario($event)" required min="0">
+                <input type="text" formControlName="salario" name="salario" id="salario" class="input"
+                    (input)="formatarSalario($event)" required min="0">
 
                 <label>CEP *</label>
                 <input type="text" formControlName="cep" name="CEP" id="cep" class="input" (input)="formatarCEP($event)"
                     required placeholder="00000-000" maxlength="9">
+
+                <label>Tipo *</label>
+                <input type="text" formControlName="tipo" name="tipo" id="tipo" class="input" required>
 
                 <label>Logradouro *</label>
                 <input type="text" formControlName="logradouro" name="logradouro" id="logradouro" class="input"
@@ -57,7 +65,8 @@
                     maxlength="2" placeholder="SP">
 
                 <label>Número *</label>
-                <input type="text" formControlName="numero" name="numero" id="numero" class="input" required min="0" (input)="formatarNumero($event)">
+                <input type="text" formControlName="numero" name="numero" id="numero" class="input" required min="0"
+                    (input)="formatarNumero($event)">
 
                 <label>Complemento</label>
                 <input type="text" formControlName="complemento" name="complemento" id="complemento" class="input">

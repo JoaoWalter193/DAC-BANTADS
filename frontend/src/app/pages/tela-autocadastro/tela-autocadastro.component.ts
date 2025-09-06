@@ -24,7 +24,9 @@ export class TelaAutocadastroComponent implements AfterViewInit {
     nome: '',
     email: '',
     salario: 0,
+    telefone: '',
     endereco: {
+      tipo: '',
       logradouro: '',
       numero: 0,
       complemento: '',
@@ -53,6 +55,10 @@ export class TelaAutocadastroComponent implements AfterViewInit {
           this.validarCPF(),
         ],
       ],
+      telefone: [
+        '',
+        [Validators.required, Validators.pattern(/^\(\d{2}\) \d{4,5}-\d{4}$/)],
+      ],
       salario: [
         '',
         Validators.compose([
@@ -62,6 +68,7 @@ export class TelaAutocadastroComponent implements AfterViewInit {
         ]),
       ],
       cep: ['', [Validators.required, Validators.pattern(/^\d{5}\-\d{3}$/)]],
+      tipo: ['', Validators.required],
       logradouro: ['', Validators.required],
       cidade: ['', Validators.required],
       estado: [
@@ -216,6 +223,7 @@ export class TelaAutocadastroComponent implements AfterViewInit {
         salario:
           this.cadastroForm.get('salario')?.value.replace(/\D/g, '') / 100,
         endereco: {
+          tipo: this.cadastroForm.get('tipo')?.value,
           logradouro: this.cadastroForm.get('logradouro')?.value,
           numero: this.cadastroForm.get('numero')?.value.replace(/\D/g, ''),
           complemento: this.cadastroForm.get('complemento')?.value,
@@ -223,6 +231,7 @@ export class TelaAutocadastroComponent implements AfterViewInit {
           cidade: this.cadastroForm.get('cidade')?.value,
           estado: this.cadastroForm.get('estado')?.value,
         },
+        telefone: this.cadastroForm.get('telefone')?.value,
         status: 'pendente',
         dataSolicitacao: new Date(),
         role: 'CLIENTE',
@@ -285,10 +294,12 @@ export class TelaAutocadastroComponent implements AfterViewInit {
       cpfNumerico.length === 11 &&
       this.cadastroForm.get('nome')?.value.trim() !== '' &&
       this.validarEmail(this.cadastroForm.get('email')?.value) &&
-      this.cadastroForm.get('salario')?.value.toString().replace(/\D/g, '') > 0 &&
+      this.cadastroForm.get('salario')?.value.toString().replace(/\D/g, '') >
+        0 &&
       cepNumerico.length === 8 &&
       this.cadastroForm.get('logradouro')?.value.trim() !== '' &&
-      this.cadastroForm.get('numero')?.value.toString().replace(/\D/g, '') > 0 &&
+      this.cadastroForm.get('numero')?.value.toString().replace(/\D/g, '') >
+        0 &&
       this.cadastroForm.get('cidade')?.value.trim() !== '' &&
       this.cadastroForm.get('estado')?.value.trim() !== ''
     );
@@ -303,7 +314,7 @@ export class TelaAutocadastroComponent implements AfterViewInit {
     const clientes = this.obterClientes();
 
     return clientes.some((cliente) => {
-      cliente.cpf === cpf
+      cliente.cpf === cpf;
     });
   }
 
@@ -333,8 +344,10 @@ export class TelaAutocadastroComponent implements AfterViewInit {
       cpf: '',
       nome: '',
       email: '',
+      telefone: '',
       salario: 0,
       endereco: {
+        tipo: '',
         logradouro: '',
         numero: 0,
         complemento: '',
@@ -343,6 +356,25 @@ export class TelaAutocadastroComponent implements AfterViewInit {
         estado: '',
       },
     };
+  }
+
+  formatarTelefone(event: Event) {
+    const input = event.target as HTMLInputElement;
+    let value = input.value.replace(/\D/g, '');
+
+    if (value.length > 11) value = value.slice(0, 11);
+
+    if (value.length <= 2) {
+      value = value.replace(/^(\d{0,2})/, '($1');
+    } else if (value.length <= 6) {
+      value = value.replace(/^(\d{2})(\d{0,4})/, '($1) $2');
+    } else if (value.length <= 10) {
+      value = value.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+    } else {
+      value = value.replace(/^(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+    }
+
+    this.cadastroForm.get('telefone')?.setValue(value, { emitEvent: false });
   }
 
   async buscarEnderecoPorCEP() {
@@ -370,7 +402,26 @@ export class TelaAutocadastroComponent implements AfterViewInit {
           return;
         }
 
-        this.cadastroForm.get('logradouro')?.setValue(data.logradouro);
+        const logradouroCompleto = data.logradouro;
+        const partesLogradouro = logradouroCompleto.split(' ');
+        const tipo = partesLogradouro[0];
+        const tiposValidos = [
+          'Rua',
+          'Avenida',
+          'Alameda',
+          'Travessa',
+          'Praça',
+          'Rodovia',
+          'Estrada',
+          'Viela',
+          'Largo',
+        ];
+
+        const tipoValido = tiposValidos.includes(tipo) ? tipo : 'Logradouro';
+        const nomeLogradouro = partesLogradouro.slice(1).join(' ');
+
+        this.cadastroForm.get('tipo')?.setValue(tipoValido);
+        this.cadastroForm.get('logradouro')?.setValue(nomeLogradouro);
         this.cadastroForm.get('cidade')?.setValue(data.localidade);
         this.cadastroForm.get('estado')?.setValue(data.uf);
 
