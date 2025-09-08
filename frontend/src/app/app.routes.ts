@@ -7,6 +7,7 @@ import { TelaAutocadastroComponent } from './pages/tela-autocadastro/tela-autoca
 import { ClientesComponent } from './pages/tela-administrador/tabela-clientes/clientes.component';
 import { CadastroGerente } from './pages/cadastro-gerente/cadastro-gerente';
 import { PerfilClienteComponent } from './pages/perfil-cliente/perfil-cliente.component';
+import { EditarGerente } from './pages/editar-gerente/editar-gerente';
 
 export const routes: Routes = [
   {
@@ -44,5 +45,9 @@ export const routes: Routes = [
   {
     path: 'perfil',
     component: PerfilClienteComponent
-  }
+  },
+    {
+    path: 'editar-gerente',
+    component: EditarGerente,
+  },
 ];

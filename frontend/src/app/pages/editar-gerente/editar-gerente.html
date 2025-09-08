@@ -1,0 +1,71 @@
+<div id="background">
+  <div id="container">
+    <div class="subcontainer" id="direita">
+      <h2>Editar Gerente</h2>
+
+      <div
+        *ngIf="mensagem"
+        [class]="tipoMensagem === 'sucesso' ? 'mensagem-sucesso' : 'mensagem-erro'"
+        class="mensagem"
+      >
+        {{ mensagem }}
+      </div>
+
+      <form id="cadastro" (ngSubmit)="onSubmit()">
+        <label for="nome">Nome Completo *</label>
+        <input
+          type="text"
+          name="nome"
+          id="nome"
+          class="input"
+          [(ngModel)]="gerente.nome"
+          required
+        />
+
+        <label for="cpf">CPF *</label>
+        <input
+          type="text"
+          name="cpf"
+          id="cpf"
+          class="input"
+          [(ngModel)]="gerente.cpf"
+          (input)="formatarCPF($event)"
+          required
+          placeholder="000.000.000-00"
+          maxlength="14"
+        />
+        <div
+          *ngIf="gerente.cpf && !validarCPF(gerente.cpf)"
+          class="mensagem-erro"
+        >
+          CPF inválido
+        </div>
+
+        <label for="email">E-mail *</label>
+        <input
+          type="email"
+          name="email"
+          id="email"
+          class="input"
+          [(ngModel)]="gerente.email"
+          required
+        />
+
+        <label for="senha">Senha *</label>
+        <input
+          type="password"
+          name="senha"
+          id="senha"
+          class="input"
+          [(ngModel)]="gerente.senha"
+          required
+        />
+
+        <button id="botao" type="submit" [disabled]="carregando">
+          {{ carregando ? 'Processando...' : 'Salvar Alterações' }}
+          <span *ngIf="carregando" class="loading"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
