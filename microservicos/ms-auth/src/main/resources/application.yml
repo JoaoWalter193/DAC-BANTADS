@@ -1,5 +1,5 @@
 server:
-    port: 8280
+    port: 8080
 
 spring:
     application:
@@ -15,9 +15,7 @@ spring:
                 jwt:
                     issuer-uri: BANTADS-AUTH-API
 
+
 jwt:
-  private:
-    key: ${JWT_PRIVATE_KEY}
-        
-  public:
-    key: ${JWT_PUBLIC_KEY}
+    private-key: file:private-key.pem
+    public-key: file:public-key.pem
