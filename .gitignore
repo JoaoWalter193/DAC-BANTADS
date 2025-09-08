@@ -20,3 +20,7 @@ microservicos/ms-auth/target/classes/msauth/ms_auth/repositories/UsuarioReposito
 microservicos/ms-auth/target/test-classes/msauth/ms_auth/MsAuthApplicationTests.class
 target/
 microservicos/APIGateway/.env
+private-key.pem
+public-key.pem
+microservicos/ms-auth/private-key.pem
+microservicos/ms-auth/public-key.pem
