@@ -85,10 +85,12 @@ services:
       volumes:
         - ./microservicos/ms-auth/:/app
         - ~/.m2:/root/.m2
+        - ./public-key.pem:/app/public-key.pem
+        - ./private-key.pem:/app/private-key.pem
       ports:
         - 8082:8080
-      env_file:
-        - ./auth.env
+      environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:senha@mongodb:27017/bantads?authSource=admin
 
 # RABBITMQ
       
