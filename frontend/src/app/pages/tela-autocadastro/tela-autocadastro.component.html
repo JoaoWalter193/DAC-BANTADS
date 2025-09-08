@@ -27,44 +27,49 @@
                 {{ mensagem }}
             </div>
 
-            <form id="cadastro" (ngSubmit)="onSubmit()">
+            <form id="cadastro" [formGroup]="cadastroForm" (ngSubmit)="onSubmit()">
                 <label>Nome Completo *</label>
-                <input type="text" name="nome" id="nome" class="input" [(ngModel)]="cliente.nome" required>
-
-                <label>CPF *</label>
-                <input type="text" name="cpf" id="cpf" class="input" [(ngModel)]="cliente.cpf"
-                    (input)="formatarCPF($event)" required placeholder="000.000.000-00" maxlength="14">
+                <input type="text" formControlName="nome" name="nome" id="nome" class="input" required>
 
                 <label>E-mail *</label>
-                <input type="email" name="email" id="email" class="input" [(ngModel)]="cliente.email" required>
+                <input type="email" formControlName="email" name="email" id="email" class="input" required>
+
+                <label>Telefone *</label>
+                <input type="text" formControlName="telefone" name="telefone" id="telefone" class="input" required
+                    placeholder="(00) 00000-0000" (input)="formatarTelefone($event)" maxlength="15">
+
+                <label>CPF *</label>
+                <input type="text" formControlName="cpf" name="cpf" id="cpf" class="input" (input)="formatarCPF($event)"
+                    required placeholder="000.000.000-00" maxlength="14">
 
                 <label>Salário *</label>
-                <input type="number" name="salario" id="salario" class="input" [(ngModel)]="cliente.salario" required
-                    min="0">
+                <input type="text" formControlName="salario" name="salario" id="salario" class="input"
+                    (input)="formatarSalario($event)" required min="0">
 
                 <label>CEP *</label>
-                <input type="text" name="CEP" id="cep" class="input" [(ngModel)]="cliente.endereco.CEP"
-                    (input)="formatarCEP($event)" required placeholder="00000-000" maxlength="9">
+                <input type="text" formControlName="cep" name="CEP" id="cep" class="input" (input)="formatarCEP($event)"
+                    required placeholder="00000-000" maxlength="9">
+
+                <label>Tipo *</label>
+                <input type="text" formControlName="tipo" name="tipo" id="tipo" class="input" required>
 
                 <label>Logradouro *</label>
-                <input type="text" name="logradouro" id="logradouro" class="input"
-                    [(ngModel)]="cliente.endereco.logradouro" required>
-
-                <label>Número *</label>
-                <input type="number" name="numero" id="numero" class="input" [(ngModel)]="cliente.endereco.numero"
-                    required min="0">
-
-                <label>Complemento</label>
-                <input type="text" name="complemento" id="complemento" class="input"
-                    [(ngModel)]="cliente.endereco.complemento">
-
-                <label>Cidade *</label>
-                <input type="text" name="cidade" id="cidade" class="input" [(ngModel)]="cliente.endereco.cidade"
+                <input type="text" formControlName="logradouro" name="logradouro" id="logradouro" class="input"
                     required>
 
+                <label>Cidade *</label>
+                <input type="text" formControlName="cidade" name="cidade" id="cidade" class="input" required>
+
                 <label>Estado *</label>
-                <input type="text" name="estado" id="estado" class="input" [(ngModel)]="cliente.endereco.estado"
-                    required maxlength="2" placeholder="SP">
+                <input type="text" formControlName="estado" name="estado" id="estado" class="input" required
+                    maxlength="2" placeholder="SP">
+
+                <label>Número *</label>
+                <input type="text" formControlName="numero" name="numero" id="numero" class="input" required min="0"
+                    (input)="formatarNumero($event)">
+
+                <label>Complemento</label>
+                <input type="text" formControlName="complemento" name="complemento" id="complemento" class="input">
             </form>
 
             <button id="botao" (click)="onSubmit()" [disabled]="carregando">

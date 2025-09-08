@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Conta } from '../models/conta.interface';
 import { AuthService } from './auth.service';
+import { MockService } from './mock.service';
 
 // const LS_CHAVE = 'contaCliente';
 
@@ -8,16 +9,14 @@ import { AuthService } from './auth.service';
   providedIn: 'root',
 })
 export class ContaService {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private mockService: MockService) {}
 
   getConta(): Conta | null {
     const session = this.authService.getUserSession();
-
-    // se for cliente retorna a conta
-    if (session && session.conta) {
-      return session.conta;
+    if (session?.user.role === 'CLIENTE') {
+      // Busca a conta mais recente do "banco de dados" persistente
+      return this.mockService.findContaCpf(session.user.cpf) ?? null;
     }
-    // retorna null se nao for cliente
     return null;
   }
 
@@ -60,10 +59,17 @@ export class ContaService {
 
   sacar(valor: number): Conta {
     const session = this.authService.getUserSession();
-    const conta = this.getConta();
+
+    if (!session) {
+      throw new Error('Sessão expirada.');
+    }
+    const conta = this.mockService.findContaCpf(session.user.cpf);
 
     if (!conta) {
       throw new Error('Sessão expirada.');
+    }
+    if (valor <= 0) {
+      throw new Error('Por favor, insira um valor válido.');
     }
     // calcula o saldo + limite
     const saldoDisponivel = conta.saldo + conta.limite;
@@ -72,20 +78,76 @@ export class ContaService {
     }
     // atualiza o valor e salva no localStorage
     conta.saldo -= valor;
+    this.mockService.updateConta(conta);
+    session.conta = conta;
     localStorage.setItem('currentUser', JSON.stringify(session));
     return conta;
   }
 
   depositar(valor: number): Conta {
     const session = this.authService.getUserSession();
-    const conta = this.getConta();
+
+    if (!session) {
+      throw new Error('Sessão expirada.');
+    }
+    const conta = this.mockService.findContaCpf(session.user.cpf);
+
     if (!conta) {
       throw new Error('Sessão expirada.');
     }
+
+    if (valor <= 0) {
+      throw new Error('Por favor, insira um valor válido.');
+    }
+
     conta.saldo += valor;
+    this.mockService.updateConta(conta);
+    session.conta = conta;
     localStorage.setItem('currentUser', JSON.stringify(session));
     return conta;
   }
 
-  transferir(valor: number) {}
+  transferir(valor: number, numeroContaDestino: string): Conta {
+    const session = this.authService.getUserSession();
+    if (!session) {
+      throw new Error('Sessão expirada.');
+    }
+    if (!numeroContaDestino) {
+      throw new Error('Por favor, insira o numero da conta a receber.');
+    }
+    if (valor <= 0) {
+      throw new Error('Por favor, insira um valor válido.');
+    }
+
+    // buscar origem e destino
+    const contaOrigem = this.mockService.findContaCpf(session.user.cpf);
+    const contaDestino = this.mockService.findContaNumero(numeroContaDestino);
+
+    if (!contaOrigem) {
+      throw new Error('Sessão expirada.');
+    }
+    if (!contaDestino) {
+      throw new Error('A conta informada nao existe.');
+    }
+    if (contaOrigem.numeroConta === contaDestino.numeroConta) {
+      throw new Error('Você deve informar uma conta diferente.');
+    }
+
+    // valida saldo
+    const saldoDisponivel = contaOrigem.saldo + contaOrigem.limite;
+    if (valor > saldoDisponivel) {
+      throw new Error('Saldo insuficiente para a transação.');
+    }
+
+    // atualiza as contas
+    contaOrigem.saldo -= valor;
+    contaDestino.saldo += valor;
+    this.mockService.updateConta(contaOrigem);
+    this.mockService.updateConta(contaDestino);
+
+    session.conta = contaOrigem;
+    localStorage.setItem('currentUser', JSON.stringify(session));
+
+    return contaOrigem;
+  }
 }

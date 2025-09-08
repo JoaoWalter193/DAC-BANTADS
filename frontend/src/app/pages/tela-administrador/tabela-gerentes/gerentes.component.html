@@ -16,12 +16,8 @@
         <td>{{ totalSaldoPositivo(gerente) | currency : "BRL" }}</td>
         <td>{{ totalSaldoNegativo(gerente) | currency : "BRL" }}</td>
         <td>
-          <button
-            class="botaoDetalhes"
-            type="button"
-            (click)="verDetalhes(gerente)"
-          >
-            Ver Detalhes
+          <button class="botaoDetalhes" type="button">
+            <a routerLink="/detalhes-gerente"></a>Ver Detalhes
           </button>
         </td>
       </tr>
