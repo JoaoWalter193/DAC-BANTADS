@@ -1,14 +1,5 @@
 /* Section - container */
-.container {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  gap: 2rem;
-  height: 100vh;
-  padding-top: 3rem;
-  padding-inline: 15%;
-  background-color: #eeeff1;
-}
+
 
 /* Botões */
 .voltar-btn,
@@ -50,6 +41,7 @@
 
 .saldo-content,
 .info-extrato,
+.info-perfil,
 .op {
   background-color: #ffffff;
   border-radius: 0.25rem;
@@ -93,6 +85,7 @@ a {
 .campos-operacao {
   padding-inline: 1rem;
   padding-bottom: 2rem;
+  flex-wrap: wrap;
 }
 
 .operacaoAtiva {
@@ -125,4 +118,27 @@ mat-icon {
 .valor-input:focus {
   border: 1px solid rgba(47, 89, 85, 1);
   outline: none;
+}
+
+/* alertas de sucesso ou erro */
+.mensagem-operacao {
+  width: 100%;
+  padding: 10px;
+  margin-top: 15px;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.mensagem-operacao.sucesso {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.mensagem-operacao.erro {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
 }
