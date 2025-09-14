@@ -4,11 +4,10 @@ import { Admin, Cliente, Conta, Gerente, Endereco } from '../models';
 const LS_CHAVE = 'contaCliente';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 // mock centralizado neste serviço para testes
 export class MockService {
-
   private clientes: (Cliente & { senha: string })[] = [
     {
       cpf: '12912861012',
@@ -17,18 +16,18 @@ export class MockService {
       role: 'CLIENTE',
       salario: 10000,
       endereco: {
-        tipo: "Avenida",
-        logradouro: "da Catharyna",
+        tipo: 'Avenida',
+        logradouro: 'da Catharyna',
         numero: 1,
-        complemento: "apto 712",
-        cidade: "Curitiba",
-        estado: "PR",
-        CEP: "80000-001"
+        complemento: 'apto 712',
+        cidade: 'Curitiba',
+        estado: 'PR',
+        CEP: '80000-001',
       },
-      telefone: "41999999999",
+      telefone: '41999999999',
       status: 'aprovado',
       dataSolicitacao: new Date('2023-01-01'),
-      senha: "tads"
+      senha: 'tads',
     },
     {
       cpf: '09506382000',
@@ -37,19 +36,19 @@ export class MockService {
       role: 'CLIENTE',
       salario: 20000,
       endereco: {
-        tipo: "Rua",
-        logradouro: "do Cleuddonio",
+        tipo: 'Rua',
+        logradouro: 'do Cleuddonio',
         numero: 2,
-        complemento: "casa",
-        cidade: "Curitiba",
-        estado: "PR",
-        CEP: "80000-002"
+        complemento: 'casa',
+        cidade: 'Curitiba',
+        estado: 'PR',
+        CEP: '80000-002',
       },
-      telefone: "41988888888",
+      telefone: '41988888888',
       status: 'aprovado',
       dataSolicitacao: new Date('2023-01-02'),
-      senha: "tads"
-    }
+      senha: 'tads',
+    },
   ];
 
   private gerentes: (Gerente & { senha: string })[] = [
@@ -58,8 +57,8 @@ export class MockService {
       nome: 'Geniéve',
       email: 'ger1@bantads.com.br',
       role: 'GERENTE',
-      senha: "tads"
-    }
+      senha: 'tads',
+    },
   ];
 
   private admins: (Admin & { senha: string })[] = [
@@ -68,8 +67,8 @@ export class MockService {
       nome: 'Adamântio',
       email: 'adm1@bantads.com.br',
       role: 'ADMIN',
-      senha: "tads"
-    }
+      senha: 'tads',
+    },
   ];
 
   private getContasBase(): Conta[] {
@@ -77,19 +76,19 @@ export class MockService {
       {
         numeroConta: '1111',
         cliente: this.clientes[0],
-        saldo: 800.00,
-        limite: 5000.00,
+        saldo: 800.0,
+        limite: 5000.0,
         nomeGerente: 'Geniéve',
-        dataCriacao: '2000-01-01'
+        dataCriacao: '2000-01-01',
       },
       {
         numeroConta: '2222',
         cliente: this.clientes[1],
-        saldo: -10000.00,
-        limite: 10000.00,
+        saldo: -10000.0,
+        limite: 10000.0,
         nomeGerente: 'Geniéve',
-        dataCriacao: '1990-10-10'
-      }
+        dataCriacao: '1990-10-10',
+      },
     ];
   }
 
@@ -105,9 +104,12 @@ export class MockService {
 
   // junta todos os usuarios (clientes estão separados de gerente e admin)
   // em uma lista allUsers pra buscar pelo email de login
-  autenticarUsuario(email: string, password: string): Cliente | Gerente | Admin | undefined {
+  autenticarUsuario(
+    email: string,
+    password: string
+  ): Cliente | Gerente | Admin | undefined {
     const allUsers = [...this.clientes, ...this.gerentes, ...this.admins];
-    const user = allUsers.find(u => u.email === email);
+    const user = allUsers.find((u) => u.email === email);
 
     if (user && user.senha === password) {
       return user;
@@ -118,18 +120,20 @@ export class MockService {
   // busca de uma conta pelo CPF do cliente
   findContaCpf(cpf: string): Conta | undefined {
     const contas: Conta[] = JSON.parse(localStorage.getItem(LS_CHAVE) || '[]');
-    return contas.find(c => c.cliente.cpf === cpf);
+    return contas.find((c) => c.cliente.cpf === cpf);
   }
 
   findContaNumero(numeroConta: string): Conta | undefined {
     const contas: Conta[] = JSON.parse(localStorage.getItem(LS_CHAVE) || '[]');
-    return contas.find(c => c.numeroConta === numeroConta);
+    return contas.find((c) => c.numeroConta === numeroConta);
   }
 
   // salva conta atualizada no LS
   updateConta(contaAtualizada: Conta): void {
     let contas: Conta[] = JSON.parse(localStorage.getItem(LS_CHAVE) || '[]');
-    const index = contas.findIndex(c => c.numeroConta === contaAtualizada.numeroConta);
+    const index = contas.findIndex(
+      (c) => c.numeroConta === contaAtualizada.numeroConta
+    );
     if (index !== -1) {
       contas[index] = contaAtualizada;
       localStorage.setItem(LS_CHAVE, JSON.stringify(contas));
@@ -144,7 +148,7 @@ export class MockService {
   }
 
   findClienteCpf(cpf: string): Cliente | undefined {
-    return this.clientes.find(c => c.cpf === cpf)
+    return this.clientes.find((c) => c.cpf === cpf);
   }
 
   getClientes(): Cliente[] {
@@ -152,15 +156,15 @@ export class MockService {
   }
 
   updateCliente(cliente: Cliente): Cliente | null {
-    const index = this.clientes.findIndex(c => c.cpf === cliente.cpf);
+    const index = this.clientes.findIndex((c) => c.cpf === cliente.cpf);
 
     if (index !== -1) {
       this.clientes[index] = { ...this.clientes[index], ...cliente };
-      console.log("Cliente atualizado: ", this.clientes[index]);
+      console.log('Cliente atualizado: ', this.clientes[index]);
       return this.clientes[index];
     }
 
-    console.error("Cliente " + cliente.cpf + " não encontrado");
+    console.error('Cliente ' + cliente.cpf + ' não encontrado');
     return null;
   }
 }
