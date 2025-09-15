@@ -9,6 +9,10 @@ import { MockService } from './mock.service';
   providedIn: 'root',
 })
 export class ContaService {
+
+  gerarExtrato(dataInicio: any, dataFim: any) {
+    throw new Error('Method not implemented.');
+  }
   constructor(private authService: AuthService, private mockService: MockService) {}
 
   getConta(): Conta | null {
