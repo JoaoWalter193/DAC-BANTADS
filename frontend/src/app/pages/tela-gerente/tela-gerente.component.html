@@ -1,0 +1,18 @@
+<app-navbar></app-navbar>
+
+<section class="container">
+    <div class="section-links"> 
+        <a routerLink="melhores-clientes">Melhores clientes</a>
+        <a routerLink="consultar-cliente">Consultar clientes</a>
+    </div>
+        <h2>Painel do Gerente</h2>
+    <div class="section-content">
+        <div class="clientes-dashboard">
+            <h3>Clientes para aprovação</h3>
+            <app-aprovar-cliente />
+
+            <h3>Todos Clientes</h3>
+            <app-clientes></app-clientes>
+        </div>
+    </div>
+</section>

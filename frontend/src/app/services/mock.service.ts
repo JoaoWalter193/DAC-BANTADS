@@ -57,6 +57,7 @@ export class MockService {
       nome: 'Geniéve',
       email: 'ger1@bantads.com.br',
       role: 'GERENTE',
+      clientes: [this.clientes[0], this.clientes[1]],
       senha: 'tads',
     },
   ];
