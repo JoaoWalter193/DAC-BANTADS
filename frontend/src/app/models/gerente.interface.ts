@@ -3,5 +3,5 @@ export interface Gerente {
   nome: string;
   email: string;
   role: 'GERENTE';
-  senha: string // somente para testes
+  senha: string; // somente para testes
 }

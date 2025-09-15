@@ -42,3 +42,32 @@ tr:hover {
   border-radius: 0.55rem;
   cursor: pointer;
 }
+
+.botaoEditar,
+.botaoExcluir {
+  padding: 6px 12px;
+  margin: 2px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.botaoEditar {
+  background-color: #007bff;
+  color: white;
+}
+
+.botaoEditar:hover {
+  background-color: #0056b3;
+}
+
+.botaoExcluir {
+  background-color: #dc3545;
+  color: white;
+}
+
+.botaoExcluir:hover {
+  background-color: #a71d2a;
+}

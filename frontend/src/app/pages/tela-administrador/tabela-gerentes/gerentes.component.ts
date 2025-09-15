@@ -1,14 +1,17 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Gerente } from '../../../models/gerente.interface';
+import { Conta } from '../../../models/conta.interface';
 
-interface Cliente {
+interface GerenteView {
+  cpf: string;
   nome: string;
-  saldo: number;
-}
-
-interface Gerente {
-  nome: string;
-  clientes: Cliente[];
+  email: string;
+  role: 'GERENTE';
+  senha: string;
+  qtdClientes: number;
+  saldoPositivo: number;
+  saldoNegativo: number;
 }
 
 @Component({
@@ -19,51 +22,84 @@ interface Gerente {
   imports: [CommonModule],
 })
 export class GerentesComponent {
-  gerentes: Gerente[] = [
-    {
-      nome: 'João Silva',
-      clientes: [
-        { nome: 'Cliente A', saldo: 1000 },
-        { nome: 'Cliente B', saldo: -200 },
-        { nome: 'Cliente C', saldo: 0 },
-      ],
-    },
-    {
-      nome: 'Maria Souza',
-      clientes: [
-        { nome: 'Cliente D', saldo: 5000 },
-        { nome: 'Cliente E', saldo: -500 },
-      ],
-    },
-    {
-      nome: 'Carlos Pereira',
-      clientes: [
-        { nome: 'Cliente F', saldo: 300 },
-        { nome: 'Cliente G', saldo: -100 },
-        { nome: 'Cliente H', saldo: 150 },
-      ],
-    },
-  ].sort((a, b) => this.totalSaldoPositivo(b) - this.totalSaldoPositivo(a));
+  gerentes: GerenteView[] = [];
 
-  totalSaldoPositivo(gerente: Gerente): number {
-    return gerente.clientes
-      .map((c) => c.saldo)
-      .filter((s) => s >= 0)
-      .reduce((acc, val) => acc + val, 0);
+  constructor() {
+    this.carregarGerentes();
   }
 
-  totalSaldoNegativo(gerente: Gerente): number {
-    return gerente.clientes
-      .map((c) => c.saldo)
-      .filter((s) => s < 0)
-      .reduce((acc, val) => acc + val, 0);
+  carregarGerentes() {
+    const gerentesJSON = localStorage.getItem('gerentes_bantads');
+    const gerentes: Gerente[] = gerentesJSON ? JSON.parse(gerentesJSON) : [];
+
+    const contasJSON = localStorage.getItem('contas_bantads');
+    const contas: Conta[] = contasJSON ? JSON.parse(contasJSON) : [];
+
+    const listaGerentes: GerenteView[] = gerentes.map((g) => {
+      const contasGerente = contas.filter((c) => c.nomeGerente === g.nome);
+      const saldoPositivo = contasGerente
+        .map((c) => c.saldo)
+        .filter((s) => s >= 0)
+        .reduce((acc, val) => acc + val, 0);
+      const saldoNegativo = contasGerente
+        .map((c) => c.saldo)
+        .filter((s) => s < 0)
+        .reduce((acc, val) => acc + val, 0);
+
+      return {
+        ...g,
+        qtdClientes: contasGerente.length,
+        saldoPositivo,
+        saldoNegativo,
+      };
+    });
+
+    this.gerentes = listaGerentes.sort(
+      (a, b) => b.saldoPositivo - a.saldoPositivo
+    );
   }
 
-  adicionarGerente() {
-    console.log('Adicionar novo gerente clicado');
-  }
+  excluirGerente(gerente: GerenteView) {
+    const gerentesJSON = localStorage.getItem('gerentes_bantads');
+    let gerentes: Gerente[] = gerentesJSON ? JSON.parse(gerentesJSON) : [];
 
-  verDetalhes(gerente: Gerente) {
-    console.log('Ver detalhes do gerente clicad', gerente);
+    if (gerentes.length <= 1) {
+      alert('Não é possível remover o último gerente do banco.');
+      return;
+    }
+
+    const contasJSON = localStorage.getItem('contas_bantads');
+    let contas: Conta[] = contasJSON ? JSON.parse(contasJSON) : [];
+
+    // Contas do gerente a ser removido
+    const contasDoGerente = contas.filter(
+      (c) => c.nomeGerente === gerente.nome
+    );
+
+    // Encontrar o gerente com menos contas
+    const outrosGerentes = gerentes.filter((g) => g.cpf !== gerente.cpf);
+    const gerentesComContas = outrosGerentes.map((g) => {
+      const qtd = contas.filter((c) => c.nomeGerente === g.nome).length;
+      return { ...g, qtd };
+    });
+    gerentesComContas.sort((a, b) => a.qtd - b.qtd);
+    const gerenteDestino = gerentesComContas[0];
+
+    // Transferir as contas
+    contas = contas.map((c) =>
+      c.nomeGerente === gerente.nome
+        ? { ...c, nomeGerente: gerenteDestino.nome }
+        : c
+    );
+
+    gerentes = gerentes.filter((g) => g.cpf !== gerente.cpf);
+    localStorage.setItem('gerentes_bantads', JSON.stringify(gerentes));
+    localStorage.setItem('contas_bantads', JSON.stringify(contas));
+
+    alert(
+      `Gerente ${gerente.nome} foi removido. Contas transferidas para ${gerenteDestino.nome}.`
+    );
+
+    this.carregarGerentes();
   }
 }
