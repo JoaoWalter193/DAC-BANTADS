@@ -32,7 +32,8 @@
 .saldo-content,
 .info-extrato,
 .info-saldo,
-.op {
+.op,
+.botao-extrato {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -42,7 +43,8 @@
 .saldo-content,
 .info-extrato,
 .info-perfil,
-.op {
+.op,
+.botao-extrato {
   background-color: #ffffff;
   border-radius: 0.25rem;
   padding-inline: 1rem;
@@ -53,9 +55,22 @@
 .info-saldo,
 .info-extrato,
 .campos-operacao,
-.op {
+.op,
+.botao-extrato {
   flex-direction: row;
   align-items: center;
+}
+
+.info-extrato {
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.botao-extrato {
+  padding: 0.25rem;
+  cursor: pointer;
+  border: none;
+  transition: background 0.3s ease;
 }
 
 .op {
