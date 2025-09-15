@@ -1,11 +1,25 @@
 .clientes-dashboard {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 1rem;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow-x: auto;
+  font-family: Arial, sans-serif;
+}
+
+.filtros {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filtros input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
 }
 
 /* Tabela */
@@ -25,6 +39,8 @@
   padding: 0.75rem 1rem;
   text-align: left;
   border-bottom: 1px solid #ddd;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .clientes-dashboard tbody tr:nth-child(even) {
@@ -35,6 +51,12 @@
   background-color: #f1f1f1;
 }
 
+/* Valores */
+.clientes-dashboard td.saldo-negativo {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
 /* Célula de vazio */
 .clientes-dashboard td[colspan] {
   text-align: center;
@@ -43,10 +65,11 @@
   padding: 1.5rem;
 }
 
-/* Botões */
+/* Botão Detalhes */
 .botaoDetalhes {
+  background-color: #3498db;
+  color: #fff;
   padding: 0.5rem 1rem;
-  margin-right: 0.5rem;
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -55,21 +78,6 @@
   transition: background 0.2s ease-in-out;
 }
 
-/* Estilos específicos */
-.botaoDetalhes:first-child {
-  background-color: #27ae60;
-  color: #fff;
-}
-
-.botaoDetalhes:first-child:hover {
-  background-color: #219150;
-}
-
-.botaoDetalhes:last-child {
-  background-color: #e74c3c;
-  color: #fff;
-}
-
-.botaoDetalhes:last-child:hover {
-  background-color: #c0392b;
+.botaoDetalhes:hover {
+  background-color: #2980b9;
 }

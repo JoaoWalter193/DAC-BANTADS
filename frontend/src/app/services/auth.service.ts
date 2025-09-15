@@ -25,8 +25,10 @@ export class AuthService {
       alert('Login realizado com sucesso!');
 
       const role = user.role;
-      if (role === 'GERENTE') {
+      if (role === 'ADMIN') {
         this.router.navigate(['/tela-administrador']);
+      } else if (role === 'GERENTE') {
+        this.router.navigate(['/tela-gerente']);
       } else if (role === 'CLIENTE') {
         this.router.navigate(['/home-cliente']);
       }
