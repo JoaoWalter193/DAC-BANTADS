@@ -1,10 +1,16 @@
 package msgerente.controllers;
 
 
+import jakarta.validation.Valid;
+import msgerente.domain.AdicionarGerenteDTO;
+import msgerente.domain.AtualizarGerenteDTO;
 import msgerente.domain.Gerente;
-import msgerente.dto.GerenteDTO;
+import msgerente.domain.GerenteDTO;
 import msgerente.services.GerenteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,32 +34,25 @@ public class GerenteController {
     @Autowired
     private GerenteService gerenteService;
 
-//    @GetMapping
-  //  public ResponseEntity<List<Gerente>> listarGerentes(){
-    //    return gerenteService.listarGerentes();
-    // }
+    @GetMapping
+    public ResponseEntity<List<Gerente>> listarGerentes(){
+        return gerenteService.listarGerentes();
+     }
 
-    @GetMapping("/{cpf}")
-    public ResponseEntity<GerenteDTO> consultarGerente(@PathVariable String cpf){
-        return ResponseEntity.ok(gerenteService.consultarGerente(cpf));
-    }
+     @GetMapping("/{cpf}")
+     public ResponseEntity<GerenteDTO>infoGerente(@PathVariable String cpf){
+        return gerenteService.infoGerente(cpf);
+     }
 
-    @PostMapping
-    public ResponseEntity<GerenteDTO> inserirGerente(GerenteDTO dto, String senha){
-        return ResponseEntity.ok(gerenteService.inserirGerente(dto, senha));
-    }
+     @PutMapping("/{cpf}")
+     public ResponseEntity<GerenteDTO> atualizarGerente(@PathVariable String cpf, @RequestBody AtualizarGerenteDTO data){
+        return gerenteService.atualizarGerente(cpf,data);
+     }
 
-    @PutMapping("/{cpf}")
-    public ResponseEntity<GerenteDTO> atualizarGerente(String cpf, GerenteDTO dto){
-        return ResponseEntity.ok(gerenteService.atualizarGerente(cpf, dto));
-    }
-
-    @DeleteMapping("/{cpf}")
-    public ResponseEntity<Void> deletarGerente(String cpf){
-        gerenteService.deletarGerente(cpf);
-        return ResponseEntity.noContent().build();
-    }
-
+     @PostMapping
+     public ResponseEntity<GerenteDTO> adicionarGerente(@RequestBody @Valid AdicionarGerenteDTO data){
+        return gerenteService.inserirGerente(data);
+     }
 
     @GetMapping("/teste")
     public ResponseEntity<String> sendMessage(@RequestParam("mensagem") String message){

@@ -1,21 +1,24 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
 import { Gerente } from '../models/gerente.interface';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GerenteService {
-  private apiUrl = 'http://localhost:8080/gerentes';
+  private storageKey = 'gerentes_bantads';
 
-  constructor(private http: HttpClient) {}
-
-  cadastrarGerente(gerente: Gerente): Observable<Gerente> {
-    return this.http.post<Gerente>(`${this.apiUrl}?senha=${gerente.senha}`, gerente);
+  obterGerentes(): Gerente[] {
+    const gerentesJSON = localStorage.getItem(this.storageKey);
+    return gerentesJSON ? JSON.parse(gerentesJSON) : [];
   }
 
-  listarGerentes(): Observable<Gerente[]> {
-    return this.http.get<Gerente[]>(this.apiUrl);
+  salvarGerente(gerente: Gerente): void {
+    const gerentes = this.obterGerentes();
+    gerentes.push(gerente);
+    localStorage.setItem(this.storageKey, JSON.stringify(gerentes));
+  }
+
+  cpfJaCadastrado(cpf: string): boolean {
+    return this.obterGerentes().some((g) => g.cpf === cpf);
   }
 }

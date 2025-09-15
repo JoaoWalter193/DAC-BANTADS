@@ -1,8 +1,11 @@
 package msgerente.services;
 
 
+import msgerente.domain.AdicionarGerenteDTO;
+import msgerente.domain.AtualizarGerenteDTO;
 import msgerente.domain.Gerente;
-import msgerente.dto.GerenteDTO;
+import msgerente.domain.GerenteDTO;
+
 import msgerente.repositories.GerenteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +27,13 @@ public class GerenteService {
 
     private String teste = "Teste 123";
 
+
+    public ResponseEntity<GerenteDTO> infoGerente(String cpf){
+        Gerente gerenteTemp = gerenteRepository.findByCpf(cpf);
+        GerenteDTO respTemp = new GerenteDTO(gerenteTemp.getCpf(), gerenteTemp.getNome(), gerenteTemp.getEmail(), gerenteTemp.getTipo());
+        return ResponseEntity.ok(respTemp);
+    }
+
     public ResponseEntity<List<Gerente>> listarGerentes() {
         List<Gerente> listaTemp = gerenteRepository.findAll();
         if (listaTemp.size() != 0 ){
@@ -33,43 +43,29 @@ public class GerenteService {
         }
     }
 
-    public GerenteDTO consultarGerente(String cpf) {
-        return gerenteRepository.findById(cpf)
-                .map(GerenteDTO::new)
-                .orElseThrow(() -> new RuntimeException("Gerente não encontrado"));
+
+    public ResponseEntity<GerenteDTO> atualizarGerente(String cpf, AtualizarGerenteDTO data){
+        Gerente gerenteTemp = gerenteRepository.findByCpf(cpf);
+            gerenteTemp.setNome(data.nome());
+            gerenteTemp.setEmail(data.email());
+            gerenteTemp.setSenha(data.senha());
+
+            GerenteDTO dto = new GerenteDTO(gerenteTemp.getCpf(), gerenteTemp.getNome(), gerenteTemp.getEmail(), gerenteTemp.getTipo());
+
+            gerenteRepository.save(gerenteTemp);
+            return ResponseEntity.ok(dto);
     }
 
-    public GerenteDTO inserirGerente(GerenteDTO dto, String senha) {
-        Gerente gerente = new Gerente();
-        gerente.setCpf(dto.getCpf());
-        gerente.setNome(dto.getNome());
-        gerente.setEmail(dto.getEmail());
-        gerente.setTipo(dto.getTipo());
-        gerente.setSenha(senha);
-        gerente = gerenteRepository.save(gerente);
-        return new GerenteDTO(gerente);
-    }
+    public ResponseEntity<GerenteDTO> inserirGerente (AdicionarGerenteDTO data){
+        Gerente gerenteTemp = new Gerente(data.cpf(), data.nome(), data.email(), data.senha(), data.tipo());
 
-    public GerenteDTO atualizarGerente(String cpf, GerenteDTO dto) {
-        Gerente gerente = gerenteRepository.findByCpf(cpf);
-        if (gerente != null) {
-            gerente.setNome(dto.getNome());
-            gerente.setEmail(dto.getEmail());
-            gerente.setTipo(dto.getTipo());
-            gerente = gerenteRepository.save(gerente);
-            return new GerenteDTO(gerente);
-        } else {
-            throw new RuntimeException("Gerente não encontrado");
+        if (gerenteRepository.findByCpf(data.cpf()) != null){
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-    }
-    
-    public void deletarGerente(String cpf) {
-        Gerente gerente = gerenteRepository.findByCpf(cpf);
-        if (gerente != null) {
-            gerenteRepository.delete(gerente);
-        } else {
-            throw new RuntimeException("Gerente não encontrado");
-        }
+
+        gerenteRepository.save(gerenteTemp);
+        return ResponseEntity.ok(new GerenteDTO(data.cpf(), data.nome(), data.email(), data.tipo()));
+
     }
 
 

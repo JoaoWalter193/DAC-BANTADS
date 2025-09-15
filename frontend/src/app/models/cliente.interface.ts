@@ -1,12 +1,12 @@
 import { Endereco } from './endereco.interface';
 
 export interface Cliente {
+  cpf: string;
   nome: string;
   email: string;
-  cpf: string;
   salario: number;
-  endereco: Endereco;
   telefone: string;
+  endereco: Endereco;
   status: 'aprovado' | 'rejeitado' | 'pendente';
   dataSolicitacao: Date;
   role: 'CLIENTE';

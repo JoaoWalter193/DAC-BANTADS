@@ -1,4 +1,3 @@
-import { UserSession } from './../models/user-session.interface';
 import { AuthService } from './auth.service';
 import { Injectable } from '@angular/core';
 import { MockService } from './mock.service';

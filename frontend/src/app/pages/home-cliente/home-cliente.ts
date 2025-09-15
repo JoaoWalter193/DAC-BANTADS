@@ -5,34 +5,44 @@ import { MatTableModule } from '@angular/material/table';
 import { ContaService } from '../../services/conta.service';
 import { RouterLink } from '@angular/router';
 import { NavbarComponent } from "../../components/navbar/navbar.component";
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Conta } from '../../models';
+import { MatDialog } from '@angular/material/dialog';
+import { ExtratoComponent } from '../../modals/extrato/extrato.component';
 
 @Component({
   selector: 'app-home-cliente',
-  imports: [MatIconModule, MatTableModule, CommonModule, RouterLink, NavbarComponent, FormsModule],
+  imports: [MatIconModule, MatTableModule, CommonModule, RouterLink, NavbarComponent, FormsModule, ReactiveFormsModule],
   templateUrl: './home-cliente.html',
   styleUrl: './home-cliente.css',
 })
 export class HomeCliente implements OnInit {
   conta: Conta | null = null;
-  operacaoAtiva: 'saque' | 'deposito' | 'transferencia' | '' = '';
+  operacaoAtiva: 'saque' | 'deposito' | 'transferencia' | 'extrato' | '' = '';
   valorSaque: number | null = null;
   valorDeposito: number | null = null;
   valorTransferencia: number | null = null;
   contaDestino: string | null = null;
+  formExtrato: FormGroup;
 
   mensagem: string | null = null;
   tipoMensagem: 'sucesso' | 'erro' | null = null;
 
-  constructor(private contaService: ContaService) {}
+  constructor(private contaService: ContaService,
+              private formBuilder: FormBuilder,
+              private dialog: MatDialog) {
+      this.formExtrato = this.formBuilder.group({
+      dataInicio: [null, Validators.required],
+      dataFim: [null, Validators.required]
+    });
+              }
 
   ngOnInit(): void {
     this.conta = this.contaService.getConta();
   }
 
   expandirOperacao(
-    operacao: 'saque' | 'deposito' | 'transferencia' | '' = ''
+    operacao: 'saque' | 'deposito' | 'transferencia' | 'extrato' | '' = ''
   ): void {
     this.limparMensagem();
     if (this.operacaoAtiva === operacao) {
@@ -91,6 +101,26 @@ export class HomeCliente implements OnInit {
     } catch (error: any) {
       this.mostrarMensagem(error.message, 'erro');
     }
+  }
+
+  gerarExtrato(): void {
+    this.limparMensagem();
+    if (this.formExtrato.invalid) {
+      this.mostrarMensagem('Por favor, selecione as datas de início e fim.', 'erro');
+      return;
+    }
+    const { dataInicio, dataFim } = this.formExtrato.value;
+    if (dataInicio > dataFim) {
+      this.mostrarMensagem('A data de início não pode ser posterior à data de fim.', 'erro');
+      return;
+    }
+
+    // const extrato = this.contaService.gerarExtrato(dataInicio, dataFim);
+    this.dialog.open(ExtratoComponent, {
+      width: '800px',
+      maxHeight: '90vh',
+      // data: extrato
+    });
   }
 
   private mostrarMensagem(texto: string, tipo: 'sucesso' | 'erro') {

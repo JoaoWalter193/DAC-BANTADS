@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Gerente } from '../../models/gerente.interface';
+import { Conta } from '../../models/conta.interface';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -23,40 +24,87 @@ export class CadastroGerente {
   tipoMensagem: 'sucesso' | 'erro' | '' = '';
   carregando: boolean = false;
 
+  private atribuirContaAoNovoGerente(novoGerente: Gerente) {
+    const contasJSON = localStorage.getItem('contas_bantads');
+    if (!contasJSON) return;
+
+    const todasContas: Conta[] = JSON.parse(contasJSON);
+    if (todasContas.length === 0) return;
+
+    const contagemPorGerente: Record<string, Conta[]> = {};
+    todasContas.forEach((conta) => {
+      if (!contagemPorGerente[conta.nomeGerente]) {
+        contagemPorGerente[conta.nomeGerente] = [];
+      }
+      contagemPorGerente[conta.nomeGerente].push(conta);
+    });
+
+    const maxContas = Math.max(
+      ...Object.values(contagemPorGerente).map((c) => c.length)
+    );
+
+    const gerentesComMaisContas = Object.entries(contagemPorGerente)
+      .filter(([_, contas]) => contas.length === maxContas)
+      .map(([nomeGerente, contas]) => ({ nomeGerente, contas }));
+
+    // Evta transferir se só tiver um gerente com uma conta
+    if (
+      gerentesComMaisContas.length === 1 &&
+      gerentesComMaisContas[0].contas.length === 1
+    )
+      return;
+
+    let contaParaTransferir: Conta | null = null;
+
+    if (gerentesComMaisContas.length === 1) {
+      contaParaTransferir = gerentesComMaisContas[0].contas[0];
+    } else {
+      const todasContasEmpatadas: Conta[] = [];
+      gerentesComMaisContas.forEach((g) =>
+        todasContasEmpatadas.push(...g.contas)
+      );
+
+      // Desempata pela conta com menor saldo positivo
+      contaParaTransferir = todasContasEmpatadas
+        .filter((c) => c.saldo >= 0)
+        .sort((a, b) => a.saldo - b.saldo)[0];
+
+      if (!contaParaTransferir) {
+        contaParaTransferir = todasContasEmpatadas[0];
+      }
+    }
+
+    if (contaParaTransferir) {
+      contaParaTransferir.nomeGerente = novoGerente.nome;
+      localStorage.setItem('contas_bantads', JSON.stringify(todasContas));
+    }
+  }
+
   formatarCPF(event: any) {
     let value = event.target.value.replace(/\D/g, '');
-
-    if (value.length > 11) {
-      value = value.slice(0, 11);
-    }
-
-    if (value.length > 9) {
+    if (value.length > 11) value = value.slice(0, 11);
+    if (value.length > 9)
       value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-    } else if (value.length > 6) {
+    else if (value.length > 6)
       value = value.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
-    } else if (value.length > 3) {
+    else if (value.length > 3)
       value = value.replace(/(\d{3})(\d{1,3})/, '$1.$2');
-    }
-
     this.gerente.cpf = value;
   }
 
   validarCPF(cpf: string): boolean {
     cpf = cpf.replace(/\D/g, '');
     if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
-
     let soma = 0;
     for (let i = 0; i < 9; i++) soma += Number(cpf.charAt(i)) * (10 - i);
     let resto = (soma * 10) % 11;
     if (resto === 10 || resto === 11) resto = 0;
     if (resto !== Number(cpf.charAt(9))) return false;
-
     soma = 0;
     for (let i = 0; i < 10; i++) soma += Number(cpf.charAt(i)) * (11 - i);
     resto = (soma * 10) % 11;
     if (resto === 10 || resto === 11) resto = 0;
     if (resto !== Number(cpf.charAt(10))) return false;
-
     return true;
   }
 
@@ -70,7 +118,6 @@ export class CadastroGerente {
     }
 
     const cpfNumerico = this.gerente.cpf.replace(/\D/g, '');
-
     if (this.CPFJaCadastrado(cpfNumerico)) {
       this.mostrarMensagem(
         'CPF já cadastrado. Não é possível fazer um novo cadastro.',
@@ -90,6 +137,7 @@ export class CadastroGerente {
         role: 'GERENTE',
       };
 
+      this.atribuirContaAoNovoGerente(gerenteCompleto);
       this.salvarGerente(gerenteCompleto);
       this.carregando = false;
 
@@ -97,14 +145,12 @@ export class CadastroGerente {
         'Cadastro de gerente realizado com sucesso!',
         'sucesso'
       );
-
       this.limparFormulario();
     }, 1500);
   }
 
   validarFormulario(): boolean {
     const cpfNumerico = this.gerente.cpf.replace(/\D/g, '');
-
     return (
       cpfNumerico.length === 11 &&
       this.gerente.nome.trim() !== '' &&
@@ -137,7 +183,6 @@ export class CadastroGerente {
   mostrarMensagem(mensagem: string, tipo: 'sucesso' | 'erro'): void {
     this.mensagem = mensagem;
     this.tipoMensagem = tipo;
-
     setTimeout(() => {
       this.mensagem = '';
       this.tipoMensagem = '';

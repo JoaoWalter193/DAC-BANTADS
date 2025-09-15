@@ -17,12 +17,37 @@
     </div>
 
     <div class="info-extrato">
-      <mat-icon
+      <button class="botao-extrato" (click)="expandirOperacao('extrato')">
+        <mat-icon
         aria-hidden="false"
         aria-label="Ícone de 'attach_money'"
         fontIcon="attach_money"
       ></mat-icon>
-      <a routerLink="/">Visualizar extrato</a>
+        <span>Visualizar Extrato</span>
+      </button>
+
+      <div *ngIf="operacaoAtiva == 'extrato'" class="campos-operacao">
+        <form [formGroup]="formExtrato" (ngSubmit)="gerarExtrato()" class="form-extrato-container">
+          <div class="input-group">
+            <label for="dataInicio">Data de Início:</label>
+            <input id="dataInicio" class="valor-input" type="date" formControlName="dataInicio">
+          </div>
+
+          <div class="input-group">
+            <label for="dataFim">Data de Fim:</label>
+            <input id="dataFim" class="valor-input" type="date" formControlName="dataFim">
+          </div>
+
+          <div class="acao-btn">
+            <button class="enviar-btn" type="submit" [disabled]="formExtrato.invalid">Gerar Extrato</button>
+          </div>
+        </form>
+
+        <div *ngIf="mensagem && operacaoAtiva == 'extrato'" class="mensagem-operacao"
+          [ngClass]="{ 'sucesso': tipoMensagem === 'sucesso', 'erro': tipoMensagem === 'erro' }">
+          {{ mensagem }}
+        </div>
+      </div>
     </div>
 
     <div class="info-perfil">
