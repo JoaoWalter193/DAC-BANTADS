@@ -104,4 +104,64 @@ senha TEXT NOT NULL,
 tipo VARCHAR(15)
 );
 
+-- Inserções
+INSERT INTO dbcliente.cliente (cpf, nome, email, senha, salario, endereco, status) VALUES
+('12912861012', 'Catharyna', 'cli1@bantads.com.br', 'tads', 10000.00, 'Rua das Flores, 123', 'APROVADO'),
+('09506382000', 'Cleuddônio', 'cli2@bantads.com.br', 'tads', 20000.00, 'Av. Principal, 456', 'APROVADO'),
+('85733854057', 'Catianna', 'cli3@bantads.com.br', 'tads', 3000.00, 'Praça Central, 789', 'APROVADO'),
+('58872160006', 'Cutardo', 'cli4@bantads.com.br', 'tads', 500.00, 'Travessa Secundária, 101', 'APROVADO'),
+('76179646090', 'Coândrya', 'cli5@bantads.com.br', 'tads', 1500.00, 'Alameda dos Anjos, 202', 'APROVADO');
 
+INSERT INTO dbContaCUD.conta (cpfCliente, nomeCliente, numConta, saldo, cpfGerente, nomeGerente, dataCriacao) VALUES
+('12912861012', 'Catharyna', '1291', 800.00, '98574307084', 'Geniéve', '2000-01-01'),
+('09506382000', 'Cleuddônio', '0950', -10000.00, '64065268052', 'Godophredo', '1990-10-10'),
+('85733854057', 'Catianna', '8573', -1000.00, '23862179060', 'Gyândula', '2012-12-12'),
+('58872160006', 'Cutardo', '5887', 150000.00, '98574307084', 'Geniéve', '2022-02-22'),
+('76179646090', 'Coândrya', '7617', 1500.00, '64065268052', 'Godophredo', '2025-01-01');
+
+INSERT INTO dbContaR.conta (cpfCliente, nomeCliente, numConta, saldo, cpfGerente, nomeGerente, dataCriacao) VALUES
+('12912861012', 'Catharyna', '1291', 800.00, '98574307084', 'Geniéve', '2000-01-01'),
+('09506382000', 'Cleuddônio', '0950', -10000.00, '64065268052', 'Godophredo', '1990-10-10'),
+('85733854057', 'Catianna', '8573', -1000.00, '23862179060', 'Gyândula', '2012-12-12'),
+('58872160006', 'Cutardo', '5887', 150000.00, '98574307084', 'Geniéve', '2022-02-22'),
+('76179646090', 'Coândrya', '7617', 1500.00, '64065268052', 'Godophredo', '2025-01-01');
+
+INSERT INTO dbContaCUD.movimentacao (dataHora, tipo, clienteOrigemNome, clienteOrigemCpf, clienteDestinoNome, clienteDestinoCpf, valor) VALUES
+('2020-01-01 10:00:00', 'depósito', 'Catharyna', '12912861012', NULL, NULL, 1000.00),
+('2020-01-01 11:00:00', 'depósito', 'Catharyna', '12912861012', NULL, NULL, 900.00),
+('2020-01-01 12:00:00', 'saque', 'Catharyna', '12912861012', NULL, NULL, 550.00),
+('2020-01-01 13:00:00', 'saque', 'Catharyna', '12912861012', NULL, NULL, 350.00),
+('2020-01-10 15:00:00', 'depósito', 'Catharyna', '12912861012', NULL, NULL, 2000.00),
+('2020-01-15 08:00:00', 'saque', 'Catharyna', '12912861012', NULL, NULL, 500.00),
+('2020-01-20 12:00:00', 'transferência', 'Catharyna', '12912861012', 'Cleuddônio', '09506382000', 1700.00),
+('2025-01-01 12:00:00', 'depósito', 'Cleuddônio', '09506382000', NULL, NULL, 1000.00),
+('2025-01-02 10:00:00', 'depósito', 'Cleuddônio', '09506382000', NULL, NULL, 5000.00),
+('2025-01-10 10:00:00', 'saque', 'Cleuddônio', '09506382000', NULL, NULL, 200.00),
+('2025-02-05 10:00:00', 'depósito', 'Cleuddônio', '09506382000', NULL, NULL, 7000.00),
+('2025-05-05 00:00:00', 'depósito', 'Catianna', '85733854057', NULL, NULL, 1000.00),
+('2025-05-06 00:00:00', 'saque', 'Catianna', '85733854057', NULL, NULL, 2000.00),
+('2025-06-01 00:00:00', 'depósito', 'Cutardo', '58872160006', NULL, NULL, 150000.00),
+('2025-07-01 00:00:00', 'depósito', 'Coândrya', '76179646090', NULL, NULL, 1500.00);
+
+INSERT INTO dbContaR.movimentacao (dataHora, tipo, clienteOrigemNome, clienteOrigemCpf, clienteDestinoNome, clienteDestinoCpf, valor) VALUES
+('2020-01-01 10:00:00', 'depósito', 'Catharyna', '12912861012', NULL, NULL, 1000.00),
+('2020-01-01 11:00:00', 'depósito', 'Catharyna', '12912861012', NULL, NULL, 900.00),
+('2020-01-01 12:00:00', 'saque', 'Catharyna', '12912861012', NULL, NULL, 550.00),
+('2020-01-01 13:00:00', 'saque', 'Catharyna', '12912861012', NULL, NULL, 350.00),
+('2020-01-10 15:00:00', 'depósito', 'Catharyna', '12912861012', NULL, NULL, 2000.00),
+('2020-01-15 08:00:00', 'saque', 'Catharyna', '12912861012', NULL, NULL, 500.00),
+('2020-01-20 12:00:00', 'transferência', 'Catharyna', '12912861012', 'Cleuddônio', '09506382000', 1700.00),
+('2025-01-01 12:00:00', 'depósito', 'Cleuddônio', '09506382000', NULL, NULL, 1000.00),
+('2025-01-02 10:00:00', 'depósito', 'Cleuddônio', '09506382000', NULL, NULL, 5000.00),
+('2025-01-10 10:00:00', 'saque', 'Cleuddônio', '09506382000', NULL, NULL, 200.00),
+('2025-02-05 10:00:00', 'depósito', 'Cleuddônio', '09506382000', NULL, NULL, 7000.00),
+('2025-05-05 00:00:00', 'depósito', 'Catianna', '85733854057', NULL, NULL, 1000.00),
+('2025-05-06 00:00:00', 'saque', 'Catianna', '85733854057', NULL, NULL, 2000.00),
+('2025-06-01 00:00:00', 'depósito', 'Cutardo', '58872160006', NULL, NULL, 150000.00),
+('2025-07-01 00:00:00', 'depósito', 'Coândrya', '76179646090', NULL, NULL, 1500.00);
+
+INSERT INTO dbGerente.gerente_adm (cpf, nome, email, senha, tipo) VALUES
+('98574307084', 'Geniéve', 'ger1@bantads.com.br', 'tads', 'gerente'),
+('64065268052', 'Godophredo', 'ger2@bantads.com.br', 'tads', 'gerente'),
+('23862179060', 'Gyândula', 'ger3@bantads.com.br', 'tads', 'gerente'),
+('40501740066', 'Adamântio', 'adm1@bantads.com.br', 'tads', 'administrador');

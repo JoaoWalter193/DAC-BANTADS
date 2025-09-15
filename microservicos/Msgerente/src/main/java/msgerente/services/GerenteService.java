@@ -1,7 +1,10 @@
 package msgerente.services;
 
 
+import msgerente.domain.AdicionarGerenteDTO;
+import msgerente.domain.AtualizarGerenteDTO;
 import msgerente.domain.Gerente;
+import msgerente.domain.GerenteDTO;
 import msgerente.repositories.GerenteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,6 +25,13 @@ public class GerenteService {
 
     private String teste = "Teste 123";
 
+
+    public ResponseEntity<GerenteDTO> infoGerente(String cpf){
+        Gerente gerenteTemp = gerenteRepository.findByCpf(cpf);
+        GerenteDTO respTemp = new GerenteDTO(gerenteTemp.getCpf(), gerenteTemp.getNome(), gerenteTemp.getEmail(), gerenteTemp.getTipo());
+        return ResponseEntity.ok(respTemp);
+    }
+
     public ResponseEntity<List<Gerente>> listarGerentes() {
         List<Gerente> listaTemp = gerenteRepository.findAll();
         if (listaTemp.size() != 0 ){
@@ -29,6 +39,29 @@ public class GerenteService {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(listaTemp);
         }
+    }
+
+    public ResponseEntity<GerenteDTO> atualizarGerente(String cpf, AtualizarGerenteDTO data){
+        Gerente gerenteTemp = gerenteRepository.findByCpf(cpf);
+            gerenteTemp.setNome(data.nome());
+            gerenteTemp.setEmail(data.email());
+            gerenteTemp.setSenha(data.senha());
+
+            GerenteDTO dto = new GerenteDTO(gerenteTemp.getCpf(), gerenteTemp.getNome(), gerenteTemp.getEmail(), gerenteTemp.getTipo());
+
+            gerenteRepository.save(gerenteTemp);
+            return ResponseEntity.ok(dto);
+    }
+
+    public ResponseEntity<GerenteDTO> inserirGerente (AdicionarGerenteDTO data){
+        Gerente gerenteTemp = new Gerente(data.cpf(), data.nome(), data.email(), data.senha(), data.tipo());
+
+        if (gerenteRepository.findByCpf(data.cpf()) != null){
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+
+        gerenteRepository.save(gerenteTemp);
+        return ResponseEntity.ok(new GerenteDTO(data.cpf(), data.nome(), data.email(), data.tipo()));
     }
 
 

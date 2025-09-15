@@ -58,6 +58,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=dbGerente
     ports: 
       - 8081:8080
+      - 1111:35729
 
   ms-cliente:
     image: maven:3.8.4-openjdk-17-slim
