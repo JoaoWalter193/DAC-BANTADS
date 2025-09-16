@@ -47,12 +47,10 @@ clientes: ClienteDashboardDTO[] = [];
           ...cliente,
           conta: conta ? conta.numeroConta : '',
           saldo: conta ? conta.saldo : 0,
-          limite: conta ? conta.limite : 0,
-          cpfGerente: gerente.cpf,
-          nomeGerente: gerente.nome,
         } as ClienteDashboardDTO;
       })
-      .sort((a, b) => a.salario - b.salario);
+      .sort((a, b) => a.salario - b.salario)
+      .slice(0, 3);
   }
 }
 
