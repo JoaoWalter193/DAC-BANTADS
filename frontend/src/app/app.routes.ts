@@ -12,6 +12,7 @@ import { TelaGerenteComponent } from './pages/tela-gerente/tela-gerente.componen
 import { Component } from '@angular/core';
 import { ConsultarClienteComponent } from './pages/tela-gerente/consultar-cliente/consultar-cliente.component';
 import { MelhoresClientesComponent } from './pages/tela-gerente/melhores-clientes/melhores-clientes.component';
+import { TelaGerenteDashboardComponent } from './pages/tela-gerente-dashboard/tela-gerente-dashboard.component';
 
 export const routes: Routes = [
   {
@@ -40,17 +41,33 @@ export const routes: Routes = [
 
   {
     path: 'tela-gerente',
-    component: TelaGerenteComponent,
+    component: TelaGerenteDashboardComponent,
     children: [
       {
-        path: 'consultar-cliente',
-        component: ConsultarClienteComponent,
+        path: '',
+        component: TelaGerenteComponent,
       },
+
       {
         path: 'melhores-clientes',
         component: MelhoresClientesComponent,
       },
+
+      {
+        path: 'consultar-cliente',
+        component: ConsultarClienteComponent,
+      }, 
     ],
+  },
+
+  {
+    path: 'consultar-cliente',
+    component: ConsultarClienteComponent,
+  },
+
+  {
+    path: 'melhores-clientes',
+    component: MelhoresClientesComponent,
   },
 
   {
