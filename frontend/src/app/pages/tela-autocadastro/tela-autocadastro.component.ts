@@ -11,6 +11,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { Cliente } from '../../models/cliente.interface';
 import { RouterLink } from '@angular/router';
+import { MockService } from '../../services/mock.service';
 
 @Component({
   selector: 'app-tela-autocadastro',
@@ -43,7 +44,7 @@ export class TelaAutocadastroComponent implements AfterViewInit {
 
   private atualizandoCPF: boolean = false;
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private mockService: MockService) {
     this.cadastroForm = this.fb.group({
       nome: ['', Validators.required],
       email: ['', Validators.compose([Validators.required, Validators.email])],
@@ -319,9 +320,8 @@ export class TelaAutocadastroComponent implements AfterViewInit {
   }
 
   salvarCliente(cliente: Cliente): void {
-    const clientes = this.obterClientes();
-    clientes.push(cliente);
-    localStorage.setItem('clientes_bantads', JSON.stringify(clientes));
+    const gerente = this.mockService.getGerenteComMenosClientes();
+    gerente.clientes?.push(cliente);
   }
 
   obterClientes(): Cliente[] {

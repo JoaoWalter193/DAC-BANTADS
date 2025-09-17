@@ -168,4 +168,14 @@ export class MockService {
     console.error('Cliente ' + cliente.cpf + ' não encontrado');
     return null;
   }
+
+  getGerenteComMenosClientes(): Gerente {
+    return this.gerentes.reduce((prev, curr) =>
+      (prev.clientes?.length ?? 0) <= (curr.clientes?.length ?? 0) ? prev : curr
+    );
+  }
+
+  getGerentes(): Gerente[] {
+    return this.gerentes;
+  }
 }
