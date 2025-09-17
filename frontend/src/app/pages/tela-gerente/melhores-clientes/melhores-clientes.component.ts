@@ -39,7 +39,7 @@ clientes: ClienteDashboardDTO[] = [];
     const gerente: Gerente = JSON.parse(currentUserJSON).user;
     const contas: Conta[] = JSON.parse(contasJSON);
 
-    this.clientes = (gerente.clientes || [])
+    this.clientes = (gerente.clientes || []).filter((cliente: {status: string}) => cliente.status === 'aprovado')
       .map((cliente) => {
         const conta = contas.find((c) => c.cliente.cpf === cliente.cpf);
 
@@ -49,7 +49,7 @@ clientes: ClienteDashboardDTO[] = [];
           saldo: conta ? conta.saldo : 0,
         } as ClienteDashboardDTO;
       })
-      .sort((a, b) => a.salario - b.salario)
+      .sort((a, b) => b.saldo - a.saldo)
       .slice(0, 3);
   }
 }
