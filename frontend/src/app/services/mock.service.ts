@@ -246,11 +246,11 @@ export class MockService {
     }
   }
 
-  // NOVO: Função útil para testes, para restaurar os dados originais.
+  // função pra resetar o mock e corrigir valores e contas
   resetMockData(): void {
     localStorage.removeItem(LS_CHAVE);
     this.initLocalStorage();
-    alert('Dados do mock restaurados para os valores iniciais!');
+    alert('pipipipipi resetado');
   }
 
   findClienteCpf(cpf: string): Cliente | undefined {

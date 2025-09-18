@@ -48,4 +48,9 @@ export class LoginComponent {
     const { account, password } = this.loginForm.value;
     this.authService.login(account, password);
   }
+
+  // reseta o mock para corrigir valores e contas
+  resetMockData(): void {
+    this.mockService.resetMockData();
+  }
 }
