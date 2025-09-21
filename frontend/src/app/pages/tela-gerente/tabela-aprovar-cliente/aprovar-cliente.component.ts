@@ -1,6 +1,6 @@
 import { CommonModule, registerLocaleData } from '@angular/common';
 import { Component } from '@angular/core';
-import { Cliente } from '../../../models';
+import { Cliente, Gerente } from '../../../models';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import localePt from '@angular/common/locales/pt';
 import localePtExtra from '@angular/common/locales/extra/pt';
@@ -23,14 +23,21 @@ export class AprovarClienteComponent {
   }
 
   getContasPendentes(): Cliente[] {
-    const contasString = localStorage.getItem('clientes_bantads');
+    const currentUserJSON = localStorage.getItem('currentUser');
 
-    if (!contasString) {
+    if (!currentUserJSON) {
+      this.clientes = [];
       return [];
     }
 
-    const clientes: Cliente[] = JSON.parse(contasString);
-    return clientes.filter((cliente) => cliente.status === 'pendente');
+    const gerente = JSON.parse(currentUserJSON).user;
+    if (!gerente || !gerente.clientes) {
+      this.clientes = [];
+      return [];
+    }
+
+    this.clientes = (gerente.clientes || []).filter((cliente: { status: string; }) => cliente.status === 'pendente');
+    return this.clientes;
   }
 
   calcularLimite(salario: number): number {
