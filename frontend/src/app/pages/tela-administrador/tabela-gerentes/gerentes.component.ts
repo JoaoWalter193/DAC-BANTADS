@@ -1,69 +1,109 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MockService } from '../../../services/mock.service';
+import { Gerente } from '../../../models/gerente.interface';
+import { Conta } from '../../../models/conta.interface';
+import { Router } from '@angular/router';
+import { RefreshService } from '../../../services/refresh.service';
 
-interface Cliente {
-  nome: string;
-  saldo: number;
-}
-
-interface Gerente {
-  nome: string;
-  clientes: Cliente[];
+interface GerenteView extends Gerente {
+  qtdClientes: number;
+  saldoPositivo: number;
+  saldoNegativo: number;
 }
 
 @Component({
   selector: 'app-gerentes',
   templateUrl: './gerentes.component.html',
   standalone: true,
-  styleUrl: './gerentes.component.css',
+  styleUrls: ['./gerentes.component.css'],
   imports: [CommonModule],
 })
 export class GerentesComponent {
-  gerentes: Gerente[] = [
-    {
-      nome: 'João Silva',
-      clientes: [
-        { nome: 'Cliente A', saldo: 1000 },
-        { nome: 'Cliente B', saldo: -200 },
-        { nome: 'Cliente C', saldo: 0 },
-      ],
-    },
-    {
-      nome: 'Maria Souza',
-      clientes: [
-        { nome: 'Cliente D', saldo: 5000 },
-        { nome: 'Cliente E', saldo: -500 },
-      ],
-    },
-    {
-      nome: 'Carlos Pereira',
-      clientes: [
-        { nome: 'Cliente F', saldo: 300 },
-        { nome: 'Cliente G', saldo: -100 },
-        { nome: 'Cliente H', saldo: 150 },
-      ],
-    },
-  ].sort((a, b) => this.totalSaldoPositivo(b) - this.totalSaldoPositivo(a));
+  gerentes: GerenteView[] = [];
 
-  totalSaldoPositivo(gerente: Gerente): number {
-    return gerente.clientes
-      .map((c) => c.saldo)
-      .filter((s) => s >= 0)
-      .reduce((acc, val) => acc + val, 0);
+  constructor(
+    private mockService: MockService,
+    private router: Router,
+    private refreshService: RefreshService
+  ) {
+    this.carregarGerentes();
   }
 
-  totalSaldoNegativo(gerente: Gerente): number {
-    return gerente.clientes
-      .map((c) => c.saldo)
-      .filter((s) => s < 0)
-      .reduce((acc, val) => acc + val, 0);
+  carregarGerentes() {
+    const gerentes = this.mockService.getGerentes();
+    const contas: Conta[] = JSON.parse(
+      localStorage.getItem('contaCliente') || '[]'
+    );
+
+    this.gerentes = gerentes.map((g) => {
+      const contasGerente = contas.filter((c) => c.nomeGerente === g.nome);
+      const saldoPositivo = contasGerente
+        .map((c) => c.saldo)
+        .filter((s) => s >= 0)
+        .reduce((acc, val) => acc + val, 0);
+      const saldoNegativo = contasGerente
+        .map((c) => c.saldo)
+        .filter((s) => s < 0)
+        .reduce((acc, val) => acc + val, 0);
+
+      return {
+        ...g,
+        qtdClientes: contasGerente.length,
+        saldoPositivo,
+        saldoNegativo,
+      };
+    });
+
+    this.gerentes.sort((a, b) => b.saldoPositivo - a.saldoPositivo);
   }
 
-  adicionarGerente() {
-    console.log('Adicionar novo gerente clicado');
+  excluirGerente(gerente: GerenteView) {
+    const contas: Conta[] = JSON.parse(
+      localStorage.getItem('contaCliente') || '[]'
+    );
+    const gerentes = this.mockService.getGerentes();
+
+    if (gerentes.length <= 1) {
+      alert('Não é possível remover o último gerente do banco.');
+      return;
+    }
+
+    const contasDoGerente = contas.filter(
+      (c) => c.nomeGerente === gerente.nome
+    );
+
+    // Encontrar o gerente com menos clientes
+    const outrosGerentes = gerentes.filter((g) => g.cpf !== gerente.cpf);
+    const gerenteDestino = outrosGerentes.reduce((prev, curr) =>
+      (prev.clientes?.length ?? 0) <= (curr.clientes?.length ?? 0) ? prev : curr
+    );
+
+    // Transferir as contas
+    const contasAtualizadas = contas.map((c) =>
+      c.nomeGerente === gerente.nome
+        ? { ...c, nomeGerente: gerenteDestino.nome }
+        : c
+    );
+
+    // Atualiza contas no localStorage
+    localStorage.setItem('contaCliente', JSON.stringify(contasAtualizadas));
+
+    // Remove o gerente do mockService (em memória)
+    this.mockService.getGerentes().splice(
+      this.mockService.getGerentes().findIndex((g) => g.cpf === gerente.cpf),
+      1
+    );
+
+    alert(
+      `Gerente ${gerente.nome} foi removido. Contas transferidas para ${gerenteDestino.nome}.`
+    );
+
+    this.carregarGerentes();
+    this.refreshService.triggerRefresh();
   }
 
-  verDetalhes(gerente: Gerente) {
-    console.log('Ver detalhes do gerente clicad', gerente);
+  editarGerente(cpf: string) {
+    this.router.navigate(['/editar-gerente', cpf]);
   }
 }

@@ -10,8 +10,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import lombok.Data;
+import msauth.ms_auth.dto.LoginRequest;
 
 @Data
 @Document(collection = "usuario")
@@ -22,7 +25,7 @@ public class UsuarioEntity implements UserDetails {
     private String id;
     @Indexed(unique = true)
     private String email;
-    private String senha;
+    private String password;
     private Set<Role> roles;
 
     @Override
@@ -34,11 +37,16 @@ public class UsuarioEntity implements UserDetails {
 
     @Override
     public String getPassword() {
-        return this.senha;
+        return this.password;
     }
 
     @Override
     public String getUsername() {
         return this.email;
+    }
+
+    public boolean isLoginCorrect(LoginRequest loginRequest, PasswordEncoder passwordEncoder) {
+        return passwordEncoder.matches(loginRequest.password(), this.password);
+
     }
 }

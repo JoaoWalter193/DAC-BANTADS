@@ -5,6 +5,7 @@ import msgerente.domain.AdicionarGerenteDTO;
 import msgerente.domain.AtualizarGerenteDTO;
 import msgerente.domain.Gerente;
 import msgerente.domain.GerenteDTO;
+
 import msgerente.repositories.GerenteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import msgerente.producer.RabbitMQProducer;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class GerenteService {
@@ -41,6 +43,7 @@ public class GerenteService {
         }
     }
 
+
     public ResponseEntity<GerenteDTO> atualizarGerente(String cpf, AtualizarGerenteDTO data){
         Gerente gerenteTemp = gerenteRepository.findByCpf(cpf);
             gerenteTemp.setNome(data.nome());
@@ -61,6 +64,7 @@ public class GerenteService {
         }
         gerenteRepository.save(gerenteTemp);
         return ResponseEntity.ok(new GerenteDTO(data.cpf(), data.nome(), data.email(), data.tipo()));
+
     }
 
 

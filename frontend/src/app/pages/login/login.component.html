@@ -1,6 +1,6 @@
 <div class="tela-login">
   <div class="login-container">
-    <h1>DinDin Invest</h1>
+    <h1>DinDin</h1>
     <h2><b>Acesse sua conta:</b></h2>
 
     <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
@@ -31,6 +31,13 @@
 
     <div class="to-cadastro">
       <span>Não tem uma conta? <a routerLink="/cadastro">Abra já a sua!</a></span>
+    </div>
+
+    <!-- botao para reset do mock para testes -->
+    <div style="margin-top: 20px;">
+      <button type="button" (click)="resetMockData()">
+        <strong>PIPIPI RESET</strong>
+      </button>
     </div>
   </div>
 </div>

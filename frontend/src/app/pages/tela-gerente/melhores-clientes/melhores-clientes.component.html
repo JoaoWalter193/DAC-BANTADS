@@ -1,0 +1,29 @@
+<h1>Melhores Clientes</h1>
+
+<div class="clientes-dashboard">
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>CPF</th>
+        <th>Cidade</th>
+        <th>Estado</th>
+        <th>Saldo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let cliente of clientes">
+        <td>{{ cliente.nome }}</td>
+        <td>{{ cliente.cpf | formatarCpf}}</td>
+        <td>{{ cliente.endereco.cidade }}</td>
+        <td>{{ cliente.endereco.estado }}</td>
+        <td [ngClass]="{ 'saldo-negativo': cliente.saldo < 0 }">
+          {{ cliente.saldo | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"}}
+        </td>
+      </tr>
+      <tr *ngIf="clientes.length === 0">
+        <td colspan="7">Nenhum cliente encontrado.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

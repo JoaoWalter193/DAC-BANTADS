@@ -4,7 +4,16 @@ import { TelaAdministradorComponent } from './pages/tela-administrador/tela-admi
 import { GerentesComponent } from './pages/tela-administrador/tabela-gerentes/gerentes.component';
 import { HomeCliente } from './pages/home-cliente/home-cliente';
 import { TelaAutocadastroComponent } from './pages/tela-autocadastro/tela-autocadastro.component';
-import { ClientesComponent } from './pages/tela-administrador/tabela-clientes/clientes.component';
+import { ClientesComponent } from './pages/tela-gerente/tabela-clientes/clientes.component';
+import { CadastroGerente } from './pages/cadastro-gerente/cadastro-gerente';
+import { PerfilClienteComponent } from './pages/perfil-cliente/perfil-cliente.component';
+import { EditarGerente } from './pages/editar-gerente/editar-gerente';
+import { TelaGerenteComponent } from './pages/tela-gerente/tela-gerente.component';
+import { Component } from '@angular/core';
+import { ConsultarClienteComponent } from './pages/tela-gerente/consultar-cliente/consultar-cliente.component';
+import { MelhoresClientesComponent } from './pages/tela-gerente/melhores-clientes/melhores-clientes.component';
+import { TelaGerenteDashboardComponent } from './pages/tela-gerente-dashboard/tela-gerente-dashboard.component';
+import { TabelaTodosClientesComponent } from './pages/tela-administrador/tabela-todos-clientes/tabela-todos-clientes.component';
 
 export const routes: Routes = [
   {
@@ -17,7 +26,6 @@ export const routes: Routes = [
   },
 
   {
-
     path: 'tela-administrador',
     component: TelaAdministradorComponent,
     children: [
@@ -27,12 +35,57 @@ export const routes: Routes = [
       },
       {
         path: 'clientes',
-        component: ClientesComponent,
+        component: TabelaTodosClientesComponent,
       },
     ],
   },
+
+  {
+    path: 'tela-gerente',
+    component: TelaGerenteDashboardComponent,
+    children: [
+      {
+        path: '',
+        component: TelaGerenteComponent,
+      },
+
+      {
+        path: 'melhores-clientes',
+        component: MelhoresClientesComponent,
+      },
+
+      {
+        path: 'consultar-cliente',
+        component: ConsultarClienteComponent,
+      },
+    ],
+  },
+
+  {
+    path: 'consultar-cliente',
+    component: ConsultarClienteComponent,
+  },
+
+  {
+    path: 'melhores-clientes',
+    component: MelhoresClientesComponent,
+  },
+
+  {
+    path: 'cadastro-gerente',
+    component: CadastroGerente,
+  },
+
   {
     path: 'home-cliente',
     component: HomeCliente,
+  },
+  {
+    path: 'perfil',
+    component: PerfilClienteComponent,
+  },
+  {
+    path: 'editar-gerente/:cpf',
+    component: EditarGerente,
   },
 ];

@@ -4,8 +4,9 @@ export interface Cliente {
   cpf: string;
   nome: string;
   email: string;
-  endereco: Endereco;
   salario: number;
+  telefone: string;
+  endereco: Endereco;
   status: 'aprovado' | 'rejeitado' | 'pendente';
   dataSolicitacao: Date;
   role: 'CLIENTE';
