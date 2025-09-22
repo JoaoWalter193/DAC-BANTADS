@@ -39,10 +39,17 @@ public class GerenteController {
         return gerenteService.atualizarGerente(cpf,data);
      }
 
+     @DeleteMapping("/{cpf}")
+     public ResponseEntity<GerenteDTO> deletarGerente (@PathVariable String cpf){
+        return gerenteService.deletarGerente(cpf);
+     }
+
      @PostMapping
      public ResponseEntity<GerenteDTO> adicionarGerente(@RequestBody @Valid AdicionarGerenteDTO data){
         return gerenteService.inserirGerente(data);
      }
+
+
     @GetMapping("/teste")
     public ResponseEntity<String> sendMessage(@RequestParam("mensagem") String message){
         producer.sendMessage(message);

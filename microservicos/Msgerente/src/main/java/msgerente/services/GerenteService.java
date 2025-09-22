@@ -59,9 +59,21 @@ public class GerenteService {
         if (gerenteRepository.findByCpf(data.cpf()) != null){
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-
         gerenteRepository.save(gerenteTemp);
         return ResponseEntity.ok(new GerenteDTO(data.cpf(), data.nome(), data.email(), data.tipo()));
+    }
+
+
+    public ResponseEntity<GerenteDTO> deletarGerente (String cpf){
+
+        Gerente gerenteTemp = gerenteRepository.findByCpf(cpf);
+
+        if (gerenteTemp != null){
+            gerenteRepository.delete(gerenteTemp);
+            GerenteDTO dto = new GerenteDTO(gerenteTemp.getCpf(),gerenteTemp.getNome(),gerenteTemp.getEmail(), gerenteTemp.getTipo());
+            return ResponseEntity.ok(dto);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
 
