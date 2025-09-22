@@ -40,7 +40,9 @@ public class ClienteService {
                         cliente.getCpf(),
                         cliente.getNome(),
                         cliente.getEmail(),
+                        cliente.getSalario(),
                         cliente.getEndereco(),
+                        cliente.getCep(),
                         cliente.getCidade(),
                         cliente.getEstado()
                 );
@@ -58,7 +60,9 @@ public class ClienteService {
                         cliente.getCpf(),
                         cliente.getNome(),
                         cliente.getEmail(),
+                        cliente.getSalario(),
                         cliente.getEndereco(),
+                        cliente.getCep(),
                         cliente.getCidade(),
                         cliente.getEstado()
                 );
@@ -85,7 +89,9 @@ public class ClienteService {
                     clienteTemp.getCpf(),
                     clienteTemp.getNome(),
                     clienteTemp.getEmail(),
+                    clienteTemp.getSalario(),
                     clienteTemp.getEndereco(),
+                    clienteTemp.getCep(),
                     clienteTemp.getCidade(),
                     clienteTemp.getEstado());
 
@@ -99,6 +105,7 @@ public class ClienteService {
         //implementar
 
         String senhaHasheada = passwordEncoder.encode(data.senha());
+
 
         Cliente clienteTemp = new Cliente(
                 data.cpf(),
@@ -119,9 +126,40 @@ public class ClienteService {
         return ResponseEntity.ok(new ClienteDTO(clienteTemp.getCpf(),
                 clienteTemp.getNome(),
                 clienteTemp.getEmail(),
+                clienteTemp.getSalario(),
                 clienteTemp.getEndereco(),
+                clienteTemp.getCep(),
                 clienteTemp.getCidade(),
                 clienteTemp.getEstado()));
+    }
+
+
+
+    public ResponseEntity<ClienteDTO> atualizarCliente(AdicionarClienteDTO data, String cpf){
+        Optional<Cliente> optCliente = clienteRepository.findByCpf(cpf);
+
+        if (optCliente.isPresent()) {
+            Cliente clienteTemp = optCliente.get();
+            clienteTemp.setNome(data.nome());
+            clienteTemp.setEmail(data.email());
+            clienteTemp.setSalario(data.salario());
+            clienteTemp.setEndereco(data.endereco());
+            clienteTemp.setCep(data.cep());
+            clienteTemp.setCidade(data.cidade());
+            clienteTemp.setEstado(data.estado());
+
+            clienteRepository.save(clienteTemp);
+
+            return ResponseEntity.ok(new ClienteDTO(clienteTemp.getCpf(),
+                    data.nome(),
+                    data.email(),
+                    data.salario(),
+                    data.endereco(),
+                    data.cep(),
+                    data.cidade(),
+                    data.estado()));
+        }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
 }

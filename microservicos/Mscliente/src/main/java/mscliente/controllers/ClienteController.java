@@ -29,10 +29,22 @@ public class ClienteController {
         return clienteService.buscarCliente(cpf);
     }
 
+
     @PostMapping
     public ResponseEntity<ClienteDTO> adicionarCliente(@RequestBody AdicionarClienteDTO data){
         return clienteService.adicionarCliente(data);
     }
+
+    @PutMapping("/{cpf}")
+    public ResponseEntity<ClienteDTO> atualizarCliente(@RequestBody AdicionarClienteDTO data, @PathVariable String cpf){
+        return clienteService.atualizarCliente(data,cpf);
+    }
+
+    // básicos foram, agora tem que mexer na parada de APROVAR E REJEITAR porém isso vou fazer só
+    // depois que aprender os microservicos, no momento apenas fazendo as coisas que não necessitam de
+    // microserviços para não ficar maluco
+
+
 
 
 
