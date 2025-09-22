@@ -4,20 +4,23 @@ import { UserSession } from '../models';
 import { MockService } from './mock.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
-
-  constructor(private router: Router, private mockService: MockService) { }
+  constructor(private router: Router, private mockService: MockService) {}
 
   // login-logout com localStorage
   login(email: string, password: string): void {
-    const user = this.mockService.autenticarUsuario(email, password);
-
+    let user = this.mockService.autenticarUsuario(email, password);
 
     if (user) {
       let conta;
       if (user.role === 'CLIENTE') {
+        // 🔹 Busca cliente atualizado
+        const clienteAtualizado = this.mockService.findClienteCpf(user.cpf);
+        if (clienteAtualizado) {
+          user = clienteAtualizado;
+        }
         conta = this.mockService.findContaCpf(user.cpf);
       }
       const userSession: UserSession = { user, conta };
@@ -53,7 +56,7 @@ export class AuthService {
     const session = this.getUserSession();
     if (session) {
       session.user = clienteAtualizado;
-      localStorage.setItem('currentUser', JSON.stringify(session))
+      localStorage.setItem('currentUser', JSON.stringify(session));
     }
   }
 

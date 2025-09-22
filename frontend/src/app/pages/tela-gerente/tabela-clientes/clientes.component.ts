@@ -5,6 +5,7 @@ import { Gerente } from '../../../models/gerente.interface';
 import { Cliente } from '../../../models/cliente.interface';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import { FormsModule } from '@angular/forms';
+import { ClienteService } from '../../../services/cliente.service';
 
 interface ClienteDashboardDTO extends Cliente {
   conta: string;
@@ -25,37 +26,11 @@ export class ClientesComponent {
   clientes: ClienteDashboardDTO[] = [];
   filtro: string = '';
 
-  constructor() {
-    this.carregarClientes();
-  }
-
-  carregarClientes() {
-    const currentUserJSON = localStorage.getItem('currentUser');
-    const contasJSON = localStorage.getItem('contaCliente');
-
-    if (!currentUserJSON || !contasJSON) {
-      this.clientes = [];
-      return;
-    }
-
-    const gerente: Gerente = JSON.parse(currentUserJSON).user;
-    const contas: Conta[] = JSON.parse(contasJSON);
-
-    this.clientes = (gerente.clientes || [])
-      .filter((cliente) => cliente.status === 'aprovado')
-      .map((cliente) => {
-        const conta = contas.find((c) => c.cliente.cpf === cliente.cpf);
-
-        return {
-          ...cliente,
-          conta: conta ? conta.numeroConta : '',
-          saldo: conta ? conta.saldo : 0,
-          limite: conta ? conta.limite : 0,
-          cpfGerente: gerente.cpf,
-          nomeGerente: gerente.nome,
-        } as ClienteDashboardDTO;
-      })
-      .sort((a, b) => a.nome.localeCompare(b.nome));
+  constructor(private clientesService: ClienteService) {
+    this.clientesService.clientes$.subscribe((lista) => {
+      this.clientes = lista;
+    });
+    this.clientesService.carregarClientes();
   }
 
   get clientesFiltrados(): ClienteDashboardDTO[] {
@@ -65,5 +40,13 @@ export class ClientesComponent {
         cliente.nome.toLowerCase().includes(termo) ||
         cliente.cpf.includes(termo)
     );
+  }
+
+  calcularLimite(salario: number): number {
+    if (salario < 2000) {
+      return 0;
+    } else {
+      return salario / 2;
+    }
   }
 }
