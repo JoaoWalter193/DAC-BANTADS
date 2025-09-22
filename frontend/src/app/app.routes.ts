@@ -12,6 +12,8 @@ import { TelaGerenteComponent } from './pages/tela-gerente/tela-gerente.componen
 import { Component } from '@angular/core';
 import { ConsultarClienteComponent } from './pages/tela-gerente/consultar-cliente/consultar-cliente.component';
 import { MelhoresClientesComponent } from './pages/tela-gerente/melhores-clientes/melhores-clientes.component';
+import { TelaGerenteDashboardComponent } from './pages/tela-gerente-dashboard/tela-gerente-dashboard.component';
+import { TabelaTodosClientesComponent } from './pages/tela-administrador/tabela-todos-clientes/tabela-todos-clientes.component';
 
 export const routes: Routes = [
   {
@@ -33,24 +35,40 @@ export const routes: Routes = [
       },
       {
         path: 'clientes',
-        component: ClientesComponent,
+        component: TabelaTodosClientesComponent,
       },
     ],
   },
 
   {
     path: 'tela-gerente',
-    component: TelaGerenteComponent,
+    component: TelaGerenteDashboardComponent,
     children: [
       {
-        path: 'consultar-cliente',
-        component: ConsultarClienteComponent,
+        path: '',
+        component: TelaGerenteComponent,
       },
+
       {
         path: 'melhores-clientes',
         component: MelhoresClientesComponent,
       },
+
+      {
+        path: 'consultar-cliente',
+        component: ConsultarClienteComponent,
+      },
     ],
+  },
+
+  {
+    path: 'consultar-cliente',
+    component: ConsultarClienteComponent,
+  },
+
+  {
+    path: 'melhores-clientes',
+    component: MelhoresClientesComponent,
   },
 
   {
@@ -67,7 +85,7 @@ export const routes: Routes = [
     component: PerfilClienteComponent,
   },
   {
-    path: 'editar-gerente',
+    path: 'editar-gerente/:cpf',
     component: EditarGerente,
   },
 ];

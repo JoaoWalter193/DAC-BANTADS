@@ -42,6 +42,7 @@ export class ClientesComponent {
     const contas: Conta[] = JSON.parse(contasJSON);
 
     this.clientes = (gerente.clientes || [])
+      .filter((cliente) => cliente.status === 'aprovado')
       .map((cliente) => {
         const conta = contas.find((c) => c.cliente.cpf === cliente.cpf);
 

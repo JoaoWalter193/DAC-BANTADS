@@ -1,14 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { Gerente } from '../../models/gerente.interface';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { MockService } from '../../services/mock.service';
 
 @Component({
   selector: 'app-editar-gerente',
-  imports: [FormsModule, CommonModule, RouterLink],
   templateUrl: './editar-gerente.html',
   styleUrls: ['./editar-gerente.css'],
+  standalone: true,
+  imports: [FormsModule, CommonModule, RouterLink],
 })
 export class EditarGerente implements OnInit {
   gerente: Gerente = {
@@ -17,20 +19,24 @@ export class EditarGerente implements OnInit {
     email: '',
     senha: '',
     role: 'GERENTE',
+    clientes: [],
   };
 
   mensagem: string = '';
   tipoMensagem: 'sucesso' | 'erro' | '' = '';
   carregando: boolean = false;
-
   private cpfOriginal: string = '';
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private mockService: MockService
+  ) {}
 
   ngOnInit(): void {
     const cpfParam = this.route.snapshot.paramMap.get('cpf');
     if (cpfParam) {
-      const gerentes = this.obterGerentes();
+      const gerentes = this.mockService.getGerentes();
       const gerenteEncontrado = gerentes.find((g) => g.cpf === cpfParam);
       if (gerenteEncontrado) {
         this.gerente = { ...gerenteEncontrado };
@@ -41,13 +47,13 @@ export class EditarGerente implements OnInit {
 
   formatarCPF(event: any) {
     let value = event.target.value.replace(/\D/g, '');
-
     if (value.length > 11) value = value.slice(0, 11);
-
-    if (value.length > 9) value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-    else if (value.length > 6) value = value.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
-    else if (value.length > 3) value = value.replace(/(\d{3})(\d{1,3})/, '$1.$2');
-
+    if (value.length > 9)
+      value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    else if (value.length > 6)
+      value = value.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+    else if (value.length > 3)
+      value = value.replace(/(\d{3})(\d{1,3})/, '$1.$2');
     this.gerente.cpf = value;
   }
 
@@ -70,14 +76,59 @@ export class EditarGerente implements OnInit {
     return true;
   }
 
+  validarEmail(email: string): boolean {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  }
+
+  validarFormulario(): boolean {
+    const cpfNumerico = this.gerente.cpf.replace(/\D/g, '');
+    return (
+      cpfNumerico.length === 11 &&
+      this.gerente.nome.trim() !== '' &&
+      this.validarEmail(this.gerente.email) &&
+      this.gerente.senha.trim() !== ''
+    );
+  }
+
+  CPFJaCadastrado(cpf: string): boolean {
+    return this.mockService
+      .getGerentes()
+      .some((g) => g.cpf === cpf && g.cpf !== this.cpfOriginal);
+  }
+
+  atualizarGerente(gerenteAtualizado: Gerente): void {
+    const gerentes = this.mockService.getGerentes();
+    const index = gerentes.findIndex((g) => g.cpf === this.cpfOriginal);
+    if (index !== -1) {
+      const gerenteAnterior = gerentes[index];
+      gerentes[index] = gerenteAtualizado;
+      this.cpfOriginal = gerenteAtualizado.cpf;
+
+      // atualizar o novo nome do gerente nos clientes
+      if (gerenteAnterior.clientes?.length) {
+        gerenteAnterior.clientes.forEach((cliente) => {
+          const conta = this.mockService.findContaCpf(cliente.cpf);
+          if (conta) {
+            conta.nomeGerente = gerenteAtualizado.nome;
+            this.mockService.updateConta(conta);
+          }
+        });
+      }
+      localStorage.setItem('gerentes_bantads', JSON.stringify(gerentes));
+    }
+  }
+
   onSubmit() {
     if (!this.validarFormulario()) {
-      this.mostrarMensagem('Por favor, preencha todos os campos obrigatórios.', 'erro');
+      this.mostrarMensagem(
+        'Por favor, preencha todos os campos obrigatórios.',
+        'erro'
+      );
       return;
     }
 
     const cpfNumerico = this.gerente.cpf.replace(/\D/g, '');
-
     if (cpfNumerico !== this.cpfOriginal && this.CPFJaCadastrado(cpfNumerico)) {
       this.mostrarMensagem('CPF já cadastrado por outro gerente.', 'erro');
       return;
@@ -86,47 +137,20 @@ export class EditarGerente implements OnInit {
     this.carregando = true;
 
     setTimeout(() => {
-      this.atualizarGerente({
+      const gerenteAtualizado: Gerente = {
         cpf: cpfNumerico,
         nome: this.gerente.nome,
         email: this.gerente.email,
         senha: this.gerente.senha,
         role: 'GERENTE',
-      });
+        clientes: this.gerente.clientes || [],
+      };
 
+      this.atualizarGerente(gerenteAtualizado);
       this.carregando = false;
       this.mostrarMensagem('Gerente atualizado com sucesso!', 'sucesso');
+      this.router.navigate(['/tela-administrador/gerentes']);
     }, 1000);
-  }
-
-  validarFormulario(): boolean {
-    const cpfNumerico = this.gerente.cpf.replace(/\D/g, '');
-    return cpfNumerico.length === 11 && this.gerente.nome.trim() !== '' && this.validarEmail(this.gerente.email) && this.gerente.senha.trim() !== '';
-  }
-
-  validarEmail(email: string): boolean {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-  }
-
-  CPFJaCadastrado(cpf: string): boolean {
-    const gerentes = this.obterGerentes();
-    return gerentes.some((g) => g.cpf === cpf && g.cpf !== this.cpfOriginal);
-  }
-
-  atualizarGerente(gerenteAtualizado: Gerente): void {
-    const gerentes = this.obterGerentes();
-    const index = gerentes.findIndex((g) => g.cpf === this.cpfOriginal);
-    if (index !== -1) {
-      gerentes[index] = gerenteAtualizado;
-      localStorage.setItem('gerentes_bantads', JSON.stringify(gerentes));
-      this.cpfOriginal = gerenteAtualizado.cpf;
-    }
-  }
-
-  obterGerentes(): Gerente[] {
-    const gerentesJSON = localStorage.getItem('gerentes_bantads');
-    return gerentesJSON ? JSON.parse(gerentesJSON) : [];
   }
 
   mostrarMensagem(mensagem: string, tipo: 'sucesso' | 'erro'): void {

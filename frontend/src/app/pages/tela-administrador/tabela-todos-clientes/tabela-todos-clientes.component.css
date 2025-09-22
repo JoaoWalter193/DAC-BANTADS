@@ -1,0 +1,86 @@
+.clientes-dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+  font-family: Arial, sans-serif;
+}
+
+.filtros {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filtros input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.clientes-dashboard table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.clientes-dashboard thead {
+  background-color: #2c3e50;
+  color: #fff;
+}
+
+.clientes-dashboard th,
+.clientes-dashboard td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.clientes-dashboard tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.clientes-dashboard tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+.clientes-dashboard td.saldo-negativo {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.clientes-dashboard td[colspan] {
+  text-align: center;
+  font-style: italic;
+  color: #777;
+  padding: 1.5rem;
+}
+
+.clientes-dashboard .botaoDetalhes,
+.clientes-dashboard .button {
+  background-color: #3498db;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.2s ease-in-out;
+}
+
+.clientes-dashboard .botaoDetalhes:hover,
+.clientes-dashboard .button:hover {
+  background-color: #2980b9;
+}
+
+.clientes-dashboard .button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
