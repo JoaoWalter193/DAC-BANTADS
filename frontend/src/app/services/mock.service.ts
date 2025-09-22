@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Admin, Cliente, Conta, Gerente, Endereco } from '../models';
+import { TipoTransacao } from '../models/tipo-transacao.enum';
 
 const LS_CHAVE = 'contaCliente';
 
@@ -158,6 +159,11 @@ export class MockService {
         limite: 5000.0,
         nomeGerente: 'Geniéve',
         dataCriacao: '2000-01-01',
+        transacoes: [
+          { data: new Date('2025-09-18T10:00:00Z'), tipo: TipoTransacao.DEPOSITO, valor: 500.00 },
+          { data: new Date('2025-09-19T14:30:00Z'), tipo: TipoTransacao.SAQUE, valor: 200.00 },
+          { data: new Date('2025-09-20T11:00:00Z'), tipo: TipoTransacao.TRANSFERENCIA, valor: 150.00, clienteOrigem: 'Catharyna', clienteDestino: 'Cleuddônio' },
+        ],
       },
       {
         numeroConta: '2222',
@@ -167,6 +173,7 @@ export class MockService {
         limite: 10000.0,
         nomeGerente: 'Godophredo',
         dataCriacao: '1990-10-10',
+        transacoes: [],
       },
       {
         numeroConta: '3333',
@@ -176,6 +183,7 @@ export class MockService {
         limite: 1500.0,
         nomeGerente: 'Gyândula',
         dataCriacao: '2012-12-12',
+        transacoes: [],
       },
       {
         numeroConta: '4444',
@@ -185,6 +193,7 @@ export class MockService {
         limite: 0.0,
         nomeGerente: 'Geniéve',
         dataCriacao: '2022-02-22',
+        transacoes: [],
       },
       {
         numeroConta: '5555',
@@ -194,6 +203,7 @@ export class MockService {
         limite: 0.0,
         nomeGerente: 'Godophredo',
         dataCriacao: '2025-01-01',
+        transacoes: [],
       },
     ];
   }
