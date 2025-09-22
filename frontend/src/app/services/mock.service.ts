@@ -380,4 +380,27 @@ export class MockService {
   getGerentes(): Gerente[] {
     return this.gerentes;
   }
+
+  criarContaParaCliente(
+    cliente: Cliente,
+    numeroConta: string,
+    limite: number,
+    senha: string
+  ): void {
+    const contas: Conta[] = JSON.parse(localStorage.getItem(LS_CHAVE) || '[]');
+
+    const novaConta: Conta = {
+      numeroConta,
+      cliente: { ...cliente, senha, conta: numeroConta },
+      saldo: 0,
+      limite,
+      nomeGerente: this.getGerenteComMenosClientes().nome,
+      dataCriacao: new Date().toISOString(),
+    };
+
+    contas.push(novaConta);
+    localStorage.setItem(LS_CHAVE, JSON.stringify(contas));
+
+    console.log('Conta criada no LS:', novaConta);
+  }
 }

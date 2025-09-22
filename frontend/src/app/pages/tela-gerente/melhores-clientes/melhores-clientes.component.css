@@ -1,3 +1,9 @@
+.background {
+  background-color: #eeeff1;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
 .clientes-dashboard {
   max-width: 1200px;
   margin: 0 auto;

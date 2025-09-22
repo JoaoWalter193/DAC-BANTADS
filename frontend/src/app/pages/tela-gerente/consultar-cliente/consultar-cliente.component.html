@@ -1,1 +1,45 @@
-<p>consultar-cliente works!</p>
+<div class="background">
+    <div class="voltar">
+        <button routerLink="/tela-gerente" class="botaoVoltar" type="button">Voltar</button>
+    </div>
+
+    <h1>Consultar Clientes</h1>
+
+    <div class="clientes-dashboard">
+        <form class="filtros" (submit)="$event.preventDefault()">
+            <input name="filtro" type="text" [(ngModel)]="filtro" placeholder="Buscar por nome ou CPF" />
+        </form>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>CPF</th>
+                    <th>Nome</th>
+                    <th>Cidade</th>
+                    <th>Estado</th>
+                    <th>Saldo</th>
+                    <th>Limite</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let cliente of clientesFiltrados">
+                    <td>{{ cliente.cpf | formatarCpf}}</td>
+                    <td>{{ cliente.nome }}</td>
+                    <td>{{ cliente.endereco.estado }}</td>
+                    <td>{{ cliente.endereco.cidade }}</td>
+                    <td [ngClass]="{ 'saldo-negativo': cliente.saldo < 0 }">
+                        {{ cliente.saldo | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"}}
+                    </td>
+                    <td>{{ calcularLimite(cliente.salario) | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"}}</td>
+                    <td>
+                        <button class="botaoDetalhes" type="button">Ver Detalhes</button>
+                    </td>
+                </tr>
+                <tr *ngIf="clientesFiltrados.length === 0">
+                    <td colspan="7">Nenhum cliente encontrado.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
