@@ -239,7 +239,7 @@ export class TelaAutocadastroComponent implements AfterViewInit {
         senha: '',
       };
 
-      this.salvarCliente(clienteCompleto);
+      this.mockService.addClienteAoGerente(clienteCompleto);
       this.carregando = false;
 
       this.mostrarMensagem(
@@ -312,21 +312,7 @@ export class TelaAutocadastroComponent implements AfterViewInit {
   }
 
   CPFJaCadastrado(cpf: string): boolean {
-    const clientes = this.obterClientes();
-
-    return clientes.some((cliente) => {
-      cliente.cpf === cpf;
-    });
-  }
-
-  salvarCliente(cliente: Cliente): void {
-    const gerente = this.mockService.getGerenteComMenosClientes();
-    gerente.clientes?.push(cliente);
-  }
-
-  obterClientes(): Cliente[] {
-    const clientesJSON = localStorage.getItem('clientes_bantads');
-    return clientesJSON ? JSON.parse(clientesJSON) : [];
+    return this.mockService.getClienteByCpf(cpf) !== null;
   }
 
   mostrarMensagem(mensagem: string, tipo: 'sucesso' | 'erro'): void {

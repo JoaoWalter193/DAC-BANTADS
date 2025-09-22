@@ -261,23 +261,120 @@ export class MockService {
     return this.clientes;
   }
 
-  updateCliente(cliente: Cliente): Cliente | null {
-    const index = this.clientes.findIndex((c) => c.cpf === cliente.cpf);
+  getClienteByCpf(cpf: string): Cliente | null {
+    const cpfNumerico = cpf.replace(/\D/g, '');
+    return (
+      this.getClientes().find(
+        (c) => (c.cpf || '').replace(/\D/g, '') === cpfNumerico
+      ) || null
+    );
+  }
 
-    if (index !== -1) {
-      this.clientes[index] = { ...this.clientes[index], ...cliente };
-      console.log('Cliente atualizado: ', this.clientes[index]);
-      return this.clientes[index];
+  updateCliente(cliente: Cliente): Cliente | null {
+    const cpf = (cliente.cpf || '').replace(/\D/g, '');
+
+    const clienteNormalizado = { ...cliente, cpf };
+
+    console.log('Tentando atualizar CPF:', cpf);
+    console.log('Clientes globais disponíveis (antes):', this.clientes);
+
+    let globalIndex = this.clientes.findIndex(
+      (c) => (c.cpf || '').replace(/\D/g, '') === cpf
+    );
+    if (globalIndex !== -1) {
+      this.clientes[globalIndex] = {
+        ...this.clientes[globalIndex],
+        ...clienteNormalizado,
+      };
+      console.log('Cliente atualizado (global):', this.clientes[globalIndex]);
+    } else {
+      this.clientes.push({
+        ...clienteNormalizado,
+        senha: clienteNormalizado['senha'] || '',
+      });
+      globalIndex = this.clientes.length - 1;
+      console.log('Cliente adicionado ao global:', this.clientes[globalIndex]);
     }
 
-    console.error('Cliente ' + cliente.cpf + ' não encontrado');
-    return null;
+    for (const gerente of this.gerentes) {
+      if (!gerente.clientes) continue;
+      const gi = gerente.clientes.findIndex(
+        (c) => (c.cpf || '').replace(/\D/g, '') === cpf
+      );
+      if (gi !== -1) {
+        gerente.clientes[gi] = {
+          ...gerente.clientes[gi],
+          ...clienteNormalizado,
+        };
+        console.log(
+          `Cliente atualizado dentro do gerente ${gerente.nome}:`,
+          gerente.clientes[gi]
+        );
+      }
+    }
+
+    const currentUserJSON = localStorage.getItem('currentUser');
+    if (currentUserJSON) {
+      const currentUser = JSON.parse(currentUserJSON);
+
+      if (
+        currentUser.user?.role === 'GERENTE' &&
+        Array.isArray(currentUser.user.clientes)
+      ) {
+        const ci = currentUser.user.clientes.findIndex(
+          (c: Cliente) => (c.cpf || '').replace(/\D/g, '') === cpf
+        );
+        if (ci !== -1) {
+          currentUser.user.clientes[ci] = {
+            ...currentUser.user.clientes[ci],
+            ...clienteNormalizado,
+          };
+          localStorage.setItem('currentUser', JSON.stringify(currentUser));
+          console.log(
+            'Cliente atualizado no currentUser (gerente):',
+            currentUser.user.clientes[ci]
+          );
+        }
+      }
+
+      if (
+        currentUser.user?.role === 'CLIENTE' &&
+        (currentUser.user.cpf || '').replace(/\D/g, '') === cpf
+      ) {
+        currentUser.user = { ...currentUser.user, ...clienteNormalizado };
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        console.log(
+          'Cliente atualizado no currentUser (cliente):',
+          currentUser.user
+        );
+      }
+    }
+
+    return this.clientes[globalIndex] || null;
   }
 
   getGerenteComMenosClientes(): Gerente {
     return this.gerentes.reduce((prev, curr) =>
       (prev.clientes?.length ?? 0) <= (curr.clientes?.length ?? 0) ? prev : curr
     );
+  }
+
+  getClientesDoGerente(cpfGerente: string): Cliente[] {
+    const gerente = this.gerentes.find((g) => g.cpf === cpfGerente);
+    return gerente?.clientes || [];
+  }
+
+  addClienteAoGerente(cliente: Cliente) {
+    const gerente = this.getGerenteComMenosClientes();
+    if (!gerente.clientes) gerente.clientes = [];
+
+    cliente.cpf = cliente.cpf.replace(/\D/g, '');
+
+    this.clientes.push(cliente);
+    console.log('Cliente adicionado ao global:', this.clientes);
+
+    gerente.clientes.push({ ...cliente, status: 'pendente' });
+    console.log('Cliente adicionado ao gerente:', gerente);
   }
 
   getGerentes(): Gerente[] {

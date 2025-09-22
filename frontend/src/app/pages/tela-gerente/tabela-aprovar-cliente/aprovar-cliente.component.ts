@@ -4,6 +4,8 @@ import { Cliente, Gerente } from '../../../models';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import localePt from '@angular/common/locales/pt';
 import localePtExtra from '@angular/common/locales/extra/pt';
+import { ClientesComponent } from '../tabela-clientes/clientes.component';
+import { ClienteService } from '../../../services/cliente.service';
 
 registerLocaleData(localePt, 'pt-BR', localePtExtra);
 
@@ -17,6 +19,8 @@ registerLocaleData(localePt, 'pt-BR', localePtExtra);
 export class AprovarClienteComponent {
   clientes: Cliente[] = [];
   limite: number = 0;
+
+  constructor(private clientesService: ClienteService) {}
 
   ngOnInit() {
     this.clientes = this.getContasPendentes();
@@ -36,7 +40,9 @@ export class AprovarClienteComponent {
       return [];
     }
 
-    this.clientes = (gerente.clientes || []).filter((cliente: { status: string; }) => cliente.status === 'pendente');
+    this.clientes = (gerente.clientes || []).filter(
+      (cliente: { status: string }) => cliente.status === 'pendente'
+    );
     return this.clientes;
   }
 
@@ -49,31 +55,24 @@ export class AprovarClienteComponent {
   }
 
   aprovar(cpf: string) {
-    let clientes: Cliente[] = JSON.parse(
-      localStorage.getItem('clientes_bantads') || '[]'
+    const cliente = this.clientes.find(
+      (c) => (c.cpf || '').replace(/\D/g, '') === cpf.replace(/\D/g, '')
     );
+    if (!cliente) return;
 
-    clientes = clientes.map((cliente) => {
-      return cliente.cpf === cpf ? { ...cliente, status: 'aprovado' } : cliente;
-    });
-
-    localStorage.setItem('clientes_bantads', JSON.stringify(clientes));
-
+    cliente.status = 'aprovado';
+    this.clientesService.updateCliente(cliente);
     this.clientes = this.getContasPendentes();
   }
 
   rejeitar(cpf: string) {
-    let clientes: Cliente[] = JSON.parse(
-      localStorage.getItem('clientes_bantads') || '[]'
+    const cliente = this.clientes.find(
+      (c) => (c.cpf || '').replace(/\D/g, '') === cpf.replace(/\D/g, '')
     );
+    if (!cliente) return;
 
-    clientes = clientes.map((cliente) => {
-      return cliente.cpf === cpf
-        ? { ...cliente, status: 'rejeitado' }
-        : cliente;
-    });
-
-    localStorage.setItem('clientes_bantads', JSON.stringify(clientes));
+    cliente.status = 'rejeitado';
+    this.clientesService.updateCliente(cliente);
     this.clientes = this.getContasPendentes();
   }
 }
