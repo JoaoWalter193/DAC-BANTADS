@@ -1,4 +1,4 @@
-package msgerente.domain;
+package mscliente.domain;
 
 
 import jakarta.persistence.Entity;
@@ -9,14 +9,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Table(name = "gerente_adm",schema = "dbgerente")
-@Entity(name = "gerente_adm")
+@Table(name = "cliente", schema = "dbcliente")
+@Entity(name = "cliente")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Gerente {
-
+public class Cliente {
 
     @Id
     private String cpf;
@@ -27,6 +26,17 @@ public class Gerente {
 
     private String senha;
 
-    private String tipo;
+    private double salario;
+
+    private String endereco;
+
+    private String cep;
+
+    private String cidade;
+
+    private String estado;
+
+    private String status;
+
 
 }
