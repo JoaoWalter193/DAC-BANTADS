@@ -4,7 +4,7 @@
   padding: 1rem;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow-x: auto;
 }
 
@@ -72,4 +72,105 @@
 
 .botaoDetalhes:last-child:hover {
   background-color: #c0392b;
+}
+
+/* Overlay do modal (escurece e desfoca o fundo) */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(44, 62, 80, 0.6);
+  /* escuro translúcido */
+  backdrop-filter: blur(4px);
+  /* desfoca conteúdo atrás */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  /* garante que fica acima de tudo */
+}
+
+/* Conteúdo do modal */
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  animation: aparecer 0.25s ease-out;
+}
+
+/* Título */
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* Textarea */
+.modal-content textarea {
+  width: 100%;
+  min-height: 100px;
+  resize: vertical;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  margin-bottom: 1.5rem;
+  transition: border-color 0.2s;
+}
+
+.modal-content textarea:focus {
+  border-color: #2c3e50;
+  outline: none;
+}
+
+/* Botões no modal */
+.modal-content button {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.2s ease-in-out;
+  margin-right: 0.5rem;
+}
+
+.modal-content button:first-of-type {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+.modal-content button:first-of-type:hover {
+  background-color: #c0392b;
+}
+
+.modal-content button:last-of-type {
+  background-color: #bdc3c7;
+  color: #2c3e50;
+}
+
+.modal-content button:last-of-type:hover {
+  background-color: #95a5a6;
+  color: #fff;
+}
+
+/* Animação de entrada */
+@keyframes aparecer {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }

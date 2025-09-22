@@ -271,17 +271,96 @@ export class MockService {
     return this.clientes;
   }
 
-  updateCliente(cliente: Cliente): Cliente | null {
-    const index = this.clientes.findIndex((c) => c.cpf === cliente.cpf);
+  getClienteByCpf(cpf: string): Cliente | null {
+    const cpfNumerico = cpf.replace(/\D/g, '');
+    return (
+      this.getClientes().find(
+        (c) => (c.cpf || '').replace(/\D/g, '') === cpfNumerico
+      ) || null
+    );
+  }
 
-    if (index !== -1) {
-      this.clientes[index] = { ...this.clientes[index], ...cliente };
-      console.log('Cliente atualizado: ', this.clientes[index]);
-      return this.clientes[index];
+  updateCliente(cliente: Cliente): Cliente | null {
+    const cpf = (cliente.cpf || '').replace(/\D/g, '');
+
+    const clienteNormalizado = { ...cliente, cpf };
+
+    console.log('Tentando atualizar CPF:', cpf);
+    console.log('Clientes globais disponíveis (antes):', this.clientes);
+
+    let globalIndex = this.clientes.findIndex(
+      (c) => (c.cpf || '').replace(/\D/g, '') === cpf
+    );
+    if (globalIndex !== -1) {
+      this.clientes[globalIndex] = {
+        ...this.clientes[globalIndex],
+        ...clienteNormalizado,
+      };
+      console.log('Cliente atualizado (global):', this.clientes[globalIndex]);
+    } else {
+      this.clientes.push({
+        ...clienteNormalizado,
+        senha: clienteNormalizado['senha'] || '',
+      });
+      globalIndex = this.clientes.length - 1;
+      console.log('Cliente adicionado ao global:', this.clientes[globalIndex]);
     }
 
-    console.error('Cliente ' + cliente.cpf + ' não encontrado');
-    return null;
+    for (const gerente of this.gerentes) {
+      if (!gerente.clientes) continue;
+      const gi = gerente.clientes.findIndex(
+        (c) => (c.cpf || '').replace(/\D/g, '') === cpf
+      );
+      if (gi !== -1) {
+        gerente.clientes[gi] = {
+          ...gerente.clientes[gi],
+          ...clienteNormalizado,
+        };
+        console.log(
+          `Cliente atualizado dentro do gerente ${gerente.nome}:`,
+          gerente.clientes[gi]
+        );
+      }
+    }
+
+    const currentUserJSON = localStorage.getItem('currentUser');
+    if (currentUserJSON) {
+      const currentUser = JSON.parse(currentUserJSON);
+
+      if (
+        currentUser.user?.role === 'GERENTE' &&
+        Array.isArray(currentUser.user.clientes)
+      ) {
+        const ci = currentUser.user.clientes.findIndex(
+          (c: Cliente) => (c.cpf || '').replace(/\D/g, '') === cpf
+        );
+        if (ci !== -1) {
+          currentUser.user.clientes[ci] = {
+            ...currentUser.user.clientes[ci],
+            ...clienteNormalizado,
+          };
+          localStorage.setItem('currentUser', JSON.stringify(currentUser));
+          console.log(
+            'Cliente atualizado no currentUser (gerente):',
+            currentUser.user.clientes[ci]
+          );
+        }
+      }
+
+      if (
+        currentUser.user?.role === 'CLIENTE' &&
+        (currentUser.user.cpf || '').replace(/\D/g, '') === cpf
+      ) {
+        currentUser.user = { ...currentUser.user, ...clienteNormalizado };
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        console.log(
+          'Cliente atualizado no currentUser (cliente):',
+          currentUser.user
+        );
+      }
+    }
+
+    return this.clientes[globalIndex] || null;
   }
 
   getGerenteComMenosClientes(): Gerente {
@@ -290,7 +369,59 @@ export class MockService {
     );
   }
 
+  getClientesDoGerente(cpfGerente: string): Cliente[] {
+    const gerente = this.gerentes.find((g) => g.cpf === cpfGerente);
+    return gerente?.clientes || [];
+  }
+
+  addClienteAoGerente(cliente: Cliente) {
+    cliente.cpf = cliente.cpf.replace(/\D/g, '');
+
+    const cpfExistente =
+      this.clientes.some((c) => c.cpf === cliente.cpf) ||
+      this.gerentes.some((g) => g.clientes?.some((c) => c.cpf === cliente.cpf));
+
+    if (cpfExistente) {
+      console.warn(`CPF ${cliente.cpf} já cadastrado. Cadastro abortado.`);
+      return false;
+    }
+
+    const gerente = this.getGerenteComMenosClientes();
+    if (!gerente.clientes) gerente.clientes = [];
+
+    this.clientes.push(cliente);
+    gerente.clientes.push({ ...cliente, status: 'pendente' });
+
+    console.log('Cliente adicionado ao global:', this.clientes);
+    console.log('Cliente adicionado ao gerente:', gerente);
+
+    return true;
+  }
+
   getGerentes(): Gerente[] {
     return this.gerentes;
+  }
+
+  criarContaParaCliente(
+    cliente: Cliente,
+    numeroConta: string,
+    limite: number,
+    senha: string
+  ): void {
+    const contas: Conta[] = JSON.parse(localStorage.getItem(LS_CHAVE) || '[]');
+
+    const novaConta: Conta = {
+      numeroConta,
+      cliente: { ...cliente, senha, conta: numeroConta },
+      saldo: 0,
+      limite,
+      nomeGerente: this.getGerenteComMenosClientes().nome,
+      dataCriacao: new Date().toISOString(),
+    };
+
+    contas.push(novaConta);
+    localStorage.setItem(LS_CHAVE, JSON.stringify(contas));
+
+    console.log('Conta criada no LS:', novaConta);
   }
 }

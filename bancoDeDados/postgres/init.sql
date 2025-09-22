@@ -47,7 +47,10 @@ email VARCHAR(100) NOT NULL,
 senha TEXT NOT NULL,
 salario DECIMAL(7,2) NOT NULL,
 endereco VARCHAR(100) NOT NULL,
-status VARCHAR (9) NOT NULL  -- APROVADO / REJEITADO / ESPERANDO
+cep VARCHAR(8) NOT NULL,
+cidade VARCHAR(100) NOT NULL,
+estado VARCHAR(100) NOT NULL,
+status VARCHAR (10) NOT NULL  -- APROVADO / REJEITADO / ESPERANDO
 );
 
 -- Schema ContaCUD
@@ -105,12 +108,13 @@ tipo VARCHAR(15)
 );
 
 -- Inserções
-INSERT INTO dbcliente.cliente (cpf, nome, email, senha, salario, endereco, status) VALUES
-('12912861012', 'Catharyna', 'cli1@bantads.com.br', 'tads', 10000.00, 'Rua das Flores, 123', 'APROVADO'),
-('09506382000', 'Cleuddônio', 'cli2@bantads.com.br', 'tads', 20000.00, 'Av. Principal, 456', 'APROVADO'),
-('85733854057', 'Catianna', 'cli3@bantads.com.br', 'tads', 3000.00, 'Praça Central, 789', 'APROVADO'),
-('58872160006', 'Cutardo', 'cli4@bantads.com.br', 'tads', 500.00, 'Travessa Secundária, 101', 'APROVADO'),
-('76179646090', 'Coândrya', 'cli5@bantads.com.br', 'tads', 1500.00, 'Alameda dos Anjos, 202', 'APROVADO');
+INSERT INTO dbcliente.cliente (cpf, nome, email, senha, salario, endereco, cep, cidade, estado, status) VALUES
+('12912861012', 'Catharyna', 'cli1@bantads.com.br', 'tads', 10000.00, 'Rua das Flores, 123', '88010000', 'Florianópolis', 'SC', 'APROVADO'),
+('09506382000', 'Cleuddônio', 'cli2@bantads.com.br', 'tads', 20000.00, 'Av. Principal, 456', '88020000', 'São José', 'SC', 'APROVADO'),
+('85733854057', 'Catianna', 'cli3@bantads.com.br', 'tads', 3000.00, 'Praça Central, 789', '88030000', 'Palhoça', 'SC', 'APROVADO'),
+('58872160006', 'Cutardo', 'cli4@bantads.com.br', 'tads', 500.00, 'Travessa Secundária, 101', '88040000', 'Biguaçu', 'SC', 'APROVADO'),
+('76179646090', 'Coândrya', 'cli5@bantads.com.br', 'tads', 1500.00, 'Alameda dos Anjos, 202', '88050000', 'Águas Mornas', 'SC', 'APROVADO');
+
 
 INSERT INTO dbContaCUD.conta (cpfCliente, nomeCliente, numConta, saldo, cpfGerente, nomeGerente, dataCriacao) VALUES
 ('12912861012', 'Catharyna', '1291', 800.00, '98574307084', 'Geniéve', '2000-01-01'),

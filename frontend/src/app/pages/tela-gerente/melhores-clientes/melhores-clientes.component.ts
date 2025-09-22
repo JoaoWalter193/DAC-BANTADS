@@ -3,6 +3,7 @@ import { Cliente, Conta, Gerente } from '../../../models';
 import { CommonModule } from '@angular/common';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 interface ClienteDashboardDTO extends Cliente {
   conta: string;
@@ -14,13 +15,12 @@ interface ClienteDashboardDTO extends Cliente {
 
 @Component({
   selector: 'app-melhores-clientes',
-  imports: [CommonModule, FormatarCpfPipe, FormsModule],
+  imports: [CommonModule, FormatarCpfPipe, FormsModule, RouterLink],
   templateUrl: './melhores-clientes.component.html',
-  styleUrl: './melhores-clientes.component.css'
+  styleUrl: './melhores-clientes.component.css',
 })
-
 export class MelhoresClientesComponent {
-clientes: ClienteDashboardDTO[] = [];
+  clientes: ClienteDashboardDTO[] = [];
   filtro: string = '';
 
   constructor() {
@@ -39,7 +39,8 @@ clientes: ClienteDashboardDTO[] = [];
     const gerente: Gerente = JSON.parse(currentUserJSON).user;
     const contas: Conta[] = JSON.parse(contasJSON);
 
-    this.clientes = (gerente.clientes || []).filter((cliente: {status: string}) => cliente.status === 'aprovado')
+    this.clientes = (gerente.clientes || [])
+      .filter((cliente: { status: string }) => cliente.status === 'aprovado')
       .map((cliente) => {
         const conta = contas.find((c) => c.cliente.cpf === cliente.cpf);
 
@@ -53,4 +54,3 @@ clientes: ClienteDashboardDTO[] = [];
       .slice(0, 3);
   }
 }
-

@@ -24,7 +24,7 @@
         <td [ngClass]="{ 'saldo-negativo': cliente.saldo < 0 }">
           {{ cliente.saldo | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"}}
         </td>
-        <td>{{ cliente.limite | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"}}</td>
+        <td>{{ calcularLimite(cliente.salario) | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"}}</td>
         <td>
           <button class="botaoDetalhes" type="button">Ver Detalhes</button>
         </td>
