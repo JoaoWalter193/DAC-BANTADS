@@ -3,6 +3,7 @@ import { Admin, Cliente, Conta, Gerente, Endereco } from '../models';
 import { TipoTransacao } from '../models/tipo-transacao.enum';
 
 const LS_CHAVE = 'contaCliente';
+const LS_CHAVE_CLIENTE = 'cliente';
 
 @Injectable({
   providedIn: 'root',
@@ -23,7 +24,7 @@ export class MockService {
         complemento: 'apto 712',
         cidade: 'Curitiba',
         estado: 'PR',
-        CEP: '80000-001',
+        CEP: '80000001',
       },
       telefone: '41999999999',
       status: 'aprovado',
@@ -43,7 +44,7 @@ export class MockService {
         complemento: 'casa',
         cidade: 'Curitiba',
         estado: 'PR',
-        CEP: '80000-002',
+        CEP: '80000002',
       },
       telefone: '41988888888',
       status: 'aprovado',
@@ -63,7 +64,7 @@ export class MockService {
         complemento: 'apto 101',
         cidade: 'Curitiba',
         estado: 'PR',
-        CEP: '80000-003',
+        CEP: '80000003',
       },
       telefone: '41977777777',
       status: 'aprovado',
@@ -83,7 +84,7 @@ export class MockService {
         complemento: 'fundos',
         cidade: 'Curitiba',
         estado: 'PR',
-        CEP: '80000-004',
+        CEP: '80000004',
       },
       telefone: '41966666666',
       status: 'aprovado',
@@ -103,7 +104,7 @@ export class MockService {
         complemento: 'bloco B',
         cidade: 'Curitiba',
         estado: 'PR',
-        CEP: '80000-005',
+        CEP: '80000005',
       },
       telefone: '41955555555',
       status: 'aprovado',
