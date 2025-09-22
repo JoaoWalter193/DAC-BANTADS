@@ -365,16 +365,27 @@ export class MockService {
   }
 
   addClienteAoGerente(cliente: Cliente) {
+    cliente.cpf = cliente.cpf.replace(/\D/g, '');
+
+    const cpfExistente =
+      this.clientes.some((c) => c.cpf === cliente.cpf) ||
+      this.gerentes.some((g) => g.clientes?.some((c) => c.cpf === cliente.cpf));
+
+    if (cpfExistente) {
+      console.warn(`CPF ${cliente.cpf} já cadastrado. Cadastro abortado.`);
+      return false;
+    }
+
     const gerente = this.getGerenteComMenosClientes();
     if (!gerente.clientes) gerente.clientes = [];
 
-    cliente.cpf = cliente.cpf.replace(/\D/g, '');
-
     this.clientes.push(cliente);
-    console.log('Cliente adicionado ao global:', this.clientes);
-
     gerente.clientes.push({ ...cliente, status: 'pendente' });
+
+    console.log('Cliente adicionado ao global:', this.clientes);
     console.log('Cliente adicionado ao gerente:', gerente);
+
+    return true;
   }
 
   getGerentes(): Gerente[] {

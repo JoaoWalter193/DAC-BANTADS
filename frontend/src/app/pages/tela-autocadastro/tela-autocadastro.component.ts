@@ -101,7 +101,6 @@ export class TelaAutocadastroComponent implements AfterViewInit {
       }
 
       const cleanedSalario = salario.toString().replace(/\D/g, '');
-
       const valorMaximo = 10000000;
 
       if (parseFloat(cleanedSalario) > valorMaximo) {
@@ -114,9 +113,7 @@ export class TelaAutocadastroComponent implements AfterViewInit {
 
   formatarCPF(event: any) {
     const control = this.cadastroForm.get('cpf');
-
     let value = event.target.value.replace(/\D/g, '');
-
     if (value.length > 11) value = value.slice(0, 11);
 
     if (value.length >= 10) {
@@ -126,72 +123,55 @@ export class TelaAutocadastroComponent implements AfterViewInit {
     } else if (value.length >= 4) {
       value = value.replace(/(\d{3})(\d{1,3})/, '$1.$2');
     }
-
     control?.setValue(value, { emitEvent: false });
   }
 
   formatarSalario(event: any) {
     const control = this.cadastroForm.get('salario');
-
     let value = event.target.value.replace(/\D/g, '');
-
     if (value.length === 0) {
       control?.setValue('', { emitEvent: false });
       return;
     }
-
     let numero = parseFloat(value) / 100;
-
     if (numero > 100000.0) {
       numero = 100000.0;
     }
-
     const partes = numero.toFixed(2).split('.');
     partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     const valorFormatado = partes.join(',');
-
     control?.setValue(valorFormatado, { emitEvent: false });
   }
 
   formatarCEP(event: any) {
     const control = this.cadastroForm.get('cep');
-
     let value = event.target.value.replace(/\D/g, '');
-
     if (value.length === 0) {
       control?.setValue('', { emitEvent: false });
       return;
     }
-
     if (value.length > 8) {
       value = value.slice(0, 8);
     }
-
     if (value.length > 5) {
       value = value.replace(/(\d{5})(\d{1,3})/, '$1-$2');
     }
-
     if (value.length === 9) {
       this.buscarEnderecoPorCEP();
     }
-
     control?.setValue(value, { emitEvent: false });
   }
 
   formatarNumero(event: any) {
     const control = this.cadastroForm.get('numero');
-
     let value = event.target.value.replace(/\D/g, '');
-
     if (value.length === 0) {
-      control?.setValue('', { emitEvent: false });
+      control?.setValue(value, { emitEvent: false });
       return;
     }
-
     if (value.length > 6) {
       value = value.slice(0, 6);
     }
-
     control?.setValue(value, { emitEvent: false });
   }
 
@@ -205,14 +185,6 @@ export class TelaAutocadastroComponent implements AfterViewInit {
     }
 
     const cpfNumerico = this.cadastroForm.get('cpf')?.value.replace(/\D/g, '');
-
-    if (this.CPFJaCadastrado(cpfNumerico)) {
-      this.mostrarMensagem(
-        'CPF já cadastrado. Não é possível fazer um novo cadastro.',
-        'erro'
-      );
-      return;
-    }
 
     this.carregando = true;
 
@@ -239,14 +211,23 @@ export class TelaAutocadastroComponent implements AfterViewInit {
         senha: '',
       };
 
-      this.mockService.addClienteAoGerente(clienteCompleto);
+      // usa o retorno para verificar se já existe
+      const sucesso = this.mockService.addClienteAoGerente(clienteCompleto);
+
       this.carregando = false;
+
+      if (!sucesso) {
+        this.mostrarMensagem(
+          'CPF já cadastrado. Não é possível fazer um novo cadastro.',
+          'erro'
+        );
+        return;
+      }
 
       this.mostrarMensagem(
         'Solicitação de cadastro enviada com sucesso! Aguarde a aprovação do gerente.',
         'sucesso'
       );
-
       this.limparFormulario();
     }, 1500);
   }
@@ -254,21 +235,16 @@ export class TelaAutocadastroComponent implements AfterViewInit {
   validarCPF() {
     return (control: AbstractControl): ValidationErrors | null => {
       const cpf = (control.value || '').replace(/\D/g, '');
-
       if (cpf.length !== 11) return { cpfInvalido: true };
       if (/^(\d)\1{10}$/.test(cpf)) return { cpfInvalido: true };
 
       let soma1 = 0;
-      for (let i = 0; i < 9; i++) {
-        soma1 += parseInt(cpf.charAt(i)) * (10 - i);
-      }
+      for (let i = 0; i < 9; i++) soma1 += parseInt(cpf.charAt(i)) * (10 - i);
       let resto1 = soma1 % 11;
       let d1 = resto1 < 2 ? 0 : 11 - resto1;
 
       let soma2 = 0;
-      for (let i = 0; i < 9; i++) {
-        soma2 += parseInt(cpf.charAt(i)) * (11 - i);
-      }
+      for (let i = 0; i < 9; i++) soma2 += parseInt(cpf.charAt(i)) * (11 - i);
       soma2 += d1 * 2;
       let resto2 = soma2 % 11;
       let d2 = resto2 < 2 ? 0 : 11 - resto2;
@@ -276,7 +252,6 @@ export class TelaAutocadastroComponent implements AfterViewInit {
       if (parseInt(cpf.charAt(9)) !== d1 || parseInt(cpf.charAt(10)) !== d2) {
         return { cpfInvalido: true };
       }
-
       return null;
     };
   }
@@ -311,14 +286,9 @@ export class TelaAutocadastroComponent implements AfterViewInit {
     return re.test(email);
   }
 
-  CPFJaCadastrado(cpf: string): boolean {
-    return this.mockService.getClienteByCpf(cpf) !== null;
-  }
-
   mostrarMensagem(mensagem: string, tipo: 'sucesso' | 'erro'): void {
     this.mensagem = mensagem;
     this.tipoMensagem = tipo;
-
     setTimeout(() => {
       this.mensagem = '';
       this.tipoMensagem = '';
@@ -342,12 +312,12 @@ export class TelaAutocadastroComponent implements AfterViewInit {
         estado: '',
       },
     };
+    this.cadastroForm.reset();
   }
 
   formatarTelefone(event: Event) {
     const input = event.target as HTMLInputElement;
     let value = input.value.replace(/\D/g, '');
-
     if (value.length > 11) value = value.slice(0, 11);
 
     if (value.length <= 2) {
@@ -359,35 +329,28 @@ export class TelaAutocadastroComponent implements AfterViewInit {
     } else {
       value = value.replace(/^(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
     }
-
     this.cadastroForm.get('telefone')?.setValue(value, { emitEvent: false });
   }
 
   async buscarEnderecoPorCEP() {
     const cep = this.cadastroForm.get('cep')?.value.replace(/\D/g, '');
-
     if (cep.length !== 8) {
       this.mostrarMensagem('CEP inválido. Deve conter 8 dígitos.', 'erro');
       return;
     }
 
     this.carregando = true;
-
     fetch(`https://viacep.com.br/ws/${cep}/json/`)
       .then((response) => {
-        if (!response.ok) {
-          throw new Error('Erro na resposta da API');
-        }
+        if (!response.ok) throw new Error('Erro na resposta da API');
         return response.json();
       })
       .then((data) => {
         this.carregando = false;
-
         if (data.erro) {
           this.mostrarMensagem('CEP não encontrado.', 'erro');
           return;
         }
-
         const logradouroCompleto = data.logradouro;
         const partesLogradouro = logradouroCompleto.split(' ');
         const tipo = partesLogradouro[0];
@@ -402,7 +365,6 @@ export class TelaAutocadastroComponent implements AfterViewInit {
           'Viela',
           'Largo',
         ];
-
         const tipoValido = tiposValidos.includes(tipo) ? tipo : 'Logradouro';
         const nomeLogradouro = partesLogradouro.slice(1).join(' ');
 
