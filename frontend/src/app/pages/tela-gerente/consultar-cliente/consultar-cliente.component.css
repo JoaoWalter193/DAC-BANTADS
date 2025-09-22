@@ -1,89 +1,80 @@
 .background {
-  background-color: #eeeff1;
-  min-height: 100vh;
-  padding: 2rem 1rem;
+    padding: 20px;
 }
 
-.clientes-dashboard {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 1rem;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    overflow-x: auto;
-    font-family: Arial, sans-serif;
+.voltar {
+    margin-bottom: 15px;
 }
 
-.filtros {
-    margin-bottom: 1rem;
-    display: flex;
-    justify-content: flex-end;
+.botaoVoltar {
+    padding: 6px 12px;
+    background: #ccc;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
 }
 
-.filtros input {
-    padding: 0.5rem 0.75rem;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 0.95rem;
+h1 {
+    margin-bottom: 20px;
 }
 
-/* Tabela */
-.clientes-dashboard table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.95rem;
+.consulta {
+    margin-bottom: 20px;
 }
 
-.clientes-dashboard thead {
-    background-color: #2c3e50;
+.consulta input {
+    padding: 6px;
+    margin-right: 10px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+}
+
+.consulta button {
+    padding: 6px 12px;
+    background: #007bff;
     color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
 }
 
-.clientes-dashboard th,
-.clientes-dashboard td {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-    white-space: normal;
-    word-break: break-word;
+.cliente-detalhes {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #f9f9f9;
 }
 
-.clientes-dashboard tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-.clientes-dashboard tbody tr:hover {
-    background-color: #f1f1f1;
-}
-
-/* Valores */
-.clientes-dashboard td.saldo-negativo {
-    color: #e74c3c;
+.saldo-negativo {
+    color: red;
     font-weight: bold;
 }
 
-/* Célula de vazio */
-.clientes-dashboard td[colspan] {
-    text-align: center;
-    font-style: italic;
-    color: #777;
-    padding: 1.5rem;
+.erro {
+    margin-top: 20px;
+    color: red;
+    font-weight: bold;
 }
 
-/* Botão Detalhes */
-.botaoDetalhes {
-    background-color: #3498db;
-    color: #fff;
-    padding: 0.5rem 1rem;
-    border: none;
+.sugestoes {
+    list-style: none;
+    margin: 0.5rem 0;
+    padding: 0;
+    border: 1px solid #ccc;
     border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: background 0.2s ease-in-out;
+    max-width: 400px;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    position: absolute;
+    z-index: 10;
 }
 
-.botaoDetalhes:hover {
-    background-color: #2980b9;
+.sugestoes li {
+    padding: 0.5rem;
+    cursor: pointer;
+}
+
+.sugestoes li:hover {
+    background-color: #f1f1f1;
 }
