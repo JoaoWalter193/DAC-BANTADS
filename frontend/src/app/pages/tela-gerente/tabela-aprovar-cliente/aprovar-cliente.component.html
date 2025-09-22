@@ -19,7 +19,9 @@
         <td>{{ cliente.email }}</td>
         <td>
           <button class="botaoDetalhes" (click)="aprovar(cliente.cpf)" type="button">Aprovar</button>
-          <button class="botaoDetalhes" (click)="rejeitar(cliente.cpf)" type="button">Reprovar</button>
+          <button class="botaoDetalhes" (click)="abrirRejeicao(cliente)" type="button">
+            Reprovar
+          </button>
         </td>
       </tr>
       <tr *ngIf="clientes.length === 0">
@@ -29,3 +31,21 @@
   </table>
 </div>
 
+<div *ngIf="clienteRejeicao" class="modal">
+  <div class="modal-content">
+    <h3>Motivo da Rejeição</h3>
+    <textarea [(ngModel)]="motivoRejeicao"></textarea>
+    <br />
+    <button (click)="confirmarRejeicao()">Confirmar</button>
+    <button (click)="cancelarRejeicao()">Cancelar</button>
+  </div>
+</div>
+
+<!-- Mensagem de envio de email -->
+<div *ngIf="emailStatus" [ngClass]="{
+       'text-blue-600': emailStatus === 'enviando',
+       'text-green-600': emailStatus === 'sucesso',
+       'text-red-600': emailStatus === 'erro'
+     }">
+  {{ emailMessage }}
+</div>
