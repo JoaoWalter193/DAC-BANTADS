@@ -91,6 +91,19 @@ services:
       env_file:
         - ./auth.env
 
+  ms-saga:
+    image: maven:3.8.4-openjdk-17-slim
+    depends_on:
+      - rabbitmq
+    working_dir: /app
+    command: "mvn spring-boot:run -Dspring-boot.run.jvmArguments='-Dspring.devtools.restart.enabled=true -Dspring-boot.run.profiles=dev'"
+    volumes:
+      - ./microservicos/msSaga/:/app 
+      - ~/.m2:/root/.m2
+    ports:
+      - 8089:8080
+
+
 # RABBITMQ
       
   rabbitmq:

@@ -1,5 +1,7 @@
 /app/src/main/java/msauth/ms_auth/MsAuthApplication.java
+/app/src/main/java/msauth/ms_auth/config/RabbitMQConnectionTest.java
 /app/src/main/java/msauth/ms_auth/config/SecurityConfig.java
+/app/src/main/java/msauth/ms_auth/consumer/RabbitMQConsumer.java
 /app/src/main/java/msauth/ms_auth/entities/Role.java
 /app/src/main/java/msauth/ms_auth/entities/UsuarioEntity.java
 /app/src/main/java/msauth/ms_auth/repositories/UsuarioRepository.java

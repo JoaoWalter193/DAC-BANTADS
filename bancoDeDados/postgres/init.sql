@@ -60,6 +60,7 @@ cpfCliente VARCHAR(11),
 nomeCliente VARCHAR(100),
 numConta VARCHAR(4),
 saldo DECIMAL(8,2),
+limite DECIMAL(8,2),
 cpfGerente VARCHAR(11),
 nomeGerente VARCHAR(100),
 dataCriacao DATE
