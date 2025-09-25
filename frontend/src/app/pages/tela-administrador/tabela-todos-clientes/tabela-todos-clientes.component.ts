@@ -5,6 +5,7 @@ import { Conta } from '../../../models/conta.interface';
 import { Gerente } from '../../../models/gerente.interface';
 import { Cliente } from '../../../models/cliente.interface';
 import { RefreshService } from '../../../services/refresh.service';
+import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 
 interface ClienteView {
   nome: string;
@@ -23,7 +24,7 @@ interface ClienteView {
   templateUrl: './tabela-todos-clientes.component.html',
   styleUrls: ['./tabela-todos-clientes.component.css'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormatarCpfPipe],
 })
 export class TabelaTodosClientesComponent {
   clientes: ClienteView[] = [];

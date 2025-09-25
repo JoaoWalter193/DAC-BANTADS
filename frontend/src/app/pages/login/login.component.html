@@ -1,49 +1,55 @@
+<!-- HTML -->
 <div class="tela-login">
-  <div class="login-image">
-
+  <!-- Fundo azul com formas -->
+  <div class="login-bg">
+    <!-- Formas geométricas -->
+    <div class="formas"></div>
+    <!-- Logo -->
+    <div class="logo-container">
+      <img src="logo-din-din.webp" alt="Logo" />
+    </div>
   </div>
 
-  <div class="login-container">
-    <h2><b>Acesse sua conta:</b></h2>
+  <!-- Retângulo branco com canto superior esquerdo arredondado -->
+  <div class="login-white">
+    <div class="login-container">
+      <h2><b>Acesse sua conta:</b></h2>
 
-    <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="account" required>
+        </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Email</mat-label>
-        <input matInput type="email" formControlName="account" required>
-      </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Senha</mat-label>
+          <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" required>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Senha</mat-label>
-        <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" required>
+          <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
+            <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
 
-        <!-- esconder/mostrar senha -->
-        <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
-          <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+            A senha é obrigatória.
+          </mat-error>
+        </mat-form-field>
+
+        <button mat-flat-button type="submit" id="login-button" [disabled]="loginForm.invalid"
+          [ngClass]="{'ativo': loginForm.valid, 'inativo': loginForm.invalid}">
+          Acessar Conta
         </button>
+      </form>
 
-        <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
-          A senha é obrigatória.
-        </mat-error>
-      </mat-form-field>
-
-      <button mat-flat-button color="primary" type="submit" [disabled]="loginForm.invalid">
-        Acessar Conta
-      </button>
-    </form>
-
-    <div class="to-cadastro">
-      <span>Não tem uma conta? <a routerLink="/cadastro">Abra já a sua!</a></span>
+      <div class="to-cadastro">
+        <span>Não tem uma conta? <a routerLink="/cadastro">Abra já a sua!</a></span>
+      </div>
+      <!--
+      <div style="margin-top: 20px;">
+        <button type="button" (click)="resetMockData()">
+          <strong>PIPIPI RESET</strong>
+        </button>
+      </div>
+      -->
     </div>
-
-    <!-- botao para reset do mock para testes -->
-    <div style="margin-top: 20px;">
-      <button type="button" (click)="resetMockData()">
-        <strong>PIPIPI RESET</strong>
-      </button>
-    </div>
-  </div>
-
-  <div class="ondas">
   </div>
 </div>

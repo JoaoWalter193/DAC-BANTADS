@@ -1,23 +1,24 @@
 .clientes-dashboard {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1rem;
-  background: #fff;
+  padding: 1.5rem;
+  background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   overflow-x: auto;
+  font-family: 'Poppins', sans-serif;
 }
 
-/* Tabela */
 .clientes-dashboard table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem;
+  min-width: 700px;
 }
 
 .clientes-dashboard thead {
-  background-color: #2c3e50;
-  color: #fff;
+  background-color: #0c2464;
+  color: #EDE654;
 }
 
 .clientes-dashboard th,
@@ -35,7 +36,6 @@
   background-color: #f1f1f1;
 }
 
-/* Célula de vazio */
 .clientes-dashboard td[colspan] {
   text-align: center;
   font-style: italic;
@@ -43,8 +43,8 @@
   padding: 1.5rem;
 }
 
-/* Botões */
-.botaoDetalhes {
+.botaoAprovar,
+.botaoReprovar {
   padding: 0.5rem 1rem;
   margin-right: 0.5rem;
   border: none;
@@ -55,44 +55,38 @@
   transition: background 0.2s ease-in-out;
 }
 
-/* Estilos específicos */
-.botaoDetalhes:first-child {
+.botaoAprovar {
   background-color: #27ae60;
   color: #fff;
 }
 
-.botaoDetalhes:first-child:hover {
+.botaoAprovar:hover {
   background-color: #219150;
 }
 
-.botaoDetalhes:last-child {
+.botaoReprovar {
   background-color: #e74c3c;
   color: #fff;
 }
 
-.botaoDetalhes:last-child:hover {
+.botaoReprovar:hover {
   background-color: #c0392b;
 }
 
-/* Overlay do modal (escurece e desfoca o fundo) */
 .modal {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(44, 62, 80, 0.6);
-  /* escuro translúcido */
+  background: rgba(12, 36, 100, 0.5);
   backdrop-filter: blur(4px);
-  /* desfoca conteúdo atrás */
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
-  /* garante que fica acima de tudo */
 }
 
-/* Conteúdo do modal */
 .modal-content {
   background: #fff;
   border-radius: 12px;
@@ -103,16 +97,14 @@
   animation: aparecer 0.25s ease-out;
 }
 
-/* Título */
 .modal-content h3 {
   margin-top: 0;
   margin-bottom: 1rem;
   font-size: 1.3rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: #0c2464;
 }
 
-/* Textarea */
 .modal-content textarea {
   width: 100%;
   min-height: 100px;
@@ -127,12 +119,11 @@
 }
 
 .modal-content textarea:focus {
-  border-color: #2c3e50;
+  border-color: #0c2464;
   outline: none;
 }
 
-/* Botões no modal */
-.modal-content button {
+.modal-buttons button {
   padding: 0.6rem 1.2rem;
   border: none;
   border-radius: 6px;
@@ -143,26 +134,25 @@
   margin-right: 0.5rem;
 }
 
-.modal-content button:first-of-type {
+.modal-buttons button:first-of-type {
   background-color: #e74c3c;
   color: #fff;
 }
 
-.modal-content button:first-of-type:hover {
+.modal-buttons button:first-of-type:hover {
   background-color: #c0392b;
 }
 
-.modal-content button:last-of-type {
+.modal-buttons button:last-of-type {
   background-color: #bdc3c7;
   color: #2c3e50;
 }
 
-.modal-content button:last-of-type:hover {
+.modal-buttons button:last-of-type:hover {
   background-color: #95a5a6;
   color: #fff;
 }
 
-/* Animação de entrada */
 @keyframes aparecer {
   from {
     transform: translateY(-20px);
@@ -173,4 +163,21 @@
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+.email-status {
+  margin-top: 1rem;
+  font-weight: 500;
+}
+
+.email-status.enviando {
+  color: #0c2464;
+}
+
+.email-status.sucesso {
+  color: #27ae60;
+}
+
+.email-status.erro {
+  color: #e74c3c;
 }

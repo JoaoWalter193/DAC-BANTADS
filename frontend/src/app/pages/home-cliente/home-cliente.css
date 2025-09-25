@@ -1,152 +1,157 @@
-/* Section - container */
-
-
-/* Botões */
-.voltar-btn,
-.enviar-btn,
-.valor-input {
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  background-color: transparent;
-}
-
-.enviar-btn {
-  color: #fff;
-  font-weight: 500;
-  background-color: rgba(47, 89, 85, 1);
-  padding-inline: 1rem;
-  padding-block: 0.5rem;
-  border-radius: 0.25rem;
-}
-
-.enviar-btn:hover {
-  background-color: rgba(47, 89, 85, 0.8);
-  transition: 0.3s ease;
-}
-
-/* Geral */
-.section-content,
-.content-operacoes,
-.campos-operacao,
-.saldo-content,
-.info-extrato,
-.info-saldo,
-.op,
-.botao-extrato,
-.info-perfil  {
+.tela-conta {
+  background-color: #0c2464;
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  font-size: 1rem;
-}
-
-.saldo-content,
-.info-extrato,
-.info-perfil,
-.op,
-.botao-extrato {
-  background-color: #ffffff;
-  border-radius: 0.25rem;
-  padding-inline: 1rem;
-  padding-block: 1rem;
-  width: 400px;
-}
-
-.info-saldo,
-.info-extrato,
-.campos-operacao,
-.op,
-.botao-extrato,
-.info-perfil  {
   flex-direction: row;
   align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2rem;
+  font-family: 'Poppins', sans-serif;
+  height: 93.4vh;
 }
 
-.info-extrato {
-  flex-wrap: wrap;
+/* Cards padronizados */
+.card {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  min-width: 450px;
+  min-height: 300px;
+  height: max-content;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
 }
 
-.botao-extrato {
-  padding: 0.25rem;
-  cursor: pointer;
-  border: none;
-  transition: background 0.3s ease;
+.card h2 {
+  font-size: 22px;
+  color: #0c2464;
+  font-weight: 600;
+  margin-bottom: 1rem;
 }
 
-.op {
-  justify-content: space-between;
-  cursor: pointer;
-  border: none;
-  transition: background 0.3s ease;
+/* Saldo */
+.saldo-container,
+.extrato-container,
+.perfil-container,
+.operacao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.operacao,
-.info-extrato,
-.saldo-content,
-.info-perfil {
-  width: 400px;
-  overflow: hidden;
-  transition: max-height 0.5s ease-in-out, transform 0.2s ease-in-out;
-  background: #fff;
-  border-radius: 0.25rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-a {
-  color: black;
+.btn-perfil {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #EDE654;
+  border-radius: 8px;
+  font-weight: 500;
+  color: #0c2464;
   text-decoration: none;
+  width: 400px;
+  cursor: pointer;
+  transition: background 0.3s ease;
 }
 
-/* Operações */
+.btn-perfil:hover {
+  background-color: #dada4f;
+}
+
+.btn-perfil mat-icon {
+  font-size: 24px;
+}
+
+.operacao {
+  padding-bottom: 10px;
+}
+
+.info-saldo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.botao-extrato,
+.btn-op {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #EDE654;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.botao-extrato:hover,
+.btn-op:hover {
+  background-color: #dada4f;
+}
+
 .campos-operacao {
-  padding-inline: 1rem;
-  padding-bottom: 2rem;
-  flex-wrap: wrap;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
 }
 
-.operacaoAtiva {
-  max-height: 200px;
+.operacao-ativa {
   transform: scale(1.02);
 }
 
-.operacaoAtiva .campos-operacao {
-  opacity: 1;
+.operacao-ativa .campos-operacao {
   max-height: 500px;
-  padding-top: 0.5rem;
+  opacity: 1;
 }
 
-.operacaoAtiva mat-icon {
-  transform: rotate(90deg);
-}
-
-mat-icon {
-  transition: transform 0.3s ease;
-}
-
-/* Operações - input */
 .valor-input {
-  padding-inline: 1rem;
-  padding-block: 0.5rem;
-  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
   border: 1px solid #ccc;
+  font-size: 1rem;
 }
 
 .valor-input:focus {
-  border: 1px solid rgba(47, 89, 85, 1);
   outline: none;
+  border: 1px solid #EDE654;
+  box-shadow: 0 0 0 2px rgba(237, 230, 84, 0.3);
 }
 
-/* alertas de sucesso ou erro */
+.btn-enviar {
+  padding: 0.5rem 1rem;
+  background-color: #2f5955;
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-enviar:hover:not(:disabled) {
+  background-color: #264f4b;
+}
+
+.btn-enviar:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Mensagens */
 .mensagem-operacao {
-  width: 100%;
-  padding: 10px;
-  margin-top: 15px;
-  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
   text-align: center;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 0.9rem;
 }
 
 .mensagem-operacao.sucesso {
@@ -159,4 +164,43 @@ mat-icon {
   background-color: #f8d7da;
   color: #721c24;
   border: 1px solid #f5c6cb;
+}
+
+/* Ícones */
+mat-icon {
+  font-size: 24px;
+  transition: transform 0.3s ease;
+}
+
+.operacao-ativa mat-icon {
+  transform: rotate(90deg);
+}
+
+/* Links */
+a {
+  color: #0c2464;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Responsividade */
+@media (max-width: 500px) {
+  .card {
+    width: 100%;
+    padding: 1.5rem;
+  }
+
+  .botao-extrato,
+  .btn-op,
+  .btn-enviar {
+    font-size: 0.9rem;
+  }
+
+  .valor-input {
+    font-size: 0.9rem;
+  }
 }

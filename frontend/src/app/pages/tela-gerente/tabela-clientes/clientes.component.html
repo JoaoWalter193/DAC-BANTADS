@@ -18,7 +18,7 @@
     <tbody>
       <tr *ngFor="let cliente of clientesFiltrados">
         <td>{{ cliente.nome }}</td>
-        <td>{{ cliente.cpf | formatarCpf}}</td>
+        <td>{{ cliente.cpf | formatarCpf }}</td>
         <td>{{ cliente.endereco.cidade }}</td>
         <td>{{ cliente.endereco.estado }}</td>
         <td [ngClass]="{ 'saldo-negativo': cliente.saldo < 0 }">
