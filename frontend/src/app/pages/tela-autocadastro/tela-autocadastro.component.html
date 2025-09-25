@@ -1,127 +1,40 @@
 <div class="tela-cadastro">
-    <div class="cadastro-esquerda">
-        <div class="formas"></div>
-        <div class="logo-container">
-            <img src="logo-din-din.webp" alt="Logo" />
-        </div>
-        <div class="textos-esquerda">
-            <p>Já tem um cadastro? <a routerLink="/">Faça login.</a></p>
-        </div><div id="background">
-    <div id="container">
-        <div class="subcontainer" id="esquerda">
-            <div id="topo">
-
-            </div>
-
-            <div id="dizer">
-                <div id="titulo">
-                    <h1>Cadastro</h1>
-                </div>
-
-                <div id="descricao">
-                    <p>Já tem um cadastro?</p>
-                    <a routerLink="/">Faça login.</a>
-                </div>
-            </div>
-        </div>
-
-        <div id="centro">
-
-        </div>
-
-        <div class="subcontainer" id="direita">
-            <div *ngIf="mensagem" [class]="tipoMensagem === 'sucesso' ? 'mensagem-sucesso' : 'mensagem-erro'"
-                class="mensagem">
-                {{ mensagem }}
-            </div>
-
-            <form id="cadastro" [formGroup]="cadastroForm" (ngSubmit)="onSubmit()">
-                <label>Nome Completo *</label>
-                <input type="text" formControlName="nome" name="nome" id="nome" class="input" required>
-
-                <label>E-mail *</label>
-                <input type="email" formControlName="email" name="email" id="email" class="input" required>
-
-                <label>Telefone *</label>
-                <input type="text" formControlName="telefone" name="telefone" id="telefone" class="input" required
-                    placeholder="(00) 00000-0000" (input)="formatarTelefone($event)" maxlength="15">
-
-                <label>CPF *</label>
-                <input type="text" formControlName="cpf" name="cpf" id="cpf" class="input" (input)="formatarCPF($event)"
-                    required placeholder="000.000.000-00" maxlength="14">
-
-                <label>Salário *</label>
-                <input type="text" formControlName="salario" name="salario" id="salario" class="input"
-                    (input)="formatarSalario($event)" required min="0">
-
-                <label>CEP *</label>
-                <input type="text" formControlName="cep" name="CEP" id="cep" class="input" (input)="formatarCEP($event)"
-                    required placeholder="00000-000" maxlength="9">
-
-                <label>Tipo *</label>
-                <input type="text" formControlName="tipo" name="tipo" id="tipo" class="input" required>
-
-                <label>Logradouro *</label>
-                <input type="text" formControlName="logradouro" name="logradouro" id="logradouro" class="input"
-                    required>
-
-                <label>Cidade *</label>
-                <input type="text" formControlName="cidade" name="cidade" id="cidade" class="input" required>
-
-                <label>Estado *</label>
-                <input type="text" formControlName="estado" name="estado" id="estado" class="input" required
-                    maxlength="2" placeholder="SP">
-
-                <label>Número *</label>
-                <input type="text" formControlName="numero" name="numero" id="numero" class="input" required min="0"
-                    (input)="formatarNumero($event)">
-
-                <label>Complemento</label>
-                <input type="text" formControlName="complemento" name="complemento" id="complemento" class="input">
-            </form>
-
-            <button id="botao" (click)="onSubmit()" [disabled]="carregando">
-                {{ carregando ? 'Processando...' : 'Cadastrar' }}
-                <span *ngIf="carregando" class="loading"></span>
-            </button>
-        </div>
+  <div class="cadastro-esquerda">
+    <div class="formas"></div>
+    <div class="logo-container">
+      <img src="logo-din-din.webp" alt="Logo" />
     </div>
-</div>
+    <div class="textos-esquerda">
+      <p>Já tem um cadastro? <a routerLink="/">Faça login.</a></p>
     </div>
+  </div>
 
-    <div class="cadastro-direita">
-        <div class="cadastro-container">
-            <h2>Cadastro</h2>
+  <div class="cadastro-direita">
+    <div class="cadastro-container">
+      <h2>Cadastro</h2>
 
-            <div *ngIf="mensagem" [class]="tipoMensagem === 'sucesso' ? 'mensagem-sucesso' : 'mensagem-erro'"
-                class="mensagem">
-                {{ mensagem }}
-            </div>
+      <div *ngIf="mensagem" [class]="tipoMensagem === 'sucesso' ? 'mensagem-sucesso' : 'mensagem-erro'" class="mensagem">
+        {{ mensagem }}
+      </div>
 
-            <form [formGroup]="cadastroForm" (ngSubmit)="onSubmit()">
-                <input type="text" formControlName="nome" placeholder="Nome Completo *" required>
-                <input type="email" formControlName="email" placeholder="E-mail *" required>
-                <input type="text" formControlName="telefone" placeholder="Telefone *"
-                    (input)="formatarTelefone($event)" maxlength="15" required>
-                <input type="text" formControlName="cpf" placeholder="CPF *" (input)="formatarCPF($event)"
-                    maxlength="14" required>
-                <input type="text" formControlName="salario" placeholder="Salário *" (input)="formatarSalario($event)"
-                    required>
-                <input type="text" formControlName="cep" placeholder="CEP *" (input)="formatarCEP($event)" maxlength="9"
-                    required>
-                <input type="text" formControlName="tipo" placeholder="Tipo *" required>
-                <input type="text" formControlName="logradouro" placeholder="Logradouro *" required>
-                <input type="text" formControlName="cidade" placeholder="Cidade *" required>
-                <input type="text" formControlName="estado" placeholder="Estado *" maxlength="2" required>
-                <input type="text" formControlName="numero" placeholder="Número *" (input)="formatarNumero($event)"
-                    required>
-                <input type="text" formControlName="complemento" placeholder="Complemento">
-                <button type="submit" [disabled]="carregando"
-                    [ngClass]="{'ativo': cadastroForm.valid, 'inativo': cadastroForm.invalid}">
-                    {{ carregando ? 'Processando...' : 'Cadastrar' }}
-                    <span *ngIf="carregando" class="loading"></span>
-                </button>
-            </form>
-        </div>
+      <form [formGroup]="cadastroForm" (ngSubmit)="onSubmit()">
+        <input type="text" formControlName="nome" placeholder="Nome Completo *" required>
+        <input type="email" formControlName="email" placeholder="E-mail *" required>
+        <input type="text" formControlName="telefone" placeholder="Telefone *" (input)="formatarTelefone($event)" maxlength="15" required>
+        <input type="text" formControlName="cpf" placeholder="CPF *" (input)="formatarCPF($event)" maxlength="14" required>
+        <input type="text" formControlName="salario" placeholder="Salário *" (input)="formatarSalario($event)" required>
+        <input type="text" formControlName="cep" placeholder="CEP *" (input)="formatarCEP($event)" maxlength="9" required>
+        <input type="text" formControlName="tipo" placeholder="Tipo *" required>
+        <input type="text" formControlName="logradouro" placeholder="Logradouro *" required>
+        <input type="text" formControlName="cidade" placeholder="Cidade *" required>
+        <input type="text" formControlName="estado" placeholder="Estado *" maxlength="2" required>
+        <input type="text" formControlName="numero" placeholder="Número *" (input)="formatarNumero($event)" required>
+        <input type="text" formControlName="complemento" placeholder="Complemento">
+        <button type="submit" [disabled]="carregando" [ngClass]="{'ativo': cadastroForm.valid, 'inativo': cadastroForm.invalid}">
+          {{ carregando ? 'Processando...' : 'Cadastrar' }}
+          <span *ngIf="carregando" class="loading"></span>
+        </button>
+      </form>
     </div>
+  </div>
 </div>
