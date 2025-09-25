@@ -79,6 +79,16 @@ export class GerentesComponent {
       (prev.clientes?.length ?? 0) <= (curr.clientes?.length ?? 0) ? prev : curr
     );
 
+    const confirmacao = confirm(
+      `Tem certeza que deseja excluir o gerente ${gerente.nome}?\n\n` +
+        `Ele possui ${contasDoGerente.length} clientes.\n` +
+        `Esses clientes serão transferidos para o gerente ${gerenteDestino.nome}.`
+    );
+
+    if (!confirmacao) {
+      return; // usuário cancelou
+    }
+
     // Transferir as contas
     const contasAtualizadas = contas.map((c) =>
       c.nomeGerente === gerente.nome
