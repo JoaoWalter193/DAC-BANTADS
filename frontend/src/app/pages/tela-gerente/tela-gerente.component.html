@@ -1,16 +1,23 @@
-<section class="container">
-    <div class="section-links"> 
-        <a routerLink="melhores-clientes">Melhores clientes</a>
-        <a routerLink="consultar-cliente">Consultar clientes</a>
-    </div>
+<section class="tela-gerente">
+    <div class="gerente-header">
         <h2>Painel do Gerente</h2>
-    <div class="section-content">
-        <div class="clientes-dashboard">
-            <h3>Clientes para aprovação</h3>
-            <app-aprovar-cliente />
+        <div class="section-links">
+            <a routerLink="melhores-clientes">Melhores clientes</a>
+            <a routerLink="consultar-cliente">Consultar clientes</a>
+        </div>
+    </div>
 
-            <h3>Todos Clientes</h3>
-            <app-clientes></app-clientes>
+    <div class="gerente-content">
+        <div class="clientes-dashboard">
+            <div class="card-dashboard">
+                <h3>Clientes para aprovação</h3>
+                <app-aprovar-cliente></app-aprovar-cliente>
+            </div>
+
+            <div class="card-dashboard">
+                <h3>Todos Clientes</h3>
+                <app-clientes></app-clientes>
+            </div>
         </div>
     </div>
 </section>

@@ -1,35 +1,40 @@
-<div class="background">
-  <div class="voltar">
-    <button routerLink="/tela-gerente" class="botaoVoltar" type="button">Voltar</button>
+<section class="tela-gerente">
+  <div class="gerente-header">
+    <h2>Melhores Clientes</h2>
+    <div class="section-links">
+      <a routerLink="/tela-gerente">Voltar</a>
+    </div>
   </div>
 
-  <h1>Melhores Clientes</h1>
-
-  <div class="clientes-dashboard">
-    <table>
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>CPF</th>
-          <th>Cidade</th>
-          <th>Estado</th>
-          <th>Saldo</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let cliente of clientes">
-          <td>{{ cliente.nome }}</td>
-          <td>{{ cliente.cpf | formatarCpf}}</td>
-          <td>{{ cliente.endereco.cidade }}</td>
-          <td>{{ cliente.endereco.estado }}</td>
-          <td [ngClass]="{ 'saldo-negativo': cliente.saldo < 0 }">
-            {{ cliente.saldo | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"}}
-          </td>
-        </tr>
-        <tr *ngIf="clientes.length === 0">
-          <td colspan="7">Nenhum cliente encontrado.</td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="gerente-content">
+    <div class="clientes-dashboard">
+      <div class="card-dashboard">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>CPF</th>
+              <th>Cidade</th>
+              <th>Estado</th>
+              <th>Saldo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cliente of clientes">
+              <td>{{ cliente.nome }}</td>
+              <td>{{ cliente.cpf | formatarCpf}}</td>
+              <td>{{ cliente.endereco.cidade }}</td>
+              <td>{{ cliente.endereco.estado }}</td>
+              <td [ngClass]="{ 'saldo-negativo': cliente.saldo < 0, 'saldo-positivo': cliente.saldo >= 0 }">
+                {{ cliente.saldo | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"}}
+              </td>
+            </tr>
+            <tr *ngIf="clientes.length === 0">
+              <td colspan="5">Nenhum cliente encontrado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
-</div>
+</section>
