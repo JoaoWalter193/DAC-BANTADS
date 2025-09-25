@@ -1,34 +1,59 @@
+/* ===== Fundo da Página ===== */
 .background {
   background-color: #eeeff1;
   min-height: 100vh;
   padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.clientes-dashboard {
+/* ===== Botão Voltar ===== */
+.voltar {
+  width: 100%;
   max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.botaoVoltar {
+  background-color: #3498db;
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background 0.2s ease-in-out;
+}
+
+.botaoVoltar:hover {
+  background-color: #2980b9;
+}
+
+/* ===== Título Principal ===== */
+h1 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+  text-align: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ===== Container da Tabela ===== */
+.clientes-dashboard {
+  width: 100%;
+  max-width: 1200px;
+  padding: 1.5rem;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   overflow-x: auto;
-  font-family: Arial, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.filtros {
-  margin-bottom: 1rem;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.filtros input {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 0.95rem;
-}
-
-/* Tabela */
+/* ===== Tabela ===== */
 .clientes-dashboard table {
   width: 100%;
   border-collapse: collapse;
@@ -42,28 +67,43 @@
 
 .clientes-dashboard th,
 .clientes-dashboard td {
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1rem;
   text-align: left;
   border-bottom: 1px solid #ddd;
-  white-space: normal;
-  word-break: break-word;
+  white-space: nowrap;
 }
 
+.clientes-dashboard th {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.clientes-dashboard td {
+  color: #333;
+}
+
+/* Linhas alternadas e hover */
 .clientes-dashboard tbody tr:nth-child(even) {
   background-color: #f9f9f9;
 }
 
 .clientes-dashboard tbody tr:hover {
   background-color: #f1f1f1;
+  transition: background 0.2s ease-in-out;
 }
 
-/* Valores */
+/* ===== Valores de Saldo ===== */
 .clientes-dashboard td.saldo-negativo {
   color: #e74c3c;
   font-weight: bold;
 }
 
-/* Célula de vazio */
+.clientes-dashboard td:not(.saldo-negativo):last-child {
+  color: #27ae60;
+  font-weight: 500;
+}
+
+/* ===== Linha de Nenhum Resultado ===== */
 .clientes-dashboard td[colspan] {
   text-align: center;
   font-style: italic;

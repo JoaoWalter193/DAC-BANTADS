@@ -1,45 +1,50 @@
 <div class="background">
     <div class="voltar">
-        <button routerLink="/tela-gerente" class="botaoVoltar" type="button">Voltar</button>
+        <button routerLink="/tela-gerente" class="botaoVoltar" type="button">
+            Voltar
+        </button>
     </div>
 
-    <h1>Consultar Clientes</h1>
+    <h1>Consultar Cliente</h1>
 
-    <div class="clientes-dashboard">
-        <form class="filtros" (submit)="$event.preventDefault()">
-            <input name="filtro" type="text" [(ngModel)]="filtro" placeholder="Buscar por nome ou CPF" />
-        </form>
+    <!-- Campo de consulta -->
+    <form class="consulta" (ngSubmit)="consultarCliente()">
+        <label for="cpf">CPF do Cliente:</label>
+        <input id="cpf" name="cpf" type="text" [(ngModel)]="cpf" (ngModelChange)="buscarSugestoes()"
+            placeholder="Digite o CPF (somente números)" maxlength="11" required />
+        <button type="submit">Consultar</button>
+    </form>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>CPF</th>
-                    <th>Nome</th>
-                    <th>Cidade</th>
-                    <th>Estado</th>
-                    <th>Saldo</th>
-                    <th>Limite</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let cliente of clientesFiltrados">
-                    <td>{{ cliente.cpf | formatarCpf}}</td>
-                    <td>{{ cliente.nome }}</td>
-                    <td>{{ cliente.endereco.estado }}</td>
-                    <td>{{ cliente.endereco.cidade }}</td>
-                    <td [ngClass]="{ 'saldo-negativo': cliente.saldo < 0 }">
-                        {{ cliente.saldo | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"}}
-                    </td>
-                    <td>{{ calcularLimite(cliente.salario) | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"}}</td>
-                    <td>
-                        <button class="botaoDetalhes" type="button">Ver Detalhes</button>
-                    </td>
-                </tr>
-                <tr *ngIf="clientesFiltrados.length === 0">
-                    <td colspan="7">Nenhum cliente encontrado.</td>
-                </tr>
-            </tbody>
-        </table>
+    <!-- Sugestões -->
+    <ul *ngIf="sugestoes.length > 0" class="sugestoes">
+        <li *ngFor="let cliente of sugestoes" (click)="selecionarSugestao(cliente)">
+            <strong>{{ cliente.nome }}</strong><br />
+            <small>{{ cliente.cpf | formatarCpf }}</small>
+        </li>
+    </ul>
+
+    <!-- Resultado -->
+    <div *ngIf="clienteEncontrado" class="cliente-detalhes">
+        <h2>{{ clienteEncontrado.nome }}</h2>
+        <p><strong>CPF:</strong> {{ clienteEncontrado.cpf | formatarCpf }}</p>
+        <p><strong>Cidade:</strong> {{ clienteEncontrado.endereco.cidade }}</p>
+        <p><strong>Estado:</strong> {{ clienteEncontrado.endereco.estado }}</p>
+        <p [ngClass]="{ 'saldo-negativo': clienteEncontrado.saldo < 0 }">
+            <strong>Saldo:</strong>
+            {{
+            clienteEncontrado.saldo
+            | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"
+            }}
+        </p>
+        <p>
+            <strong>Limite:</strong>
+            {{ calcularLimite(clienteEncontrado.salario) | currency : "BRL" }}
+        </p>
+        <p><strong>Gerente:</strong> {{ clienteEncontrado.nomeGerente }}</p>
+    </div>
+
+    <!-- Feedback de erro -->
+    <div *ngIf="erro" class="erro">
+        {{ erro }}
     </div>
 </div>

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { Cliente } from '../../../models';
+import { Cliente, Conta } from '../../../models';
 import { ClienteService } from '../../../services/cliente.service';
+import { MockService } from '../../../services/mock.service';
 import { CommonModule } from '@angular/common';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import { FormsModule } from '@angular/forms';
@@ -10,8 +11,8 @@ interface ClienteDashboardDTO extends Cliente {
   conta: string;
   saldo: number;
   limite: number;
-  cpfGerente: string;
-  nomeGerente: string;
+  cpfGerente?: string;
+  nomeGerente?: string;
 }
 
 @Component({
@@ -21,23 +22,52 @@ interface ClienteDashboardDTO extends Cliente {
   styleUrl: './consultar-cliente.component.css',
 })
 export class ConsultarClienteComponent {
-  clientes: ClienteDashboardDTO[] = [];
-  filtro: string = '';
+  cpf: string = '';
+  clienteEncontrado: ClienteDashboardDTO | null = null;
+  erro: string = '';
+  sugestoes: Cliente[] = [];
 
-  constructor(private clientesService: ClienteService) {
-    this.clientesService.clientes$.subscribe((lista) => {
-      this.clientes = lista;
-    });
-    this.clientesService.carregarClientes();
+  constructor(
+    private clienteService: ClienteService,
+    private mockService: MockService
+  ) {}
+
+  consultarCliente() {
+    this.erro = '';
+    this.clienteEncontrado = null;
+
+    const cliente = this.mockService.findClienteCpf(this.cpf);
+    const conta = this.mockService.findContaCpf(this.cpf);
+
+    if (cliente && conta) {
+      this.clienteEncontrado = {
+        ...cliente,
+        conta: conta.numeroConta,
+        saldo: conta.saldo,
+        limite: conta.limite,
+        nomeGerente: conta.nomeGerente,
+      };
+      this.sugestoes = []; // limpa sugestões
+    } else {
+      this.erro = 'Cliente não encontrado.';
+    }
   }
 
-  get clientesFiltrados(): ClienteDashboardDTO[] {
-    const termo = this.filtro.toLowerCase();
-    return this.clientes.filter(
-      (cliente) =>
-        cliente.nome.toLowerCase().includes(termo) ||
-        cliente.cpf.includes(termo)
-    );
+  buscarSugestoes() {
+    this.sugestoes = [];
+    this.clienteEncontrado = null;
+    this.erro = '';
+
+    if (this.cpf.length >= 1) {
+      const todosClientes = this.mockService.getClientes();
+      this.sugestoes = todosClientes.filter((c) => c.cpf.startsWith(this.cpf));
+    }
+  }
+
+  selecionarSugestao(cliente: Cliente) {
+    this.cpf = cliente.cpf;
+    this.sugestoes = [];
+    this.consultarCliente();
   }
 
   calcularLimite(salario: number): number {
