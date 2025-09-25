@@ -13,6 +13,7 @@ import { Component } from '@angular/core';
 import { ConsultarClienteComponent } from './pages/tela-gerente/consultar-cliente/consultar-cliente.component';
 import { MelhoresClientesComponent } from './pages/tela-gerente/melhores-clientes/melhores-clientes.component';
 import { TelaGerenteDashboardComponent } from './pages/tela-gerente-dashboard/tela-gerente-dashboard.component';
+import { TabelaTodosClientesComponent } from './pages/tela-administrador/tabela-todos-clientes/tabela-todos-clientes.component';
 
 export const routes: Routes = [
   {
@@ -34,7 +35,7 @@ export const routes: Routes = [
       },
       {
         path: 'clientes',
-        component: ClientesComponent,
+        component: TabelaTodosClientesComponent,
       },
     ],
   },
@@ -56,7 +57,7 @@ export const routes: Routes = [
       {
         path: 'consultar-cliente',
         component: ConsultarClienteComponent,
-      }, 
+      },
     ],
   },
 
@@ -84,7 +85,7 @@ export const routes: Routes = [
     component: PerfilClienteComponent,
   },
   {
-    path: 'editar-gerente',
+    path: 'editar-gerente/:cpf',
     component: EditarGerente,
   },
 ];

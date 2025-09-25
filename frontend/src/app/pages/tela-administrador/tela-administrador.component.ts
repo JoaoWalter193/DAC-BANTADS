@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { GerentesComponent } from './tabela-gerentes/gerentes.component';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { Router, RouterLink } from '@angular/router';
+import { TabelaTodosClientesComponent } from './tabela-todos-clientes/tabela-todos-clientes.component';
 
 @Component({
   selector: 'app-tela-administrador',
@@ -12,8 +13,9 @@ import { Router, RouterLink } from '@angular/router';
   imports: [
     CommonModule,
     GerentesComponent,
+    TabelaTodosClientesComponent,
     NavbarComponent,
-    RouterLink
+    RouterLink,
   ],
 })
 export class TelaAdministradorComponent {}

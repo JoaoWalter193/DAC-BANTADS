@@ -4,3 +4,7 @@ export * from './conta.interface';
 export * from './endereco.interface'
 export * from './gerente.interface';
 export * from  './user-session.interface';
+export * from './extrato-dia.interface';
+export * from './extrato-total.interface';
+export * from './transacao.interface';
+export * from './tipo-transacao.enum';

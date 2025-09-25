@@ -110,3 +110,20 @@ h1 {
   color: #777;
   padding: 1.5rem;
 }
+
+/* Botão Detalhes */
+.botaoDetalhes {
+  background-color: #3498db;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.2s ease-in-out;
+}
+
+.botaoDetalhes:hover {
+  background-color: #2980b9;
+}

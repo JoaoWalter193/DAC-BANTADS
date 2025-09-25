@@ -1,0 +1,58 @@
+.subtitulo {
+  font-size: 1em;
+  font-weight: normal;
+  color: #666;
+  margin-top: -10px;
+}
+.conteudo-dialogo {
+  font-family: Arial, sans-serif;
+  max-height: 70vh;
+}
+.saldo-inicial {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.1em;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #ccc;
+}
+.container-dia {
+  margin-bottom: 20px;
+}
+.cabecalho-dia {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f2f2f2;
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+.cabecalho-dia h3 {
+  margin: 0;
+  font-size: 1.1em;
+}
+.saldo-consolidado {
+  text-align: right;
+}
+.tabela-transacoes {
+  width: 100%;
+  border-collapse: collapse;
+}
+.tabela-transacoes th, .tabela-transacoes td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+.sem-transacoes {
+  text-align: center;
+  color: #888;
+  padding: 10px;
+}
+
+.entrada td {
+  color: blue;
+}
+.saida td {
+  color: red;
+}

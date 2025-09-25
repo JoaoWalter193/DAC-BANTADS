@@ -58,6 +58,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=dbGerente
     ports: 
       - 8081:8080
+      - 1111:35729
 
   ms-cliente:
     image: maven:3.8.4-openjdk-17-slim
@@ -70,8 +71,8 @@ services:
       - ~/.m2:/root/.m2
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/DAC
-      - SPRING_DATASOURCE_USERNAME=dbCliente
-      - SPRING_DATASOURCE_PASSWORD=dbClienteCUD
+      - SPRING_DATASOURCE_USERNAME=dbcliente
+      - SPRING_DATASOURCE_PASSWORD=dbCliente
     ports: 
       - 8083:8080
 

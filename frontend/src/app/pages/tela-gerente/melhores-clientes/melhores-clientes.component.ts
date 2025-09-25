@@ -17,11 +17,10 @@ interface ClienteDashboardDTO extends Cliente {
   selector: 'app-melhores-clientes',
   imports: [CommonModule, FormatarCpfPipe, FormsModule, RouterLink],
   templateUrl: './melhores-clientes.component.html',
-  styleUrl: './melhores-clientes.component.css'
+  styleUrl: './melhores-clientes.component.css',
 })
-
 export class MelhoresClientesComponent {
-clientes: ClienteDashboardDTO[] = [];
+  clientes: ClienteDashboardDTO[] = [];
   filtro: string = '';
 
   constructor() {
@@ -40,7 +39,8 @@ clientes: ClienteDashboardDTO[] = [];
     const gerente: Gerente = JSON.parse(currentUserJSON).user;
     const contas: Conta[] = JSON.parse(contasJSON);
 
-    this.clientes = (gerente.clientes || []).filter((cliente: {status: string}) => cliente.status === 'aprovado')
+    this.clientes = (gerente.clientes || [])
+      .filter((cliente: { status: string }) => cliente.status === 'aprovado')
       .map((cliente) => {
         const conta = contas.find((c) => c.cliente.cpf === cliente.cpf);
 
@@ -54,4 +54,3 @@ clientes: ClienteDashboardDTO[] = [];
       .slice(0, 3);
   }
 }
-

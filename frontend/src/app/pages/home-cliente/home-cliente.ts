@@ -54,7 +54,7 @@ export class HomeCliente implements OnInit {
 
   realizarSaque(): void {
     if (!this.valorSaque || this.valorSaque <= 0) {
-      this.mostrarMensagem('Por favor, insira um valor válido.', 'erro');
+      this.mostrarMensagem('Insira um valor positivo.', 'erro');
       return;
     }
 
@@ -71,7 +71,7 @@ export class HomeCliente implements OnInit {
 
   realizarDeposito(): void {
     if (!this.valorDeposito || this.valorDeposito <= 0) {
-      this.mostrarMensagem('Por favor, insira um valor válido.', 'erro');
+      this.mostrarMensagem('Insira um valor positivo.', 'erro');
       return;
     }
 
@@ -106,21 +106,28 @@ export class HomeCliente implements OnInit {
   gerarExtrato(): void {
     this.limparMensagem();
     if (this.formExtrato.invalid) {
-      this.mostrarMensagem('Por favor, selecione as datas de início e fim.', 'erro');
+      this.mostrarMensagem('Selecione as datas para consulta.', 'erro');
       return;
     }
     const { dataInicio, dataFim } = this.formExtrato.value;
-    if (dataInicio > dataFim) {
-      this.mostrarMensagem('A data de início não pode ser posterior à data de fim.', 'erro');
+    if (new Date(dataInicio) > new Date(dataFim)) {
+      this.mostrarMensagem('A data de início maior que a data final.', 'erro');
       return;
     }
+    try {
+      const extratoData = this.contaService.gerarExtrato(new Date(dataInicio), new Date(dataFim));
 
-    // const extrato = this.contaService.gerarExtrato(dataInicio, dataFim);
-    this.dialog.open(ExtratoComponent, {
-      width: '800px',
-      maxHeight: '90vh',
-      // data: extrato
-    });
+      this.dialog.open(ExtratoComponent, {
+        width: '800px',
+        maxHeight: '70vh',
+        data: {
+          extrato: extratoData,
+          nomeCliente: this.conta?.cliente.nome
+        }
+      });
+    } catch (error: any) {
+      this.mostrarMensagem(error.message, 'erro');
+    }
   }
 
   private mostrarMensagem(texto: string, tipo: 'sucesso' | 'erro') {

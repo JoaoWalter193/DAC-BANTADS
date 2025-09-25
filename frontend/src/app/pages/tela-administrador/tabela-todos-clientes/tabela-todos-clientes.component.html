@@ -1,1 +1,37 @@
-<p>tabela-todos-clientes works!</p>
+<div class="clientes-dashboard">
+  <table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+      <tr>
+        <th>Nome do Cliente</th>
+        <th>CPF</th>
+        <th>Saldo</th>
+        <th>Limite</th>
+        <th>Salário</th>
+        <th>Email</th>
+        <th>Número da Conta</th>
+        <th>Nome do Gerente</th>
+        <th>CPF do Gerente</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let cliente of clientes">
+        <td>{{ cliente.nome }}</td>
+        <td>{{ cliente.cpf }}</td>
+        <td>{{ cliente.saldo | currency : "BRL" }}</td>
+        <td>{{ cliente.limite | currency : "BRL" }}</td>
+        <td>{{ cliente.salario | currency : "BRL" }}</td>
+        <td>{{ cliente.email }}</td>
+        <td>{{ cliente.conta }}</td>
+        <td>{{ cliente.nomeGerente }}</td>
+        <td>{{ cliente.cpfGerente }}</td>
+        <td>
+          <button class="botaoDetalhes" type="button">Ver Detalhes</button>
+        </td>
+      </tr>
+      <tr *ngIf="clientes.length === 0">
+        <td colspan="5">Nenhum cliente cadastrado.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

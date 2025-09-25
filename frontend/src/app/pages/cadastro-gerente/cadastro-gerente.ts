@@ -1,15 +1,18 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { Gerente } from '../../models/gerente.interface';
 import { Conta } from '../../models/conta.interface';
-import { RouterLink } from '@angular/router';
+import { MockService } from '../../services/mock.service';
 
 @Component({
   selector: 'app-cadastro-gerente',
-  imports: [FormsModule, CommonModule, RouterLink],
   templateUrl: './cadastro-gerente.html',
-  styleUrl: './cadastro-gerente.css',
+  styleUrls: ['./cadastro-gerente.css'],
+  standalone: true,
+  imports: [FormsModule, CommonModule, RouterLink],
 })
 export class CadastroGerente {
   gerente: Gerente = {
@@ -18,21 +21,23 @@ export class CadastroGerente {
     email: '',
     senha: '',
     role: 'GERENTE',
+    clientes: [],
   };
 
   mensagem: string = '';
   tipoMensagem: 'sucesso' | 'erro' | '' = '';
   carregando: boolean = false;
 
-  private atribuirContaAoNovoGerente(novoGerente: Gerente) {
-    const contasJSON = localStorage.getItem('contas_bantads');
-    if (!contasJSON) return;
+  constructor(private router: Router, private mockService: MockService) {}
 
-    const todasContas: Conta[] = JSON.parse(contasJSON);
-    if (todasContas.length === 0) return;
+  private atribuirContaAoNovoGerente(novoGerente: Gerente) {
+    const contas: Conta[] = JSON.parse(
+      localStorage.getItem('contaCliente') || '[]'
+    );
+    if (!contas || contas.length === 0) return;
 
     const contagemPorGerente: Record<string, Conta[]> = {};
-    todasContas.forEach((conta) => {
+    contas.forEach((conta) => {
       if (!contagemPorGerente[conta.nomeGerente]) {
         contagemPorGerente[conta.nomeGerente] = [];
       }
@@ -44,10 +49,9 @@ export class CadastroGerente {
     );
 
     const gerentesComMaisContas = Object.entries(contagemPorGerente)
-      .filter(([_, contas]) => contas.length === maxContas)
-      .map(([nomeGerente, contas]) => ({ nomeGerente, contas }));
+      .filter(([_, c]) => c.length === maxContas)
+      .map(([nomeGerente, c]) => ({ nomeGerente, contas: c }));
 
-    // Evta transferir se só tiver um gerente com uma conta
     if (
       gerentesComMaisContas.length === 1 &&
       gerentesComMaisContas[0].contas.length === 1
@@ -64,19 +68,15 @@ export class CadastroGerente {
         todasContasEmpatadas.push(...g.contas)
       );
 
-      // Desempata pela conta com menor saldo positivo
-      contaParaTransferir = todasContasEmpatadas
-        .filter((c) => c.saldo >= 0)
-        .sort((a, b) => a.saldo - b.saldo)[0];
-
-      if (!contaParaTransferir) {
-        contaParaTransferir = todasContasEmpatadas[0];
-      }
+      contaParaTransferir =
+        todasContasEmpatadas
+          .filter((c) => c.saldo >= 0)
+          .sort((a, b) => a.saldo - b.saldo)[0] || todasContasEmpatadas[0];
     }
 
     if (contaParaTransferir) {
       contaParaTransferir.nomeGerente = novoGerente.nome;
-      localStorage.setItem('contas_bantads', JSON.stringify(todasContas));
+      localStorage.setItem('contaCliente', JSON.stringify(contas));
     }
   }
 
@@ -108,6 +108,29 @@ export class CadastroGerente {
     return true;
   }
 
+  validarEmail(email: string): boolean {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  }
+
+  validarFormulario(): boolean {
+    const cpfNumerico = this.gerente.cpf.replace(/\D/g, '');
+    return (
+      cpfNumerico.length === 11 &&
+      this.gerente.nome.trim() !== '' &&
+      this.validarEmail(this.gerente.email) &&
+      this.gerente.senha.trim() !== ''
+    );
+  }
+
+  CPFJaCadastrado(cpf: string): boolean {
+    return this.mockService.getGerentes().some((g) => g.cpf === cpf);
+  }
+
+  salvarGerente(gerente: Gerente): void {
+    this.mockService.getGerentes().push(gerente);
+  }
+
   onSubmit() {
     if (!this.validarFormulario()) {
       this.mostrarMensagem(
@@ -129,55 +152,26 @@ export class CadastroGerente {
     this.carregando = true;
 
     setTimeout(() => {
-      const gerenteCompleto: Gerente = {
+      const novoGerente: Gerente = {
         cpf: cpfNumerico,
         nome: this.gerente.nome,
         email: this.gerente.email,
         senha: this.gerente.senha,
         role: 'GERENTE',
+        clientes: [],
       };
 
-      this.atribuirContaAoNovoGerente(gerenteCompleto);
-      this.salvarGerente(gerenteCompleto);
-      this.carregando = false;
+      this.atribuirContaAoNovoGerente(novoGerente);
+      this.salvarGerente(novoGerente);
 
+      this.carregando = false;
       this.mostrarMensagem(
         'Cadastro de gerente realizado com sucesso!',
         'sucesso'
       );
       this.limparFormulario();
-    }, 1500);
-  }
-
-  validarFormulario(): boolean {
-    const cpfNumerico = this.gerente.cpf.replace(/\D/g, '');
-    return (
-      cpfNumerico.length === 11 &&
-      this.gerente.nome.trim() !== '' &&
-      this.validarEmail(this.gerente.email) &&
-      this.gerente.senha.trim() !== ''
-    );
-  }
-
-  validarEmail(email: string): boolean {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-  }
-
-  CPFJaCadastrado(cpf: string): boolean {
-    const gerentes = this.obterGerentes();
-    return gerentes.some((gerente) => gerente.cpf === cpf);
-  }
-
-  salvarGerente(gerente: Gerente): void {
-    const gerentes = this.obterGerentes();
-    gerentes.push(gerente);
-    localStorage.setItem('gerentes_bantads', JSON.stringify(gerentes));
-  }
-
-  obterGerentes(): Gerente[] {
-    const gerentesJSON = localStorage.getItem('gerentes_bantads');
-    return gerentesJSON ? JSON.parse(gerentesJSON) : [];
+      this.router.navigate(['/tela-administrador']);
+    }, 1000);
   }
 
   mostrarMensagem(mensagem: string, tipo: 'sucesso' | 'erro'): void {
@@ -196,6 +190,7 @@ export class CadastroGerente {
       email: '',
       senha: '',
       role: 'GERENTE',
+      clientes: [],
     };
   }
 }
