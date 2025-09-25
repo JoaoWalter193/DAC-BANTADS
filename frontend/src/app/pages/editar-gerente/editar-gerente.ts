@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { Gerente } from '../../models/gerente.interface';
 import { MockService } from '../../services/mock.service';
+import { Conta } from '../../models/conta.interface';
 
 @Component({
   selector: 'app-editar-gerente',
@@ -100,21 +101,23 @@ export class EditarGerente implements OnInit {
   atualizarGerente(gerenteAtualizado: Gerente): void {
     const gerentes = this.mockService.getGerentes();
     const index = gerentes.findIndex((g) => g.cpf === this.cpfOriginal);
+
     if (index !== -1) {
       const gerenteAnterior = gerentes[index];
       gerentes[index] = gerenteAtualizado;
       this.cpfOriginal = gerenteAtualizado.cpf;
 
-      // atualizar o novo nome do gerente nos clientes
-      if (gerenteAnterior.clientes?.length) {
-        gerenteAnterior.clientes.forEach((cliente) => {
-          const conta = this.mockService.findContaCpf(cliente.cpf);
-          if (conta) {
-            conta.nomeGerente = gerenteAtualizado.nome;
-            this.mockService.updateConta(conta);
-          }
-        });
-      }
+      const contas: Conta[] = JSON.parse(
+        localStorage.getItem('contaCliente') || '[]'
+      );
+
+      contas.forEach((conta) => {
+        if (conta.nomeGerente === gerenteAnterior.nome) {
+          conta.nomeGerente = gerenteAtualizado.nome;
+        }
+      });
+
+      localStorage.setItem('contaCliente', JSON.stringify(contas));
       localStorage.setItem('gerentes_bantads', JSON.stringify(gerentes));
     }
   }

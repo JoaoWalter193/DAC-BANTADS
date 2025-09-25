@@ -18,15 +18,27 @@
       <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <mat-form-field appearance="outline">
           <mat-label>Email</mat-label>
-          <input matInput type="email" formControlName="account" required>
+          <input matInput type="email" formControlName="account" required />
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Senha</mat-label>
-          <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" required>
+          <input
+            matInput
+            [type]="hidePassword ? 'password' : 'text'"
+            formControlName="password"
+            required
+          />
 
-          <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
-            <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          <button
+            mat-icon-button
+            matSuffix
+            (click)="hidePassword = !hidePassword"
+            type="button"
+          >
+            <mat-icon>{{
+              hidePassword ? "visibility_off" : "visibility"
+            }}</mat-icon>
           </button>
 
           <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
@@ -34,22 +46,28 @@
           </mat-error>
         </mat-form-field>
 
-        <button mat-flat-button type="submit" id="login-button" [disabled]="loginForm.invalid"
-          [ngClass]="{'ativo': loginForm.valid, 'inativo': loginForm.invalid}">
+        <button
+          mat-flat-button
+          type="submit"
+          id="login-button"
+          [disabled]="loginForm.invalid"
+          [ngClass]="{ ativo: loginForm.valid, inativo: loginForm.invalid }"
+        >
           Acessar Conta
         </button>
       </form>
 
       <div class="to-cadastro">
-        <span>Não tem uma conta? <a routerLink="/cadastro">Abra já a sua!</a></span>
+        <span
+          >Não tem uma conta? <a routerLink="/cadastro">Abra já a sua!</a></span
+        >
       </div>
-      <!--
-      <div style="margin-top: 20px;">
+
+      <div style="margin-top: 20px">
         <button type="button" (click)="resetMockData()">
           <strong>PIPIPI RESET</strong>
         </button>
       </div>
-      -->
     </div>
   </div>
 </div>
