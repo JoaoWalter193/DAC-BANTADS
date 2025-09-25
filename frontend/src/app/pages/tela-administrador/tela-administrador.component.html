@@ -1,20 +1,22 @@
 <app-navbar></app-navbar>
 
-<section class="container">
-  <h2>Painel do Administrador</h2>
-  <div class="section-content">
-    <div class="gerentes-dashboard">
+<section class="tela-admin">
+  <div class="admin-header">
+    <h2>Painel do Administrador</h2>
+  </div>
+
+  <div class="admin-content">
+    <div class="card-dashboard">
       <h3>Gerentes</h3>
       <div class="actions">
         <button class="botao-add" type="button">
           <a routerLink="/cadastro-gerente">Adicionar Novo Gerente</a>
         </button>
       </div>
-
       <app-gerentes></app-gerentes>
     </div>
-    <br />
-    <div class="clientes-dashboard">
+
+    <div class="card-dashboard">
       <h3>Relatório de clientes</h3>
       <app-tabela-todos-clientes></app-tabela-todos-clientes>
     </div>

@@ -1,12 +1,12 @@
 .clientes-dashboard {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 1.5rem;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   overflow-x: auto;
-  font-family: Arial, sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 .filtros {
@@ -26,20 +26,21 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem;
+  min-width: 900px;
+  /* Para manter legibilidade em telas pequenas */
 }
 
 .clientes-dashboard thead {
-  background-color: #2c3e50;
-  color: #fff;
+  background-color: #0c2464;
+  color: #EDE654;
 }
 
 .clientes-dashboard th,
 .clientes-dashboard td {
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1rem;
   text-align: left;
   border-bottom: 1px solid #ddd;
-  white-space: normal;
-  word-break: break-word;
+  white-space: nowrap;
 }
 
 .clientes-dashboard tbody tr:nth-child(even) {
@@ -48,6 +49,7 @@
 
 .clientes-dashboard tbody tr:hover {
   background-color: #f1f1f1;
+  transition: background 0.2s ease-in-out;
 }
 
 .clientes-dashboard td.saldo-negativo {
@@ -62,25 +64,40 @@
   padding: 1.5rem;
 }
 
-.clientes-dashboard .botaoDetalhes,
-.clientes-dashboard .button {
-  background-color: #3498db;
-  color: #fff;
-  padding: 0.5rem 1rem;
+/* Botões padronizados (caso sejam adicionados futuramente) */
+.clientes-dashboard .botaoDetalhes {
+  padding: 8px 16px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
-  font-weight: 500;
-  transition: background 0.2s ease-in-out;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  background-color: #EDE654;
+  color: #0c2464;
 }
 
-.clientes-dashboard .botaoDetalhes:hover,
-.clientes-dashboard .button:hover {
-  background-color: #2980b9;
+.clientes-dashboard .botaoDetalhes:hover {
+  background-color: #dada4f;
 }
 
-.clientes-dashboard .button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+/* Responsividade */
+@media (max-width: 1024px) {
+  .clientes-dashboard table {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .clientes-dashboard {
+    padding: 1rem;
+  }
+
+  .filtros {
+    justify-content: center;
+  }
+
+  .clientes-dashboard table {
+    min-width: 700px;
+  }
 }

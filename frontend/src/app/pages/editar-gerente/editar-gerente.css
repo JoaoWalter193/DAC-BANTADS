@@ -1,213 +1,121 @@
-#background {
-  height: 100%;
-  width: 100%;
+.tela-gerente-editar {
+  max-width: 600px;
+  margin: 2rem auto;
+  background-color: #fff;
+  padding: 40px 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-family: 'Poppins', sans-serif;
+}
+
+.tela-gerente-editar h2 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #0c2464;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.form-gerente {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  gap: 15px;
 }
 
-#container {
-  width: 80%;
-  height: 90%;
-  display: flex;
-  flex-direction: row;
-}
-
-.subcontainer {
-  flex: 1;
-}
-
-#esquerda {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-#centro {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-}
-
-#direita {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-}
-
-#cadastro {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: start;
-}
-
-#background {
-  background-color: #f5f5f5;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-}
-
-#container {
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  display: flex;
-  width: 900px;
-  max-width: 100%;
-  overflow: hidden;
-}
-
-.subcontainer {
-  padding: 40px;
-  flex: 1;
-}
-
-#esquerda {
-  background: linear-gradient(135deg, #3f51b5, #2196f3);
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-#centro {
-  width: 1px;
-  background-color: #e0e0e0;
-}
-
-#direita {
-  background-color: white;
-}
-
-.input {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-  transition: border-color 0.3s;
-}
-
-.input:focus {
-  border-color: #3f51b5;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
-}
-
-label {
-  display: block;
-  margin-bottom: 5px;
+.form-gerente label {
   font-weight: 500;
   color: #333;
 }
 
-#botao {
+.form-gerente input {
   width: 100%;
   padding: 12px;
-  background-color: #3f51b5;
-  color: white;
-  border: none;
-  border-radius: 4px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   font-size: 16px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-gerente input:focus {
+  border-color: #EDE654;
+  box-shadow: 0 0 0 2px rgba(237, 230, 84, 0.3);
+  outline: none;
+}
+
+button {
+  padding: 12px;
+  background-color: #EDE654;
+  color: #0c2464;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s;
-  margin-top: 10px;
+  font-size: 16px;
+  transition: background 0.3s;
 }
 
-#botao:hover {
-  background-color: #303f9f;
+button:hover:not(:disabled) {
+  background-color: #dada4f;
 }
 
-#botao:disabled {
-  background-color: #9e9e9e;
+button:disabled {
+  background-color: #ccc;
   cursor: not-allowed;
 }
 
-.mensagem {
-  padding: 12px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-  text-align: center;
-  font-weight: 500;
-}
-
+/* Mensagens de feedback */
 .mensagem-sucesso {
   background-color: #d4edda;
   color: #155724;
   border: 1px solid #c3e6cb;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
 }
 
 .mensagem-erro {
   background-color: #f8d7da;
   color: #721c24;
   border: 1px solid #f5c6cb;
-}
-
-#titulo h1 {
-  margin: 0 0 10px 0;
-  font-size: 28px;
-}
-
-#descricao {
-  margin-top: 20px;
-}
-
-#descricao a {
-  color: #c5cae9;
-  text-decoration: none;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
   font-weight: 500;
 }
 
-#descricao a:hover {
-  text-decoration: underline;
-}
-
-#topo {
-  height: 60px;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-  #container {
-    flex-direction: column;
-  }
-
-  #centro {
-    width: 100%;
-    height: 1px;
-  }
-
-  .subcontainer {
-    padding: 20px;
-  }
-}
-
+/* Loader animado */
 .loading {
   display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  width: 18px;
+  height: 18px;
+  border: 3px solid rgba(0, 0, 0, 0.2);
+  border-top-color: #0c2464;
   border-radius: 50%;
-  border-top-color: #fff;
   animation: spin 1s ease-in-out infinite;
+  margin-left: 10px;
 }
 
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .tela-gerente-editar {
+    padding: 30px 20px;
+    margin: 1rem;
+  }
+
+  .form-gerente input {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  button {
+    font-size: 14px;
+    padding: 10px;
   }
 }
