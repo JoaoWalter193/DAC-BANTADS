@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Conta } from '../models/conta.interface';
 import { AuthService } from './auth.service';
 import { MockService } from './mock.service';
-import { ExtratoDia, ExtratoTotal, TipoTransacao } from '../models';
+import { ExtratoDia, ExtratoTotal, TipoTransacao, Transacao } from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -21,25 +21,34 @@ export class ContaService {
 
   sacar(valor: number): Conta {
     const session = this.authService.getUserSession();
-
     if (!session) {
       throw new Error('Sessão expirada.');
     }
-    const conta = this.mockService.findContaCpf(session.user.cpf);
 
+    const conta = this.mockService.findContaCpf(session.user.cpf);
     if (!conta) {
       throw new Error('Sessão expirada.');
     }
-    if (valor <= 0) {
-      throw new Error('Por favor, insira um valor válido.');
-    }
+
     // calcula o saldo + limite
     const saldoDisponivel = conta.saldo + conta.limite;
     if (valor > saldoDisponivel) {
       throw new Error('Saldo insuficiente.');
     }
-    // atualiza o valor e salva no localStorage
+    if (valor <= 0) {
+      throw new Error('Por favor, insira um valor válido.');
+    }
+
+    // atualiza o valore e registra a transacao
     conta.saldo -= valor;
+    const novaTransacao: Transacao = {
+      data: new Date(),
+      tipo: TipoTransacao.SAQUE,
+      valor: valor
+    };
+    conta.transacoes?.push(novaTransacao);
+
+    // salva no localStorage
     this.mockService.updateConta(conta);
     session.conta = conta;
     localStorage.setItem('currentUser', JSON.stringify(session));
@@ -48,21 +57,26 @@ export class ContaService {
 
   depositar(valor: number): Conta {
     const session = this.authService.getUserSession();
-
     if (!session) {
       throw new Error('Sessão expirada.');
     }
-    const conta = this.mockService.findContaCpf(session.user.cpf);
 
+    const conta = this.mockService.findContaCpf(session.user.cpf);
     if (!conta) {
       throw new Error('Sessão expirada.');
     }
-
     if (valor <= 0) {
       throw new Error('Por favor, insira um valor válido.');
     }
 
     conta.saldo += valor;
+    const novaTransacao: Transacao = {
+      data: new Date(),
+      tipo: TipoTransacao.DEPOSITO,
+      valor: valor
+    };
+    conta.transacoes?.push(novaTransacao);
+
     this.mockService.updateConta(conta);
     session.conta = conta;
     localStorage.setItem('currentUser', JSON.stringify(session));
@@ -101,9 +115,24 @@ export class ContaService {
       throw new Error('Saldo insuficiente para a transação.');
     }
 
-    // atualiza as contas
+    // atualiza os saldos
     contaOrigem.saldo -= valor;
     contaDestino.saldo += valor;
+
+    // registra a transacao nas duas contas
+    const transacaoSaida: Transacao = {
+      data: new Date(),
+      tipo: TipoTransacao.TRANSFERENCIA,
+      valor: valor,
+      clienteOrigem: contaOrigem.cliente.nome,
+      clienteDestino: contaDestino.cliente.nome
+    };
+    const transacaoEntrada: Transacao = { ...transacaoSaida };
+
+    contaOrigem.transacoes?.push(transacaoSaida);
+    contaDestino.transacoes?.push(transacaoEntrada);
+
+    // salva no localStorage
     this.mockService.updateConta(contaOrigem);
     this.mockService.updateConta(contaDestino);
 
@@ -113,54 +142,66 @@ export class ContaService {
     return contaOrigem;
   }
 
-    gerarExtrato(dataInicio: Date, dataFim: Date): ExtratoTotal {
+  gerarExtrato(dataInicio: Date, dataFim: Date): ExtratoTotal {
     const conta = this.getConta();
     if (!conta || !conta.transacoes) {
       throw new Error('Nenhuma operação encontrada para esta conta.');
     }
 
-    // ultimo segundo como data final
+    // correcao pra pegar o dia do inicio ao fim
+    dataInicio.setHours(0, 0, 0, 0);
     dataFim.setHours(23, 59, 59, 999);
 
-    const todasTransacoes = conta.transacoes.map(op => ({ ...op, data: new Date(op.data) }));
+    // pega o saldo inicial e calcula os anteriores de forma retroativa
+    let saldoInicial = conta.saldo;
+    const transacoesPosteriores = conta.transacoes.filter(t => new Date(t.data) >= dataInicio);
 
-    // calcular o saldo antes da data marcada
-    const saldoInicialPeriodo = todasTransacoes
-      .filter(op => op.data < dataInicio).reduce((saldo, op) => {
-        return op.tipo === TipoTransacao.DEPOSITO || (op.tipo === TipoTransacao.TRANSFERENCIA && op.clienteDestino === conta.cliente.nome)
-          ? saldo + op.valor
-          : saldo - op.valor;
-      },
-      //para começar do saldo base
-      conta.saldo - todasTransacoes.reduce((sum, op) => op.tipo === TipoTransacao.DEPOSITO ? sum + op.valor : sum - op.valor, 0));
+    for (const t of transacoesPosteriores) {
+      const entrada = t.tipo === TipoTransacao.DEPOSITO || (t.tipo === TipoTransacao.TRANSFERENCIA && t.clienteDestino === conta.cliente.nome);
+      if (entrada) {
+        saldoInicial -= t.valor; // entrada = subtrai
+      } else {
+        saldoInicial += t.valor; // saida = soma
+      }
+    }
 
+    // transacoes do dia
+    const transacoesNoPeriodo = conta.transacoes.filter(t => {
+      const dataTransacao = new Date(t.data);
+      return dataTransacao >= dataInicio && dataTransacao <= dataFim;
+    });
+
+    // construir o extrato diario
     const extrato: ExtratoDia[] = [];
-    let saldoConsolidado = saldoInicialPeriodo;
+    let saldoDoDia = saldoInicial;
 
-    // diaa dia, da data inicial ate a final
     for (let dia = new Date(dataInicio); dia <= dataFim; dia.setDate(dia.getDate() + 1)) {
-      const inicioDoDia = new Date(dia.setHours(0, 0, 0, 0));
-      const fimDoDia = new Date(dia.setHours(23, 59, 59, 999));
+      const dataCorrenteStr = dia.toISOString().split('T')[0];
 
-      const operacoesDoDia = todasTransacoes.filter(op => op.data >= inicioDoDia && op.data <= fimDoDia);
+      const transacoesDoDia = transacoesNoPeriodo.filter(
+        t => new Date(t.data).toISOString().split('T')[0] === dataCorrenteStr
+      );
 
-      // calcula o saldo do dia
-      operacoesDoDia.forEach(op => {
-        saldoConsolidado += op.tipo === TipoTransacao.DEPOSITO || (op.tipo === TipoTransacao.TRANSFERENCIA && op.clienteDestino === conta.cliente.nome)
-          ? op.valor
-          : -op.valor;
-      });
+      // correcao no saldo final de cada dia
+      let saldoFinalDoDia = saldoDoDia;
+      for (const t of transacoesDoDia) {
+        const entrada = t.tipo === TipoTransacao.DEPOSITO || (t.tipo === TipoTransacao.TRANSFERENCIA && t.clienteDestino === conta.cliente.nome);
+        saldoFinalDoDia += entrada ? t.valor : -t.valor;
+      }
 
       extrato.push({
-        data: new Date(inicioDoDia),
-        transacoes: operacoesDoDia.sort((a, b) => a.data.getTime() - b.data.getTime()),
-        saldoConsolidado: saldoConsolidado
+        data: new Date(dia),
+        transacoes: transacoesDoDia.sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()),
+        saldoConsolidado: saldoFinalDoDia
       });
+
+      // seta o saldo do dia seguinte
+      saldoDoDia = saldoFinalDoDia;
     }
 
     return {
       periodo: { inicio: dataInicio, fim: dataFim },
-      saldoInicial: saldoInicialPeriodo,
+      saldoInicial: saldoInicial,
       dias: extrato
     };
   }
