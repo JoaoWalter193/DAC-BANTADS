@@ -204,3 +204,8 @@ a:hover {
     font-size: 0.9rem;
   }
 }
+
+.saldo-negativo {
+  color: #dc3545;
+  font-weight: 700;
+}

@@ -32,16 +32,16 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let transacao of dia.transacoes" [ngClass]="{ 'saida': ehSaida(transacao), 'entrada': !ehSaida(transacao) }">
+          <tr *ngFor="let transacao of dia.transacoes" [ngClass]="{ 'saida': saida(transacao), 'entrada': !saida(transacao) }">
             <td>{{ transacao.data | date:'HH:mm' }}</td>
             <td>{{ transacao.tipo }}</td>
             <td>
               <span *ngIf="transacao.tipo === 'Transferencia'">
-                {{ ehSaida(transacao) ? 'Para: ' + transacao.clienteDestino : 'De: ' + transacao.clienteOrigem }}
+                {{ saida(transacao) ? 'Para: ' + transacao.clienteDestino : 'De: ' + transacao.clienteOrigem }}
               </span>
             </td>
             <td>
-              {{ (ehSaida(transacao) ? -transacao.valor : transacao.valor) | currency:'BRL' }}
+              {{ (saida(transacao) ? -transacao.valor : transacao.valor) | currency:'BRL' }}
             </td>
           </tr>
         </tbody>

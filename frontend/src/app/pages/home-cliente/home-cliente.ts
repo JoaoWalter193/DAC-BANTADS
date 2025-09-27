@@ -110,12 +110,16 @@ export class HomeCliente implements OnInit {
       return;
     }
     const { dataInicio, dataFim } = this.formExtrato.value;
-    if (new Date(dataInicio) > new Date(dataFim)) {
+
+    const dataInicioReal = new Date(dataInicio.replace(/-/g, '/'));
+    const dataFimReal = new Date(dataFim.replace(/-/g, '/'));
+
+    if (new Date(dataInicioReal) > new Date(dataFimReal)) {
       this.mostrarMensagem('A data de início maior que a data final.', 'erro');
       return;
     }
     try {
-      const extratoData = this.contaService.gerarExtrato(new Date(dataInicio), new Date(dataFim));
+      const extratoData = this.contaService.gerarExtrato(new Date(dataInicioReal), new Date(dataFimReal));
 
       this.dialog.open(ExtratoComponent, {
         width: '800px',
