@@ -6,6 +6,7 @@ import { Cliente } from '../../../models/cliente.interface';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import { FormsModule } from '@angular/forms';
 import { ClienteService } from '../../../services/cliente.service';
+import { RouterModule } from '@angular/router';
 
 interface ClienteDashboardDTO extends Cliente {
   conta: string;
@@ -20,7 +21,7 @@ interface ClienteDashboardDTO extends Cliente {
   templateUrl: './clientes.component.html',
   standalone: true,
   styleUrl: './clientes.component.css',
-  imports: [CommonModule, FormatarCpfPipe, FormsModule],
+  imports: [CommonModule, RouterModule, FormatarCpfPipe, FormsModule],
 })
 export class ClientesComponent {
   clientes: ClienteDashboardDTO[] = [];

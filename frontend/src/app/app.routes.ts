@@ -14,7 +14,7 @@ import { ConsultarClienteComponent } from './pages/tela-gerente/consultar-client
 import { MelhoresClientesComponent } from './pages/tela-gerente/melhores-clientes/melhores-clientes.component';
 import { TelaGerenteDashboardComponent } from './pages/tela-gerente-dashboard/tela-gerente-dashboard.component';
 import { TabelaTodosClientesComponent } from './pages/tela-administrador/tabela-todos-clientes/tabela-todos-clientes.component';
-
+import { ClienteDetalhesComponent } from './pages/tela-gerente/cliente-detalhes/cliente-detalhes.component';
 export const routes: Routes = [
   {
     path: '',
@@ -87,5 +87,9 @@ export const routes: Routes = [
   {
     path: 'editar-gerente/:cpf',
     component: EditarGerente,
+  },
+  {
+    path: 'clientes/:cpf',
+    component: ClienteDetalhesComponent,
   },
 ];

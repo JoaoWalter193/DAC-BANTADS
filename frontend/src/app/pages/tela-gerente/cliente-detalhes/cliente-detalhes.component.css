@@ -1,0 +1,70 @@
+.cliente-detalhes-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-family: "Poppins", sans-serif;
+  color: #333;
+}
+
+.cliente-detalhes-container h2,
+.cliente-detalhes-container h3 {
+  color: #0c2464;
+  margin-bottom: 1rem;
+}
+
+.info {
+  margin-bottom: 20px;
+}
+
+.info p {
+  margin: 6px 0;
+  line-height: 1.4;
+}
+
+p strong {
+  color: #0c2464;
+}
+
+.saldo-negativo {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.saldo-positivo {
+  color: #27ae60;
+  font-weight: 500;
+}
+
+button {
+  padding: 0.6rem 1.2rem;
+  background-color: #ede654;
+  color: #0c2464;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease-in-out;
+}
+
+button:hover {
+  background-color: #dada4f;
+}
+
+@media (max-width: 1024px) {
+  .cliente-detalhes-container {
+    padding: 1rem;
+    margin: 20px;
+  }
+
+  .info p {
+    font-size: 0.9rem;
+  }
+
+  button {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+  }
+}

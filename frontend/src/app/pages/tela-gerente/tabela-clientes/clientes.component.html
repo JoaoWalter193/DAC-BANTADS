@@ -1,6 +1,11 @@
 <div class="clientes-dashboard">
   <form class="filtros" (submit)="$event.preventDefault()">
-    <input name="filtro" type="text" [(ngModel)]="filtro" placeholder="Buscar por nome ou CPF" />
+    <input
+      name="filtro"
+      type="text"
+      [(ngModel)]="filtro"
+      placeholder="Buscar por nome ou CPF"
+    />
   </form>
 
   <table>
@@ -22,11 +27,18 @@
         <td>{{ cliente.endereco.cidade }}</td>
         <td>{{ cliente.endereco.estado }}</td>
         <td [ngClass]="{ 'saldo-negativo': cliente.saldo < 0 }">
-          {{ cliente.saldo | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"}}
+          {{ cliente.saldo | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR" }}
         </td>
-        <td>{{ calcularLimite(cliente.salario) | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"}}</td>
         <td>
-          <button class="botaoDetalhes" type="button">Ver Detalhes</button>
+          {{
+            calcularLimite(cliente.salario)
+              | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"
+          }}
+        </td>
+        <td>
+          <a class="botaoDetalhes" [routerLink]="['/clientes', cliente.cpf]"
+            >Ver Detalhes</a
+          >
         </td>
       </tr>
       <tr *ngIf="clientesFiltrados.length === 0">
