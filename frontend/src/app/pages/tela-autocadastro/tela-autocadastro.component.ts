@@ -212,7 +212,8 @@ export class TelaAutocadastroComponent implements AfterViewInit {
       };
 
       // usa o retorno para verificar se já existe
-      const sucesso = this.mockService.addClienteAoGerente(clienteCompleto);
+      const sucesso =
+        this.mockService.verificarOuAdicionarClienteLS(clienteCompleto);
 
       this.carregando = false;
 
@@ -223,6 +224,8 @@ export class TelaAutocadastroComponent implements AfterViewInit {
         );
         return;
       }
+
+      this.mockService.addClienteAoGerente(clienteCompleto);
 
       this.mostrarMensagem(
         'Solicitação de cadastro enviada com sucesso! Aguarde a aprovação do gerente.',
