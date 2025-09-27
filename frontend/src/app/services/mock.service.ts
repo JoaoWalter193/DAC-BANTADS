@@ -161,9 +161,23 @@ export class MockService {
         nomeGerente: 'Geniéve',
         dataCriacao: '2000-01-01',
         transacoes: [
-          { data: new Date('2025-09-18T10:00:00Z'), tipo: TipoTransacao.DEPOSITO, valor: 500.00 },
-          { data: new Date('2025-09-19T14:30:00Z'), tipo: TipoTransacao.SAQUE, valor: 200.00 },
-          { data: new Date('2025-09-20T11:00:00Z'), tipo: TipoTransacao.TRANSFERENCIA, valor: 150.00, clienteOrigem: 'Catharyna', clienteDestino: 'Cleuddônio' },
+          {
+            data: new Date('2025-09-18T10:00:00Z'),
+            tipo: TipoTransacao.DEPOSITO,
+            valor: 500.0,
+          },
+          {
+            data: new Date('2025-09-19T14:30:00Z'),
+            tipo: TipoTransacao.SAQUE,
+            valor: 200.0,
+          },
+          {
+            data: new Date('2025-09-20T11:00:00Z'),
+            tipo: TipoTransacao.TRANSFERENCIA,
+            valor: 150.0,
+            clienteOrigem: 'Catharyna',
+            clienteDestino: 'Cleuddônio',
+          },
         ],
       },
       {
@@ -216,6 +230,10 @@ export class MockService {
   private initLocalStorage(): void {
     if (!localStorage.getItem(LS_CHAVE)) {
       localStorage.setItem(LS_CHAVE, JSON.stringify(this.getContasBase()));
+    }
+
+    if (!localStorage.getItem(LS_CHAVE_CLIENTE)) {
+      localStorage.setItem(LS_CHAVE_CLIENTE, JSON.stringify(this.clientes));
     }
   }
 
@@ -364,6 +382,20 @@ export class MockService {
     return this.clientes[globalIndex] || null;
   }
 
+  getClientesLS(): Cliente[] {
+    return JSON.parse(localStorage.getItem(LS_CHAVE_CLIENTE) || '[]');
+  }
+
+  updateClientesLS(clientesAtualizados: Cliente[]): void {
+    localStorage.setItem(LS_CHAVE_CLIENTE, JSON.stringify(clientesAtualizados));
+  }
+
+  addClienteLS(cliente: Cliente): void {
+    const clientes = this.getClientesLS();
+    clientes.push(cliente);
+    this.updateClientesLS(clientes);
+  }
+
   getGerenteComMenosClientes(): Gerente {
     return this.gerentes.reduce((prev, curr) =>
       (prev.clientes?.length ?? 0) <= (curr.clientes?.length ?? 0) ? prev : curr
@@ -424,5 +456,18 @@ export class MockService {
     localStorage.setItem(LS_CHAVE, JSON.stringify(contas));
 
     console.log('Conta criada no LS:', novaConta);
+  }
+
+  verificarOuAdicionarClienteLS(novoCliente: Cliente): boolean {
+    const clientes = this.getClientesLS();
+    const jaExiste = clientes.some((c) => c.cpf === novoCliente.cpf);
+
+    if (jaExiste) {
+      return false;
+    }
+
+    clientes.push(novoCliente);
+    this.updateClientesLS(clientes);
+    return true;
   }
 }

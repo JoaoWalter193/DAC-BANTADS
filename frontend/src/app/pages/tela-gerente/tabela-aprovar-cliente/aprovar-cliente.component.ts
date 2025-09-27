@@ -106,6 +106,8 @@ export class AprovarClienteComponent {
       time: new Date(cliente.dataDecisao).toLocaleString(),
       text_message: textMessage,
     });
+
+    this.refreshClientes();
   }
 
   clienteRejeicao: Cliente | null = null;
@@ -140,13 +142,17 @@ export class AprovarClienteComponent {
 
         Infelizmente sua solicitação foi rejeitada.
         Motivo: ${this.motivoRejeicao}
-        Data da decisão: ${new Date(this.clienteRejeicao.dataDecisao).toLocaleString('pt-BR')}
+        Data da decisão: ${new Date(
+          this.clienteRejeicao.dataDecisao
+        ).toLocaleString('pt-BR')}
         Atenciosamente,
         Equipe DinDin Bank
       `,
     });
 
     this.cancelarRejeicao();
+
+    this.refreshClientes();
   }
 
   enviarEmail(params: {
@@ -176,5 +182,9 @@ export class AprovarClienteComponent {
         this.emailStatus = 'erro';
         this.emailMessage = 'Falha ao enviar email.';
       });
+  }
+
+  refreshClientes() {
+    this.clientes = this.getContasPendentes();
   }
 }
