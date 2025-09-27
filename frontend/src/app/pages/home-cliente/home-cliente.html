@@ -9,7 +9,9 @@
       <span>Saldo disponível</span>
       <div class="info-saldo">
         <mat-icon fontIcon="wallet" aria-hidden="false" aria-label="Ícone de 'wallet'"></mat-icon>
-        <span>{{ conta.saldo | currency:"BRL":"symbol":"1.2-2" }}</span>
+        <span [ngClass]="{ 'saldo-negativo': conta.saldo < 0 }">
+          {{ conta.saldo | currency:"BRL":"symbol":"1.2-2" }}
+        </span>
       </div>
     </div>
 
