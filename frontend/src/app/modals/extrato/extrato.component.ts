@@ -20,7 +20,7 @@ export class ExtratoComponent {
     this.nomeClienteLogado = data.nomeCliente;
   }
 
-  ehSaida(transacao: Transacao): boolean {
+  saida(transacao: Transacao): boolean {
     if (transacao.tipo === TipoTransacao.SAQUE) return true;
     if (transacao.tipo === TipoTransacao.TRANSFERENCIA && transacao.clienteOrigem === this.nomeClienteLogado) return true;
     return false;
