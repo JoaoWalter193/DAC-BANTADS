@@ -1,11 +1,19 @@
 .tela-gerente-cadastro {
+  background-color: #0c2464;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.content {
+  overflow: hidden;
   max-width: 600px;
-  margin: 2rem auto;
   background-color: #fff;
+  margin: 2rem auto;
   padding: 40px 30px;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 .tela-gerente-cadastro h2 {
@@ -13,7 +21,7 @@
   font-weight: 600;
   color: #0c2464;
   margin-bottom: 20px;
-  text-align: center;
+  text-align: left;
 }
 
 .form-gerente {
@@ -29,41 +37,55 @@
 
 .form-gerente input {
   width: 100%;
-  padding: 12px;
+  padding: 0.75rem;
   border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 0.5rem;
+  font-size: 1rem;
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .form-gerente input:focus {
-  border-color: #EDE654;
+  border-color: #ede654;
   box-shadow: 0 0 0 2px rgba(237, 230, 84, 0.3);
   outline: none;
 }
 
-button {
-  padding: 12px;
-  background-color: #EDE654;
+.btn-voltar,
+.btn-cadastrar {
+  width: 100%;
   color: #0c2464;
   font-weight: 600;
   border: none;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 1rem;
+  padding: 0.75rem;
   transition: background 0.3s;
 }
 
-button:hover:not(:disabled) {
+.btn-cadastrar {
+  background-color: #ede654;
+}
+
+.btn-cadastrar:hover:not(:disabled) {
   background-color: #dada4f;
 }
 
-button:disabled {
+.btn-cadastrar:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
 
+.btns {
+  display: flex;
+  gap: 1rem;
+}
+
 /* Mensagens de feedback */
+.mensagem {
+  margin-bottom: 1rem;
+}
+
 .mensagem-sucesso {
   background-color: #d4edda;
   color: #155724;
