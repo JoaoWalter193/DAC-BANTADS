@@ -6,7 +6,7 @@
   justify-content: center;
   gap: 2rem;
   padding: 2rem;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   height: 93.4vh;
 }
 
@@ -31,6 +31,11 @@
   margin-bottom: 1rem;
 }
 
+.extrato-container {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  font-size: 1rem;
+}
+
 /* Saldo */
 .saldo-container,
 .extrato-container,
@@ -41,20 +46,6 @@
   gap: 0.5rem;
 }
 
-.btn-perfil {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: #EDE654;
-  border-radius: 8px;
-  font-weight: 500;
-  color: #0c2464;
-  text-decoration: none;
-  width: 400px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
 
 .btn-perfil:hover {
   background-color: #dada4f;
@@ -76,31 +67,49 @@
   font-weight: 600;
 }
 
-.botao-extrato,
-.btn-op {
+
+.btn-extrato,
+.btn-op,
+.btn-perfil {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: #EDE654;
+  padding: .75rem 1rem;
+  background-color: #ede654;
+  color: #010101;
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 26px;
+  width: 400px;
   border-radius: 8px;
   border: none;
-  font-weight: 500;
   cursor: pointer;
   transition: background 0.3s ease;
 }
 
-.botao-extrato:hover,
+.btn-op {
+  justify-content: space-between;
+}
+
+.btn-extrato:hover,
 .btn-op:hover {
   background-color: #dada4f;
+}
+
+.input-group {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
 }
 
 .campos-operacao {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  margin-top: 0.5rem;
+  margin-block: 1rem;
+  padding-inline: 0.5rem;
 }
 
 .operacao-ativa {
@@ -121,7 +130,7 @@
 
 .valor-input:focus {
   outline: none;
-  border: 1px solid #EDE654;
+  border: 1px solid #ede654;
   box-shadow: 0 0 0 2px rgba(237, 230, 84, 0.3);
 }
 
@@ -178,13 +187,12 @@ mat-icon {
 
 /* Links */
 a {
-  color: #0c2464;
   text-decoration: none;
   font-weight: 500;
 }
 
 a:hover {
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 /* Responsividade */
@@ -194,7 +202,7 @@ a:hover {
     padding: 1.5rem;
   }
 
-  .botao-extrato,
+  .btn-extrato,
   .btn-op,
   .btn-enviar {
     font-size: 0.9rem;

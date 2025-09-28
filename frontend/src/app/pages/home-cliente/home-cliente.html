@@ -16,7 +16,7 @@
     </div>
 
     <div class="extrato-container">
-      <button class="botao-extrato" (click)="expandirOperacao('extrato')">
+      <button class="btn-extrato" (click)="expandirOperacao('extrato')">
         <mat-icon fontIcon="attach_money"></mat-icon>
         <span>Visualizar Extrato</span>
       </button>
@@ -24,13 +24,15 @@
       <div *ngIf="operacaoAtiva == 'extrato'" class="campos-operacao">
         <form [formGroup]="formExtrato" (ngSubmit)="gerarExtrato()" class="form-extrato">
           <div class="input-group">
-            <label for="dataInicio">Data de Início</label>
+            <label for="dataInicio">Data de Início:</label>
             <input type="date" id="dataInicio" formControlName="dataInicio" class="valor-input" />
           </div>
+
           <div class="input-group">
-            <label for="dataFim">Data de Fim</label>
+            <label for="dataFim">Data de Fim:</label>
             <input type="date" id="dataFim" formControlName="dataFim" class="valor-input" />
           </div>
+
           <button type="submit" class="btn-enviar" [disabled]="formExtrato.invalid">Gerar Extrato</button>
         </form>
 
