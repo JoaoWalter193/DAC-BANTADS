@@ -166,8 +166,6 @@ export class TelaAutocadastroComponent implements AfterViewInit {
   }
 
   onSubmit() {
-    // CORREÇÃO: Usa a validação nativa do Angular Reactive Forms.
-    // Marcar todos os campos como "tocados" para exibir as mensagens de erro.
     this.cadastroForm.markAllAsTouched();
 
     if (!this.cadastroForm.valid) {
@@ -180,7 +178,6 @@ export class TelaAutocadastroComponent implements AfterViewInit {
 
     this.carregando = true;
 
-    // O setTimeout simula a latência da rede
     setTimeout(() => {
       const formValues = this.cadastroForm.getRawValue();
 
@@ -204,12 +201,9 @@ export class TelaAutocadastroComponent implements AfterViewInit {
         status: 'pendente',
         dataSolicitacao: new Date(),
         role: 'CLIENTE',
-        // CORREÇÃO: Atribui uma senha padrão para permitir o login no protótipo.
-        // De acordo com a R1, em produção, a senha só seria enviada após aprovação.
         senha: '',
       };
 
-      // A lógica de verificação e adição foi centralizada no MockService
       const sucesso = this.mockService.addClienteAoGerente(clienteCompleto);
 
       this.carregando = false;

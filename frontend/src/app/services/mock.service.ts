@@ -229,20 +229,11 @@ export class MockService {
 
   private initLocalStorage(): void {
     if (!localStorage.getItem(LS_CHAVE_CLIENTE)) {
-      console.log(
-        `[MockService] Populando Local Storage com dados iniciais de CLIENTES na chave: ${LS_CHAVE_CLIENTE}`
-      );
       localStorage.setItem(LS_CHAVE_CLIENTE, JSON.stringify(this.clientes));
     }
 
     if (!localStorage.getItem(LS_CHAVE)) {
-      console.log(
-        `[MockService] Populando Local Storage com dados iniciais de CONTAS na chave: ${LS_CHAVE}`
-      );
-      localStorage.setItem(
-        LS_CHAVE,
-        JSON.stringify(this.getContasBase())
-      );
+      localStorage.setItem(LS_CHAVE, JSON.stringify(this.getContasBase()));
     }
   }
 
@@ -252,49 +243,21 @@ export class MockService {
     email: string,
     password: string
   ): Cliente | Gerente | Admin | undefined {
-    console.log(`[MockService] --- INICIANDO AUTENTICAÇÃO PARA: ${email} ---`);
-
     const clientes = this.getClientes();
     const allUsers = [...clientes, ...this.gerentes, ...this.admins];
-    console.log(
-      '[MockService] Buscando na lista completa de usuários. Total:',
-      allUsers.length
-    );
-    console.log(
-      '[MockService] Dados dos clientes vindos do Local Storage:',
-      JSON.parse(JSON.stringify(clientes))
-    );
 
     const user = allUsers.find((u) => u.email === email);
 
     if (!user) {
-      console.error(
-        `[MockService] ERRO: Usuário com email "${email}" NÃO FOI ENCONTRADO.`
-      );
+      console.error(`Usuário com email "${email}" não encontrado.`);
       return undefined;
     }
 
-    console.log(
-      '[MockService] SUCESSO: Usuário encontrado pelo email. Dados:',
-      user
-    );
-    console.log(
-      `[MockService] Comparando senhas... Digitada: "${password}" vs Armazenada: "${
-        (user as any).senha
-      }"`
-    );
+    console.log('Usuário encontrado. Dados:', user);
 
-    if ('senha' in user && (user as any).senha === password) {
-      console.log(
-        '%c[MockService] SUCESSO: As senhas coincidem!',
-        'color: green; font-weight: bold;'
-      );
+    if (user.senha && user.senha === password) {
       return user;
     } else {
-      console.error(
-        '%c[MockService] ERRO: As senhas NÃO coincidem!',
-        'color: red; font-weight: bold;'
-      );
       return undefined;
     }
   }
@@ -370,15 +333,8 @@ export class MockService {
       if (contaIndex !== -1) {
         contas[contaIndex].cliente = clientes[index];
         localStorage.setItem(LS_CHAVE, JSON.stringify(contas));
-        console.log(
-          '[MockService] Dados do cliente na conta também foram sincronizados.'
-        );
       }
 
-      console.log(
-        '[MockService] Cliente atualizado e salvo no Local Storage:',
-        clientes[index]
-      );
       return clientes[index];
     }
 
