@@ -228,12 +228,21 @@ export class MockService {
   }
 
   private initLocalStorage(): void {
-    if (!localStorage.getItem(LS_CHAVE)) {
-      localStorage.setItem(LS_CHAVE, JSON.stringify(this.getContasBase()));
+    if (!localStorage.getItem(LS_CHAVE_CLIENTE)) {
+      console.log(
+        `[MockService] Populando Local Storage com dados iniciais de CLIENTES na chave: ${LS_CHAVE_CLIENTE}`
+      );
+      localStorage.setItem(LS_CHAVE_CLIENTE, JSON.stringify(this.clientes));
     }
 
-    if (!localStorage.getItem(LS_CHAVE_CLIENTE)) {
-      localStorage.setItem(LS_CHAVE_CLIENTE, JSON.stringify(this.clientes));
+    if (!localStorage.getItem(LS_CHAVE)) {
+      console.log(
+        `[MockService] Populando Local Storage com dados iniciais de CONTAS na chave: ${LS_CHAVE}`
+      );
+      localStorage.setItem(
+        LS_CHAVE,
+        JSON.stringify(this.getContasBase())
+      );
     }
   }
 
@@ -243,13 +252,51 @@ export class MockService {
     email: string,
     password: string
   ): Cliente | Gerente | Admin | undefined {
-    const allUsers = [...this.clientes, ...this.gerentes, ...this.admins];
+    console.log(`[MockService] --- INICIANDO AUTENTICAÇÃO PARA: ${email} ---`);
+
+    const clientes = this.getClientes();
+    const allUsers = [...clientes, ...this.gerentes, ...this.admins];
+    console.log(
+      '[MockService] Buscando na lista completa de usuários. Total:',
+      allUsers.length
+    );
+    console.log(
+      '[MockService] Dados dos clientes vindos do Local Storage:',
+      JSON.parse(JSON.stringify(clientes))
+    );
+
     const user = allUsers.find((u) => u.email === email);
 
-    if (user && user.senha === password) {
-      return user;
+    if (!user) {
+      console.error(
+        `[MockService] ERRO: Usuário com email "${email}" NÃO FOI ENCONTRADO.`
+      );
+      return undefined;
     }
-    return undefined;
+
+    console.log(
+      '[MockService] SUCESSO: Usuário encontrado pelo email. Dados:',
+      user
+    );
+    console.log(
+      `[MockService] Comparando senhas... Digitada: "${password}" vs Armazenada: "${
+        (user as any).senha
+      }"`
+    );
+
+    if ('senha' in user && (user as any).senha === password) {
+      console.log(
+        '%c[MockService] SUCESSO: As senhas coincidem!',
+        'color: green; font-weight: bold;'
+      );
+      return user;
+    } else {
+      console.error(
+        '%c[MockService] ERRO: As senhas NÃO coincidem!',
+        'color: red; font-weight: bold;'
+      );
+      return undefined;
+    }
   }
 
   // busca de uma conta pelo CPF do cliente
@@ -263,7 +310,6 @@ export class MockService {
     return contas.find((c) => c.numeroConta === numeroConta);
   }
 
-  // salva conta atualizada no LS
   updateConta(contaAtualizada: Conta): void {
     let contas: Conta[] = JSON.parse(localStorage.getItem(LS_CHAVE) || '[]');
     const index = contas.findIndex(
@@ -287,7 +333,7 @@ export class MockService {
   }
 
   getClientes(): Cliente[] {
-    return this.clientes;
+    return JSON.parse(localStorage.getItem(LS_CHAVE_CLIENTE) || '[]');
   }
 
   getClienteByCpf(cpf: string): Cliente | null {
@@ -299,87 +345,44 @@ export class MockService {
     );
   }
 
-  updateCliente(cliente: Cliente): Cliente | null {
-    const cpf = (cliente.cpf || '').replace(/\D/g, '');
-
-    const clienteNormalizado = { ...cliente, cpf };
-
-    console.log('Tentando atualizar CPF:', cpf);
-    console.log('Clientes globais disponíveis (antes):', this.clientes);
-
-    let globalIndex = this.clientes.findIndex(
-      (c) => (c.cpf || '').replace(/\D/g, '') === cpf
+  updateCliente(clienteAtualizadoParcial: Cliente): Cliente | null {
+    const clientes = this.getClientes();
+    const index = clientes.findIndex(
+      (c) => c.cpf === clienteAtualizadoParcial.cpf
     );
-    if (globalIndex !== -1) {
-      this.clientes[globalIndex] = {
-        ...this.clientes[globalIndex],
-        ...clienteNormalizado,
+
+    if (index !== -1) {
+      const clienteOriginalCompleto = clientes[index];
+
+      clientes[index] = {
+        ...clienteOriginalCompleto,
+        ...clienteAtualizadoParcial,
       };
-      console.log('Cliente atualizado (global):', this.clientes[globalIndex]);
-    } else {
-      this.clientes.push({
-        ...clienteNormalizado,
-        senha: clienteNormalizado['senha'] || '',
-      });
-      globalIndex = this.clientes.length - 1;
-      console.log('Cliente adicionado ao global:', this.clientes[globalIndex]);
-    }
 
-    for (const gerente of this.gerentes) {
-      if (!gerente.clientes) continue;
-      const gi = gerente.clientes.findIndex(
-        (c) => (c.cpf || '').replace(/\D/g, '') === cpf
+      localStorage.setItem(LS_CHAVE_CLIENTE, JSON.stringify(clientes));
+
+      const contas: Conta[] = JSON.parse(
+        localStorage.getItem(LS_CHAVE) || '[]'
       );
-      if (gi !== -1) {
-        gerente.clientes[gi] = {
-          ...gerente.clientes[gi],
-          ...clienteNormalizado,
-        };
+      const contaIndex = contas.findIndex(
+        (c) => c.cliente.cpf === clienteAtualizadoParcial.cpf
+      );
+      if (contaIndex !== -1) {
+        contas[contaIndex].cliente = clientes[index];
+        localStorage.setItem(LS_CHAVE, JSON.stringify(contas));
         console.log(
-          `Cliente atualizado dentro do gerente ${gerente.nome}:`,
-          gerente.clientes[gi]
+          '[MockService] Dados do cliente na conta também foram sincronizados.'
         );
       }
+
+      console.log(
+        '[MockService] Cliente atualizado e salvo no Local Storage:',
+        clientes[index]
+      );
+      return clientes[index];
     }
 
-    const currentUserJSON = localStorage.getItem('currentUser');
-    if (currentUserJSON) {
-      const currentUser = JSON.parse(currentUserJSON);
-
-      if (
-        currentUser.user?.role === 'GERENTE' &&
-        Array.isArray(currentUser.user.clientes)
-      ) {
-        const ci = currentUser.user.clientes.findIndex(
-          (c: Cliente) => (c.cpf || '').replace(/\D/g, '') === cpf
-        );
-        if (ci !== -1) {
-          currentUser.user.clientes[ci] = {
-            ...currentUser.user.clientes[ci],
-            ...clienteNormalizado,
-          };
-          localStorage.setItem('currentUser', JSON.stringify(currentUser));
-          console.log(
-            'Cliente atualizado no currentUser (gerente):',
-            currentUser.user.clientes[ci]
-          );
-        }
-      }
-
-      if (
-        currentUser.user?.role === 'CLIENTE' &&
-        (currentUser.user.cpf || '').replace(/\D/g, '') === cpf
-      ) {
-        currentUser.user = { ...currentUser.user, ...clienteNormalizado };
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        console.log(
-          'Cliente atualizado no currentUser (cliente):',
-          currentUser.user
-        );
-      }
-    }
-
-    return this.clientes[globalIndex] || null;
+    return null;
   }
 
   getClientesLS(): Cliente[] {
@@ -411,7 +414,7 @@ export class MockService {
     cliente.cpf = cliente.cpf.replace(/\D/g, '');
 
     const cpfExistente =
-      this.clientes.some((c) => c.cpf === cliente.cpf) ||
+      this.getClientes().some((c) => c.cpf === cliente.cpf) ||
       this.gerentes.some((g) => g.clientes?.some((c) => c.cpf === cliente.cpf));
 
     if (cpfExistente) {
@@ -422,10 +425,18 @@ export class MockService {
     const gerente = this.getGerenteComMenosClientes();
     if (!gerente.clientes) gerente.clientes = [];
 
-    this.clientes.push(cliente);
-    gerente.clientes.push({ ...cliente, status: 'pendente' });
+    const clienteComSenha: Cliente & { senha: string } = {
+      ...cliente,
+      status: 'pendente',
+      senha: '',
+    };
 
-    console.log('Cliente adicionado ao global:', this.clientes);
+    this.clientes.push(clienteComSenha);
+    this.addClienteLS(clienteComSenha);
+
+    gerente.clientes.push(clienteComSenha);
+
+    console.log('Cliente adicionado à lista em memória:', this.clientes);
     console.log('Cliente adicionado ao gerente:', gerente);
 
     return true;

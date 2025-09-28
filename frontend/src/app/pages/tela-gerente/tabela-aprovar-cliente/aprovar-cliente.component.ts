@@ -74,6 +74,7 @@ export class AprovarClienteComponent {
     // atualiza status e dados da aprovação
     cliente.status = 'aprovado';
     cliente.conta = conta; // <-- ADICIONAR no cliente
+    cliente.senha = senha;
     const limite = this.calcularLimite(cliente.salario);
     cliente.dataDecisao = new Date().toISOString();
 
