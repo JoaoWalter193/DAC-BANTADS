@@ -1,5 +1,5 @@
 .tela-cadastro {
-    height: 100vh;
+    min-height: 100vh;
     width: 100%;
     display: flex;
     font-family: 'Poppins', sans-serif;
@@ -92,7 +92,7 @@
     border-top-left-radius: 300px;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     padding: 40px;
 }
 
