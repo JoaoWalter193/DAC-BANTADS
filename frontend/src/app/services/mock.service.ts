@@ -278,6 +278,7 @@ export class MockService {
   // função pra resetar o mock e corrigir valores e contas
   resetMockData(): void {
     localStorage.removeItem(LS_CHAVE);
+    localStorage.removeItem(LS_CHAVE_CLIENTE);
     this.initLocalStorage();
     alert('pipipipipi resetado');
   }
