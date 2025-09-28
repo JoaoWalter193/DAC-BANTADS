@@ -2,6 +2,7 @@ import { Endereco } from './../../models/endereco.interface';
 import { ClienteService } from './../../services/cliente.service';
 import { AuthService } from './../../services/auth.service';
 import { Component, OnInit } from '@angular/core';
+import { Location } from '@angular/common';
 import {
   FormBuilder,
   FormGroup,
@@ -15,7 +16,7 @@ import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { MatButton } from '@angular/material/button';
 import { Cliente } from '../../models/cliente.interface';
 import { CommonModule } from '@angular/common';
-import { NgxMaskService } from 'ngx-mask';
+import { NgxMaskDirective } from 'ngx-mask';
 
 @Component({
   selector: 'app-perfil-cliente',
@@ -28,6 +29,7 @@ import { NgxMaskService } from 'ngx-mask';
     ReactiveFormsModule,
     MatButton,
     CommonModule,
+    NgxMaskDirective,
   ],
   templateUrl: './perfil-cliente.component.html',
   styleUrl: './perfil-cliente.component.css',
@@ -39,9 +41,8 @@ export class PerfilClienteComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService,
     private clienteService: ClienteService,
-    private maskService: NgxMaskService
+    private location: Location
   ) {
     // incia a estrutura do formulário com dados vazios
     this.profileForm = this.fb.group({
@@ -55,7 +56,7 @@ export class PerfilClienteComponent implements OnInit {
         logradouro: ['', [Validators.required]],
         numero: ['', [Validators.required]],
         complemento: [''],
-        cep: ['', [Validators.required]],
+        CEP: ['', [Validators.required]],
         cidade: ['', [Validators.required]],
         estado: ['', [Validators.required]],
       }),
@@ -93,5 +94,9 @@ export class PerfilClienteComponent implements OnInit {
       this.cliente = clienteNovo;
       this.status = 'Cliente atualizado';
     }
+  }
+
+  voltar(): void {
+    this.location.back();
   }
 }

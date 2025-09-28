@@ -82,24 +82,14 @@ export class TelaAutocadastroComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.cadastroForm.get('cpf')?.valueChanges.subscribe((cpf: string) => {
-      if (this.atualizandoCPF) return;
-
-      const cleanedCPF = cpf.replace(/\D/g, '');
-      if (cleanedCPF.length === 11) {
-        this.atualizandoCPF = true;
-        this.cadastroForm
-          .get('cpf')
-          ?.updateValueAndValidity({ onlySelf: true });
-        this.atualizandoCPF = false;
-      }
-    });
-
     this.cadastroForm.get('salario')?.valueChanges.subscribe((salario) => {
-      if (salario < 0 || salario === null) {
+      if (salario === null || salario === undefined) return; // Guarda de segurança
+
+      if (salario < 0) {
         this.cadastroForm.get('salario')?.setValue(0, { emitEvent: false });
       }
 
+      // Converte para string apenas se não for nulo
       const cleanedSalario = salario.toString().replace(/\D/g, '');
       const valorMaximo = 10000000;
 
@@ -176,62 +166,66 @@ export class TelaAutocadastroComponent implements AfterViewInit {
   }
 
   onSubmit() {
-    if (!this.validarFormulario()) {
+    // CORREÇÃO: Usa a validação nativa do Angular Reactive Forms.
+    // Marcar todos os campos como "tocados" para exibir as mensagens de erro.
+    this.cadastroForm.markAllAsTouched();
+
+    if (!this.cadastroForm.valid) {
       this.mostrarMensagem(
-        'Por favor, preencha todos os campos obrigatórios.',
+        'Por favor, preencha todos os campos obrigatórios corretamente.',
         'erro'
       );
       return;
     }
 
-    const cpfNumerico = this.cadastroForm.get('cpf')?.value.replace(/\D/g, '');
-
     this.carregando = true;
 
+    // O setTimeout simula a latência da rede
     setTimeout(() => {
+      const formValues = this.cadastroForm.getRawValue();
+
       const clienteCompleto: Cliente = {
-        cpf: cpfNumerico,
-        nome: this.cadastroForm.get('nome')?.value,
-        email: this.cadastroForm.get('email')?.value,
-        salario:
-          this.cadastroForm.get('salario')?.value.replace(/\D/g, '') / 100,
+        cpf: formValues.cpf.replace(/\D/g, ''),
+        nome: formValues.nome,
+        email: formValues.email,
+        salario: parseFloat(
+          formValues.salario.replace(/\./g, '').replace(',', '.')
+        ),
         endereco: {
-          tipo: this.cadastroForm.get('tipo')?.value,
-          logradouro: this.cadastroForm.get('logradouro')?.value,
-          numero: this.cadastroForm.get('numero')?.value.replace(/\D/g, ''),
-          complemento: this.cadastroForm.get('complemento')?.value,
-          CEP: this.cadastroForm.get('cep')?.value.replace(/\D/g, ''),
-          cidade: this.cadastroForm.get('cidade')?.value,
-          estado: this.cadastroForm.get('estado')?.value,
+          tipo: formValues.tipo,
+          logradouro: formValues.logradouro,
+          numero: formValues.numero,
+          complemento: formValues.complemento,
+          CEP: formValues.cep.replace(/\D/g, ''),
+          cidade: formValues.cidade,
+          estado: formValues.estado,
         },
-        telefone: this.cadastroForm.get('telefone')?.value,
+        telefone: formValues.telefone.replace(/\D/g, ''),
         status: 'pendente',
         dataSolicitacao: new Date(),
         role: 'CLIENTE',
+        // CORREÇÃO: Atribui uma senha padrão para permitir o login no protótipo.
+        // De acordo com a R1, em produção, a senha só seria enviada após aprovação.
         senha: '',
       };
 
-      // usa o retorno para verificar se já existe
-      const sucesso =
-        this.mockService.verificarOuAdicionarClienteLS(clienteCompleto);
+      // A lógica de verificação e adição foi centralizada no MockService
+      const sucesso = this.mockService.addClienteAoGerente(clienteCompleto);
 
       this.carregando = false;
 
       if (!sucesso) {
         this.mostrarMensagem(
-          'CPF já cadastrado. Não é possível fazer um novo cadastro.',
+          'CPF já cadastrado. Não é possível fazer uma novo cadastro.',
           'erro'
         );
-        return;
+      } else {
+        this.mostrarMensagem(
+          'Solicitação de cadastro enviada com sucesso! Aguarde a aprovação do gerente.',
+          'sucesso'
+        );
+        this.limparFormulario();
       }
-
-      this.mockService.addClienteAoGerente(clienteCompleto);
-
-      this.mostrarMensagem(
-        'Solicitação de cadastro enviada com sucesso! Aguarde a aprovação do gerente.',
-        'sucesso'
-      );
-      this.limparFormulario();
     }, 1500);
   }
 
