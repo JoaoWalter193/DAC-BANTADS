@@ -1,0 +1,34 @@
+<app-navbar></app-navbar>
+
+<div class="tela-gerente">
+  <div class="gerente-header">
+    <h2>Lista de Gerentes</h2>
+    <div class="section-links">
+      <a routerLink="/tela-administrador">Voltar</a>
+    </div>
+  </div>
+
+  <div class="gerente-content">
+    <div class="card-dashboard">
+      <h3>Todos os Gerentes Cadastrados</h3>
+
+      <table class="tabela-gerentes">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>CPF</th>
+            <th>E-mail</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let gerente of gerentes">
+            <td>{{ gerente.nome }}</td>
+            <td>{{ gerente.cpf | formatarCpf }}</td>
+            <td>{{ gerente.email }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p *ngIf="gerentes.length === 0">Nenhum gerente encontrado.</p>
+    </div>
+  </div>
+</div>

@@ -15,6 +15,7 @@ import { MelhoresClientesComponent } from './pages/tela-gerente/melhores-cliente
 import { TelaGerenteDashboardComponent } from './pages/tela-gerente-dashboard/tela-gerente-dashboard.component';
 import { TabelaTodosClientesComponent } from './pages/tela-administrador/tabela-todos-clientes/tabela-todos-clientes.component';
 import { ClienteDetalhesComponent } from './pages/tela-gerente/cliente-detalhes/cliente-detalhes.component';
+import { GerenteDetalhesComponent } from './pages/tela-administrador/gerente-detalhes/gerente-detalhes.component';
 export const routes: Routes = [
   {
     path: '',
@@ -74,6 +75,11 @@ export const routes: Routes = [
   {
     path: 'cadastro-gerente',
     component: CadastroGerente,
+  },
+
+  {
+    path: 'gerente-detalhes',
+    component: GerenteDetalhesComponent,
   },
 
   {

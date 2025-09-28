@@ -8,7 +8,7 @@ const LS_CHAVE_CLIENTE = 'cliente';
 @Injectable({
   providedIn: 'root',
 })
-// mock centralizado neste serviço para testes
+// mock centralizado para testes
 export class MockService {
   private clientes: (Cliente & { senha: string })[] = [
     {
