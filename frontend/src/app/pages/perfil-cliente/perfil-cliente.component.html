@@ -11,26 +11,61 @@
           <mat-form-field appearance="outline">
             <mat-label>Nome</mat-label>
             <input matInput formControlName="nome" />
+            <mat-error
+              *ngIf="
+                profileForm.get('nome')?.touched &&
+                profileForm.get('nome')?.invalid
+              "
+              >O nome é obrigatório</mat-error
+            >
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>E-mail</mat-label>
             <input matInput formControlName="email" />
+            <mat-error
+              *ngIf="
+                profileForm.get('email')?.touched &&
+                profileForm.get('email')?.invalid
+              "
+              >O e-mail é obrigatório</mat-error
+            >
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>CPF</mat-label>
             <input matInput formControlName="cpf" />
+            <mat-error
+              *ngIf="
+                profileForm.get('cpf')?.touched &&
+                profileForm.get('cpf')?.invalid
+              "
+              >O CPF é obrigatório</mat-error
+            >
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Telefone</mat-label>
             <input matInput formControlName="telefone" mask="(00) 00000-0000" />
+            <mat-error
+              *ngIf="
+                profileForm.get('telefone')?.touched &&
+                profileForm.get('telefone')?.invalid
+              "
+              >O telefone é obrigatório</mat-error
+            >
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Salário</mat-label>
             <input matInput formControlName="salario" />
+            <mat-error
+              *ngIf="
+                profileForm.get('salario')?.touched &&
+                profileForm.get('salario')?.invalid
+              "
+              >O salário é obrigatório</mat-error
+            >
           </mat-form-field>
         </div>
 
@@ -39,16 +74,37 @@
           <mat-form-field appearance="outline">
             <mat-label>Tipo</mat-label>
             <input matInput formControlName="tipo" />
+            <mat-error
+              *ngIf="
+                profileForm.get('endereco.tipo')?.touched &&
+                profileForm.get('endereco.tipo')?.invalid
+              "
+              >O tipo é obrigatório</mat-error
+            >
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Logradouro</mat-label>
             <input matInput formControlName="logradouro" />
+            <mat-error
+              *ngIf="
+                profileForm.get('endereco.logradouro')?.touched &&
+                profileForm.get('endereco.logradouro')?.invalid
+              "
+              >O logradouro é obrigatório</mat-error
+            >
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Número</mat-label>
             <input matInput formControlName="numero" />
+            <mat-error
+              *ngIf="
+                profileForm.get('endereco.numero')?.touched &&
+                profileForm.get('endereco.numero')?.invalid
+              "
+              >O número é obrigatório</mat-error
+            >
           </mat-form-field>
 
           <mat-form-field appearance="outline">
@@ -58,17 +114,38 @@
 
           <mat-form-field appearance="outline">
             <mat-label>CEP</mat-label>
-            <input matInput formControlName="cep" mask="00000-000" />
+            <input matInput formControlName="CEP" mask="00000-000" />
+            <mat-error
+              *ngIf="
+                profileForm.get('endereco.CEP')?.touched &&
+                profileForm.get('endereco.CEP')?.invalid
+              "
+              >O CEP é obrigatório</mat-error
+            >
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Cidade</mat-label>
             <input matInput formControlName="cidade" />
+            <mat-error
+              *ngIf="
+                profileForm.get('endereco.cidade')?.touched &&
+                profileForm.get('endereco.cidade')?.invalid
+              "
+              >O cidade é obrigatório</mat-error
+            >
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Estado</mat-label>
             <input matInput formControlName="estado" />
+            <mat-error
+              *ngIf="
+                profileForm.get('endereco.estado')?.touched &&
+                profileForm.get('endereco.estado')?.invalid
+              "
+              >O estado é obrigatório</mat-error
+            >
           </mat-form-field>
         </div>
       </div>
@@ -78,12 +155,14 @@
       </div>
 
       <div class="botoes">
-        <button mat-raised-button type="submit" [disabled]="profileForm.invalid">
+        <button
+          mat-raised-button
+          type="submit"
+          [disabled]="profileForm.invalid"
+        >
           Salvar alterações
         </button>
-        <button mat-button class="btn-voltar">
-          <a href="/home-cliente">Voltar para tela inicial</a>
-        </button>
+        <button mat-button class="btn-voltar" (click)="voltar()">Voltar</button>
       </div>
     </div>
   </section>
