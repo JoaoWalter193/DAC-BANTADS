@@ -30,3 +30,10 @@ Para rodar este projeto é necessário alguns softwares:
  - 12345 : Adminer(Gerenciador Web de SQL)
  - 1010: microserviço de gerente
 
+## Integrantes:
+  - Giulio Miguel Simao da Silva - GRR20231020
+  - Lucas Venturin Trindade - GRR20231001
+  - João Vitor Liskoski Walter - GRR20231005
+  - Sophia Costa Soares de Silva - GRR20231011
+  - Pedro Augusto Lemos - GRR20234188 
+
