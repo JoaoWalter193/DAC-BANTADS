@@ -1,0 +1,49 @@
+<div class="clientes-dashboard">
+  <table>
+    <thead>
+      <tr>
+        <th>Nome do Cliente</th>
+        <th>CPF</th>
+        <th>Limite</th>
+        <th>Salário</th>
+        <th>Email</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let cliente of clientes">
+        <td>{{ cliente.nome }}</td>
+        <td>{{ cliente.cpf | formatarCpf }}</td>
+        <td>{{ calcularLimite(cliente.salario) | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"}}</td>
+        <td>{{ cliente.salario | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"}}</td>
+        <td>{{ cliente.email }}</td>
+        <td>
+          <button class="botaoAprovar" (click)="aprovar(cliente.cpf)" type="button">Aprovar</button>
+          <button class="botaoReprovar" (click)="abrirRejeicao(cliente)" type="button">Reprovar</button>
+        </td>
+      </tr>
+      <tr *ngIf="clientes.length === 0">
+        <td colspan="6">Nenhum cliente para ser aprovado.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div *ngIf="clienteRejeicao" class="modal">
+  <div class="modal-content">
+    <h3>Motivo da Rejeição</h3>
+    <textarea [(ngModel)]="motivoRejeicao"></textarea>
+    <div class="modal-buttons">
+      <button (click)="confirmarRejeicao()">Confirmar</button>
+      <button (click)="cancelarRejeicao()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="emailStatus" class="email-status" [ngClass]="{
+       'enviando': emailStatus === 'enviando',
+       'sucesso': emailStatus === 'sucesso',
+       'erro': emailStatus === 'erro'
+     }">
+  {{ emailMessage }}
+</div>

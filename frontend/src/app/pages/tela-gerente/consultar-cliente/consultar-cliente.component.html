@@ -1,0 +1,50 @@
+<section class="tela-gerente">
+    <div class="gerente-header">
+        <h2>Consultar Cliente</h2>
+        <div class="section-links">
+            <a routerLink="/tela-gerente">Voltar</a>
+        </div>
+    </div>
+
+    <div class="gerente-content">
+        <div class="clientes-dashboard">
+            <div class="card-dashboard">
+                <!-- Formulário de consulta -->
+                <form class="consulta" (ngSubmit)="consultarCliente()">
+                    <label for="cpf">CPF do Cliente:</label>
+                    <input id="cpf" name="cpf" type="text" [(ngModel)]="cpf" (ngModelChange)="buscarSugestoes()"
+                        placeholder="Digite o CPF (somente números)" maxlength="11" required />
+                    <button type="submit">Consultar</button>
+                </form>
+
+                <!-- Sugestões -->
+                <ul *ngIf="sugestoes.length > 0" class="sugestoes">
+                    <li *ngFor="let cliente of sugestoes" (click)="selecionarSugestao(cliente)">
+                        <strong>{{ cliente.nome }}</strong><br />
+                        <small>{{ cliente.cpf | formatarCpf }}</small>
+                    </li>
+                </ul>
+
+                <!-- Resultado -->
+                <div *ngIf="clienteEncontrado" class="cliente-detalhes">
+                    <h3>{{ clienteEncontrado.nome }}</h3>
+                    <p><strong>CPF:</strong> {{ clienteEncontrado.cpf | formatarCpf }}</p>
+                    <p><strong>Cidade:</strong> {{ clienteEncontrado.endereco.cidade }}</p>
+                    <p><strong>Estado:</strong> {{ clienteEncontrado.endereco.estado }}</p>
+                    <p
+                        [ngClass]="{ 'saldo-negativo': clienteEncontrado.saldo < 0, 'saldo-positivo': clienteEncontrado.saldo >= 0 }">
+                        <strong>Saldo:</strong>
+                        {{ clienteEncontrado.saldo | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR" }}
+                    </p>
+                    <p><strong>Limite:</strong> {{ calcularLimite(clienteEncontrado.salario) | currency : "BRL" }}</p>
+                    <p><strong>Gerente:</strong> {{ clienteEncontrado.nomeGerente }}</p>
+                </div>
+
+                <!-- Feedback de erro -->
+                <div *ngIf="erro" class="erro">
+                    {{ erro }}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

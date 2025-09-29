@@ -1,0 +1,183 @@
+.clientes-dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+  font-family: 'Poppins', sans-serif;
+}
+
+.clientes-dashboard table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  min-width: 700px;
+}
+
+.clientes-dashboard thead {
+  background-color: #0c2464;
+  color: #EDE654;
+}
+
+.clientes-dashboard th,
+.clientes-dashboard td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.clientes-dashboard tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.clientes-dashboard tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+.clientes-dashboard td[colspan] {
+  text-align: center;
+  font-style: italic;
+  color: #777;
+  padding: 1.5rem;
+}
+
+.botaoAprovar,
+.botaoReprovar {
+  padding: 0.5rem 1rem;
+  margin-right: 0.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.2s ease-in-out;
+}
+
+.botaoAprovar {
+  background-color: #27ae60;
+  color: #fff;
+}
+
+.botaoAprovar:hover {
+  background-color: #219150;
+}
+
+.botaoReprovar {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+.botaoReprovar:hover {
+  background-color: #c0392b;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(12, 36, 100, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  animation: aparecer 0.25s ease-out;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #0c2464;
+}
+
+.modal-content textarea {
+  width: 100%;
+  min-height: 100px;
+  resize: vertical;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  margin-bottom: 1.5rem;
+  transition: border-color 0.2s;
+}
+
+.modal-content textarea:focus {
+  border-color: #0c2464;
+  outline: none;
+}
+
+.modal-buttons button {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.2s ease-in-out;
+  margin-right: 0.5rem;
+}
+
+.modal-buttons button:first-of-type {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+.modal-buttons button:first-of-type:hover {
+  background-color: #c0392b;
+}
+
+.modal-buttons button:last-of-type {
+  background-color: #bdc3c7;
+  color: #2c3e50;
+}
+
+.modal-buttons button:last-of-type:hover {
+  background-color: #95a5a6;
+  color: #fff;
+}
+
+@keyframes aparecer {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.email-status {
+  margin-top: 1rem;
+  font-weight: 500;
+}
+
+.email-status.enviando {
+  color: #0c2464;
+}
+
+.email-status.sucesso {
+  color: #27ae60;
+}
+
+.email-status.erro {
+  color: #e74c3c;
+}

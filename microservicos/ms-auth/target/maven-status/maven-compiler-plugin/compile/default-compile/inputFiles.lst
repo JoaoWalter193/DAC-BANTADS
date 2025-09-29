@@ -2,6 +2,13 @@
 /app/src/main/java/msauth/ms_auth/config/RabbitMQConnectionTest.java
 /app/src/main/java/msauth/ms_auth/config/SecurityConfig.java
 /app/src/main/java/msauth/ms_auth/consumer/RabbitMQConsumer.java
+/app/src/main/java/msauth/ms_auth/config/AdminUserConfig.java
+/app/src/main/java/msauth/ms_auth/config/RsaKeyProperties.java
+/app/src/main/java/msauth/ms_auth/config/SecurityConfig.java
+/app/src/main/java/msauth/ms_auth/controllers/TokenController.java
+/app/src/main/java/msauth/ms_auth/dto/LoginRequest.java
+/app/src/main/java/msauth/ms_auth/dto/LoginResponse.java
+/app/src/main/java/msauth/ms_auth/dto/UsuarioResponse.java
 /app/src/main/java/msauth/ms_auth/entities/Role.java
 /app/src/main/java/msauth/ms_auth/entities/UsuarioEntity.java
 /app/src/main/java/msauth/ms_auth/repositories/UsuarioRepository.java

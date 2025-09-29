@@ -1,0 +1,143 @@
+.tela-gerente-cadastro {
+  background-color: #0c2464;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.content {
+  overflow: hidden;
+  max-width: 600px;
+  background-color: #fff;
+  margin: 2rem auto;
+  padding: 40px 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-family: "Poppins", sans-serif;
+}
+
+.tela-gerente-cadastro h2 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #0c2464;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-gerente {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-gerente label {
+  font-weight: 500;
+  color: #333;
+}
+
+.form-gerente input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-gerente input:focus {
+  border-color: #ede654;
+  box-shadow: 0 0 0 2px rgba(237, 230, 84, 0.3);
+  outline: none;
+}
+
+.btn-voltar,
+.btn-cadastrar {
+  width: 100%;
+  color: #0c2464;
+  font-weight: 600;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.75rem;
+  transition: background 0.3s;
+}
+
+.btn-cadastrar {
+  background-color: #ede654;
+}
+
+.btn-cadastrar:hover:not(:disabled) {
+  background-color: #dada4f;
+}
+
+.btn-cadastrar:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.btns {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Mensagens de feedback */
+.mensagem {
+  margin-bottom: 1rem;
+}
+
+.mensagem-sucesso {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.mensagem-erro {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Loader animado */
+.loading {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 3px solid rgba(0, 0, 0, 0.2);
+  border-top-color: #0c2464;
+  border-radius: 50%;
+  animation: spin 1s ease-in-out infinite;
+  margin-left: 10px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .tela-gerente-cadastro {
+    padding: 30px 20px;
+    margin: 1rem;
+  }
+
+  .form-gerente input {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  button {
+    font-size: 14px;
+    padding: 10px;
+  }
+}

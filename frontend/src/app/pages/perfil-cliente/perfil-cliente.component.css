@@ -1,0 +1,114 @@
+/* Tela */
+.tela-perfil {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+  background-color: #0c2464;
+  min-height: 90vh;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Card grande unificado */
+.card-grande {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  padding: 2rem;
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.card-grande h2 {
+  color: #0c2464;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Formulário agrupado */
+.form-grupo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.perfil,
+.endereco {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+/* Inputs */
+input.mat-input-element {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+input.mat-input-element:focus {
+  outline: none;
+  border: 1px solid #EDE654;
+  box-shadow: 0 0 0 2px rgba(237, 230, 84, 0.3);
+}
+
+/* Botões amarelos */
+.botoes {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.botoes button.mat-raised-button {
+  background-color: #EDE654;
+  color: #0c2464;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.5rem 1.2rem;
+  transition: background 0.3s ease;
+}
+
+.botoes button.mat-raised-button:hover:not(:disabled) {
+  background-color: #dada4f;
+}
+
+.btn-voltar a {
+  color: #0c2464;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.btn-voltar a:hover {
+  text-decoration: underline;
+}
+
+/* Status */
+.status-message {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+  font-size: 0.95rem;
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+/* Responsividade */
+@media (max-width: 700px) {
+  .form-grupo {
+    grid-template-columns: 1fr;
+  }
+
+  .botoes {
+    justify-content: center;
+  }
+}

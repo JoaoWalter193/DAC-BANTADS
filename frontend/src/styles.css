@@ -6,7 +6,23 @@ body,
   box-sizing: border-box;
 }
 
-body, * {
+body,
+* {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 2rem;
+  height: 100vh;
+  padding-top: 3rem;
+  padding-inline: 15%;
+  background-color: #eeeff1;
+}
+
+.btn-voltar:hover {
+  background-color: #cccccca9;
 }

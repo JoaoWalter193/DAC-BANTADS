@@ -1,36 +1,73 @@
+<!-- HTML -->
 <div class="tela-login">
-  <div class="login-container">
-    <h1>DinDin Invest</h1>
-    <h2><b>Acesse sua conta:</b></h2>
+  <!-- Fundo azul com formas -->
+  <div class="login-bg">
+    <!-- Formas geométricas -->
+    <div class="formas"></div>
+    <!-- Logo -->
+    <div class="logo-container">
+      <img src="logo-din-din.webp" alt="Logo" />
+    </div>
+  </div>
 
-    <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+  <!-- Retângulo branco com canto superior esquerdo arredondado -->
+  <div class="login-white">
+    <div class="login-container">
+      <h2><b>Acesse sua conta:</b></h2>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Email</mat-label>
-        <input matInput type="email" formControlName="account" required>
-      </mat-form-field>
+      <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="account" required />
+        </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Senha</mat-label>
-        <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" required>
+        <mat-form-field appearance="outline">
+          <mat-label>Senha</mat-label>
+          <input
+            matInput
+            [type]="hidePassword ? 'password' : 'text'"
+            formControlName="password"
+            required
+          />
 
-        <!-- esconder/mostrar senha -->
-        <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
-          <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          <button
+            mat-icon-button
+            matSuffix
+            (click)="hidePassword = !hidePassword"
+            type="button"
+          >
+            <mat-icon>{{
+              hidePassword ? "visibility_off" : "visibility"
+            }}</mat-icon>
+          </button>
+
+          <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+            A senha é obrigatória.
+          </mat-error>
+        </mat-form-field>
+
+        <button
+          mat-flat-button
+          type="submit"
+          id="login-button"
+          [disabled]="loginForm.invalid"
+          [ngClass]="{ ativo: loginForm.valid, inativo: loginForm.invalid }"
+        >
+          Acessar Conta
         </button>
+      </form>
 
-        <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
-          A senha é obrigatória.
-        </mat-error>
-      </mat-form-field>
+      <div class="to-cadastro">
+        <span
+          >Não tem uma conta? <a routerLink="/cadastro">Abra já a sua!</a></span
+        >
+      </div>
 
-      <button mat-flat-button color="primary" type="submit" [disabled]="loginForm.invalid">
-        Acessar Conta
-      </button>
-    </form>
-
-    <div class="to-cadastro">
-      <span>Não tem uma conta? <a routerLink="/cadastro">Abra já a sua!</a></span>
+      <div style="margin-top: 20px">
+        <button type="button" (click)="resetMockData()">
+          <strong>PIPIPI RESET</strong>
+        </button>
+      </div>
     </div>
   </div>
 </div>

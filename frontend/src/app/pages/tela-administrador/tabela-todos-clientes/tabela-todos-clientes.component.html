@@ -1,0 +1,35 @@
+<div class="clientes-dashboard">
+  <table>
+    <thead>
+      <tr>
+        <th>Nome do Cliente</th>
+        <th>CPF</th>
+        <th>E-mail</th>
+        <th>Salário</th>
+        <th>Número da Conta</th>
+        <th>Saldo</th>
+        <th>Limite</th>
+        <th>Nome do Gerente</th>
+        <th>CPF do Gerente</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let cliente of clientes">
+        <td>{{ cliente.nome }}</td>
+        <td>{{ cliente.cpf | formatarCpf }}</td>
+        <td>{{ cliente.email }}</td>
+        <td>{{ cliente.salario | currency : "BRL" }}</td>
+        <td>{{ cliente.conta }}</td>
+        <td [ngClass]="{ 'saldo-negativo': cliente.saldo < 0 }">
+          {{ cliente.saldo | currency : "BRL" }}
+        </td>
+        <td>{{ cliente.limite | currency : "BRL" }}</td>
+        <td>{{ cliente.nomeGerente }}</td>
+        <td>{{ cliente.cpfGerente | formatarCpf }}</td>
+      </tr>
+      <tr *ngIf="clientes.length === 0">
+        <td colspan="9">Nenhum cliente cadastrado.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

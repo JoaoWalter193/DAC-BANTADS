@@ -1,0 +1,32 @@
+<div class="tela-gerente-editar">
+  <h2>Editar Gerente</h2>
+
+  <!-- Mensagem de feedback -->
+  <div *ngIf="mensagem" [class]="tipoMensagem === 'sucesso' ? 'mensagem-sucesso' : 'mensagem-erro'" class="mensagem">
+    {{ mensagem }}
+  </div>
+
+  <!-- Formulário -->
+  <form (ngSubmit)="onSubmit()" class="form-gerente">
+    <label for="nome">Nome Completo *</label>
+    <input type="text" name="nome" id="nome" [(ngModel)]="gerente.nome" required />
+
+    <label for="cpf">CPF *</label>
+    <input type="text" name="cpf" id="cpf" [(ngModel)]="gerente.cpf" (input)="formatarCPF($event)"
+      placeholder="000.000.000-00" maxlength="14" required />
+    <div *ngIf="gerente.cpf && !validarCPF(gerente.cpf)" class="mensagem-erro">
+      CPF inválido
+    </div>
+
+    <label for="email">E-mail *</label>
+    <input type="email" name="email" id="email" [(ngModel)]="gerente.email" required />
+
+    <label for="senha">Senha *</label>
+    <input type="password" name="senha" id="senha" [(ngModel)]="gerente.senha" required />
+
+    <button type="submit" [disabled]="carregando">
+      {{ carregando ? 'Processando...' : 'Salvar Alterações' }}
+      <span *ngIf="carregando" class="loading"></span>
+    </button>
+  </form>
+</div>

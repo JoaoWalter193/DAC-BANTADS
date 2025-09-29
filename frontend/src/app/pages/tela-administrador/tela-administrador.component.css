@@ -1,32 +1,90 @@
-/* Section - container */
-.container {
-  display: block;
-  flex-direction: row;
-  justify-content: center;
-  gap: 2rem;
-  height: 100vh;
-  padding-top: 3rem;
-  padding-inline: 15%;
-  background-color: #eeeff1;
+/* ===== Tela Administrador ===== */
+.tela-admin {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Poppins', sans-serif;
+  background-color: #0c2464;
+  color: #fff;
+  padding-bottom: 40px;
+  position: relative;
+  overflow: hidden;
 }
 
-.botao-add {
-  background-color: #8c8c8c;
-  color: white;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 0.25rem;
-  cursor: pointer;
+/* Header */
+.admin-header {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px 20px 20px;
 }
 
+.admin-header h2 {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #EDE654;
+}
+
+/* Conteúdo */
+.admin-content {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* Cards */
+.card-dashboard {
+  background-color: white;
+  border-radius: 12px;
+  color: #333;
+  padding: 20px 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-dashboard h3 {
+  margin: 0 0 15px 0;
+  color: #0c2464;
+}
+
+/* Ações */
 .actions {
   margin-bottom: 1rem;
 }
 
-h2 {
-  margin-bottom: 3rem;
+.botao-add {
+  background-color: #EDE654;
+  color: #0c2464;
+  border: none;
+  padding: 10px 20px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 1rem;
 }
 
-h3 {
-  margin-bottom: 0.5rem;
+.botao-add a {
+  color: #0c2464;
+  text-decoration: none;
+}
+
+.botao-add:hover {
+  background-color: #dada4f;
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+  .admin-content {
+    flex-direction: column;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: flex-start;
+  }
 }

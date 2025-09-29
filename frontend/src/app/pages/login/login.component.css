@@ -1,37 +1,105 @@
+/* CSS */
 .tela-login {
+  margin: 0;
+  background-color: #0c2464;
+  /* fundo azul default */
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.login-bg {
+  position: relative;
+  height: 35vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  width: 100%;
-  background-image: linear-gradient(130deg, #f0f2f5, #d6e0ff);
-  font-family: 'Poppins', sans-serif;
+  overflow: hidden;
 }
 
-.login-container {
+/* Logo centralizada */
+.logo-container img {
+  width: 210px;
+  z-index: 2;
+}
+
+/* Formas geométricas no fundo azul */
+.login-bg::before,
+.login-bg::after,
+.login-bg .formas::before,
+.login-bg .formas::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background-color: rgba(237, 230, 84, 0.05);
+  z-index: 1;
+}
+
+.login-bg::before {
+  width: 250px;
+  height: 250px;
+  top: 10%;
+  left: 5%;
+  transform: rotate(25deg);
+}
+
+.login-bg::after {
+  width: 300px;
+  height: 300px;
+  bottom: -50px;
+  right: -50px;
+  background-color: rgba(237, 230, 84, 0.08);
+  transform: rotate(-45deg);
+}
+
+.login-bg .formas::before {
+  width: 150px;
+  height: 150px;
+  top: 20%;
+  right: 15%;
+  background-color: rgba(237, 230, 84, 0.06);
+}
+
+.login-bg .formas::after {
+  width: 100px;
+  height: 100px;
+  bottom: 15%;
+  left: 10%;
+  background-color: rgba(237, 230, 84, 0.07);
+}
+
+/* Retângulo branco com canto superior esquerdo arredondado */
+.login-white {
   background-color: white;
-  padding: 40px 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  border-top-left-radius: 300px;
+  /* canto superior esquerdo arredondado */
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 40px;
+  position: relative;
+}
+
+/* Container do formulário */
+.login-container {
   width: 100%;
   max-width: 400px;
+  padding: 20px 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
 }
 
-.login-container h1 {
-  font-size: 28px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 8px;
-}
-
 .login-container h2 {
   font-size: 18px;
   font-weight: 400;
-  color: #666;
+  color: #333;
   margin-bottom: 30px;
 }
 
@@ -43,25 +111,40 @@
 
 .login-form mat-form-field {
   width: 100%;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
-.login-form button {
+/* Botão de login condicional */
+#login-button {
   height: 50px;
   font-size: 16px;
   font-weight: 600;
   border-radius: 8px;
   margin-top: 20px;
+  transition: all 0.3s ease;
 }
 
+#login-button.ativo {
+  background-color: #EDE654;
+  color: #0c2464;
+  cursor: pointer;
+}
+
+#login-button.inativo {
+  background-color: #cccc44;
+  color: #555;
+  cursor: not-allowed;
+}
+
+/* Link de cadastro */
 .to-cadastro {
-  margin-top: 30px;
+  margin-top: 25px;
   font-size: 14px;
   color: #555;
 }
 
 .to-cadastro a {
-  color: #2F48E0;
+  color: #0c2464;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.3s ease;
@@ -69,4 +152,21 @@
 
 .to-cadastro a:hover {
   text-decoration: underline;
+  color: #091a49;
+}
+
+/* Botão de reset mock */
+.login-container>div button {
+  background-color: #0c2464;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.login-container>div button:hover {
+  background-color: #192d6e;
 }

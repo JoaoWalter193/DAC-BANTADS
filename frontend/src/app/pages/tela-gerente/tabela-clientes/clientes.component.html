@@ -1,0 +1,49 @@
+<div class="clientes-dashboard">
+  <form class="filtros" (submit)="$event.preventDefault()">
+    <input
+      name="filtro"
+      type="text"
+      [(ngModel)]="filtro"
+      placeholder="Buscar por nome ou CPF"
+    />
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>CPF</th>
+        <th>Cidade</th>
+        <th>Estado</th>
+        <th>Saldo</th>
+        <th>Limite</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let cliente of clientesFiltrados">
+        <td>{{ cliente.nome }}</td>
+        <td>{{ cliente.cpf | formatarCpf }}</td>
+        <td>{{ cliente.endereco.cidade }}</td>
+        <td>{{ cliente.endereco.estado }}</td>
+        <td [ngClass]="{ 'saldo-negativo': cliente.saldo < 0 }">
+          {{ cliente.saldo | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR" }}
+        </td>
+        <td>
+          {{
+            calcularLimite(cliente.salario)
+              | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"
+          }}
+        </td>
+        <td>
+          <a class="botaoDetalhes" [routerLink]="['/clientes', cliente.cpf]"
+            >Ver Detalhes</a
+          >
+        </td>
+      </tr>
+      <tr *ngIf="clientesFiltrados.length === 0">
+        <td colspan="7">Nenhum cliente encontrado.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,23 @@
+<section class="tela-gerente">
+    <div class="gerente-header">
+        <h2>Painel do Gerente</h2>
+        <div class="section-links">
+            <a routerLink="melhores-clientes">Melhores clientes</a>
+            <a routerLink="consultar-cliente">Consultar clientes</a>
+        </div>
+    </div>
+
+    <div class="gerente-content">
+        <div class="clientes-dashboard">
+            <div class="card-dashboard">
+                <h3>Clientes para aprovação</h3>
+                <app-aprovar-cliente></app-aprovar-cliente>
+            </div>
+
+            <div class="card-dashboard">
+                <h3>Todos Clientes</h3>
+                <app-clientes></app-clientes>
+            </div>
+        </div>
+    </div>
+</section>
