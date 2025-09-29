@@ -1,4 +1,5 @@
-package msgerente.consumer;
+package MSconta.consumer;
+
 
 
 import org.slf4j.Logger;
@@ -12,7 +13,7 @@ public class RabbitMQConsumer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQConsumer.class);
 
-    @RabbitListener(queues = {"MsGerente"})
+    @RabbitListener(queues = {"MsConta"})
     public void consume(String message){
         LOGGER.info(String.format("Menasgem consumida -> %s",message));
     }

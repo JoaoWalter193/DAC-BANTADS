@@ -56,16 +56,18 @@ status VARCHAR (10) NOT NULL  -- APROVADO / REJEITADO / ESPERANDO
 -- Schema ContaCUD
 
 CREATE TABLE dbContaCUD.conta(
+numConta SERIAL PRIMARY KEY,
 cpfCliente VARCHAR(11),
 nomeCliente VARCHAR(100),
-numConta VARCHAR(4),
 saldo DECIMAL(8,2),
+limite DECIMAL(8,2),
 cpfGerente VARCHAR(11),
 nomeGerente VARCHAR(100),
 dataCriacao DATE
 );
 
 CREATE TABLE dbContaCUD.movimentacao (
+id SERIAL PRIMARY KEY,
 dataHora TIMESTAMP,
 tipo VARCHAR(15),
 clienteOrigemNome VARCHAR(100),
@@ -78,16 +80,18 @@ valor DECIMAL(8,2)
 -- Schema ContaR
 
 CREATE TABLE dbContaR.conta(
+numConta SERIAL PRIMARY KEY,
 cpfCliente VARCHAR(11),
 nomeCliente VARCHAR(100),
-numConta VARCHAR(4),
 saldo DECIMAL(8,2),
+limite DECIMAL (8,2),
 cpfGerente VARCHAR(11),
 nomeGerente VARCHAR(100),
 dataCriacao DATE
 );
 
 CREATE TABLE dbContaR.movimentacao (
+id SERIAL PRIMARY KEY,
 dataHora TIMESTAMP,
 tipo VARCHAR(15),
 clienteOrigemNome VARCHAR(100),
@@ -115,20 +119,19 @@ INSERT INTO dbcliente.cliente (cpf, nome, email, senha, salario, endereco, cep, 
 ('58872160006', 'Cutardo', 'cli4@bantads.com.br', 'tads', 500.00, 'Travessa Secundária, 101', '88040000', 'Biguaçu', 'SC', 'APROVADO'),
 ('76179646090', 'Coândrya', 'cli5@bantads.com.br', 'tads', 1500.00, 'Alameda dos Anjos, 202', '88050000', 'Águas Mornas', 'SC', 'APROVADO');
 
+INSERT INTO dbContaCUD.conta (cpfCliente, nomeCliente, numConta, saldo, limite, cpfGerente, nomeGerente, dataCriacao) VALUES
+('12912861012', 'Catharyna', 1291, 800.00, 5000.00, '98574307084', 'Geniéve', '2000-01-01'),
+('09506382000', 'Cleuddônio', 950, -10000.00, 10000.00, '64065268052', 'Godophredo', '1990-10-10'),
+('85733854057', 'Catianna', 8573, -1000.00, 1500.00, '23862179060', 'Gyândula', '2012-12-12'),
+('58872160006', 'Cutardo', 5887, 150000.00, 250.00, '98574307084', 'Geniéve', '2022-02-22'),
+('76179646090', 'Coândrya', 7617, 1500.00, 750.00, '64065268052', 'Godophredo', '2025-01-01');
 
-INSERT INTO dbContaCUD.conta (cpfCliente, nomeCliente, numConta, saldo, cpfGerente, nomeGerente, dataCriacao) VALUES
-('12912861012', 'Catharyna', '1291', 800.00, '98574307084', 'Geniéve', '2000-01-01'),
-('09506382000', 'Cleuddônio', '0950', -10000.00, '64065268052', 'Godophredo', '1990-10-10'),
-('85733854057', 'Catianna', '8573', -1000.00, '23862179060', 'Gyândula', '2012-12-12'),
-('58872160006', 'Cutardo', '5887', 150000.00, '98574307084', 'Geniéve', '2022-02-22'),
-('76179646090', 'Coândrya', '7617', 1500.00, '64065268052', 'Godophredo', '2025-01-01');
-
-INSERT INTO dbContaR.conta (cpfCliente, nomeCliente, numConta, saldo, cpfGerente, nomeGerente, dataCriacao) VALUES
-('12912861012', 'Catharyna', '1291', 800.00, '98574307084', 'Geniéve', '2000-01-01'),
-('09506382000', 'Cleuddônio', '0950', -10000.00, '64065268052', 'Godophredo', '1990-10-10'),
-('85733854057', 'Catianna', '8573', -1000.00, '23862179060', 'Gyândula', '2012-12-12'),
-('58872160006', 'Cutardo', '5887', 150000.00, '98574307084', 'Geniéve', '2022-02-22'),
-('76179646090', 'Coândrya', '7617', 1500.00, '64065268052', 'Godophredo', '2025-01-01');
+INSERT INTO dbContaR.conta (cpfCliente, nomeCliente, numConta, saldo, limite, cpfGerente, nomeGerente, dataCriacao) VALUES
+('12912861012', 'Catharyna', 1291, 800.00, 5000.00, '98574307084', 'Geniéve', '2000-01-01'),
+('09506382000', 'Cleuddônio', 950, -10000.00, 10000.00, '64065268052', 'Godophredo', '1990-10-10'),
+('85733854057', 'Catianna', 8573, -1000.00, 1500.00, '23862179060', 'Gyândula', '2012-12-12'),
+('58872160006', 'Cutardo', 5887, 150000.00, 250.00, '98574307084', 'Geniéve', '2022-02-22'),
+('76179646090', 'Coândrya', 7617, 1500.00, 750.00, '64065268052', 'Godophredo', '2025-01-01');
 
 INSERT INTO dbContaCUD.movimentacao (dataHora, tipo, clienteOrigemNome, clienteOrigemCpf, clienteDestinoNome, clienteDestinoCpf, valor) VALUES
 ('2020-01-01 10:00:00', 'depósito', 'Catharyna', '12912861012', NULL, NULL, 1000.00),

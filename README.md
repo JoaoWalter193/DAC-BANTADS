@@ -22,7 +22,8 @@ Para rodar este projeto é necessário alguns softwares:
 
  - 80 : Front-end
  - 3000 : APIGateway
- - 8081 : ms-gerente
+- 8080 : ms-conta 
+- 8081 : ms-gerente
  - 8082 : ms-auth
  - 8083 : ms-cliente
  - 5432 : PostgreSQL

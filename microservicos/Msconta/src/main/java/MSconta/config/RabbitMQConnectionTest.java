@@ -1,4 +1,5 @@
-package msgerente.config;
+package MSconta.config;
+
 
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -18,7 +19,7 @@ public class RabbitMQConnectionTest {
     public void testConnection() {
         try {
             var connection = connectionFactory.createConnection();
-            System.out.println("✅ Conexão com RabbitMQ estabelecida com sucesso! -- MS GERENTEF");
+            System.out.println("✅ Conexão com RabbitMQ estabelecida com sucesso! -- MS CONTAR");
             System.out.println("✅ Host: " + connectionFactory.getHost());
             System.out.println("✅ Port: " + connectionFactory.getPort());
             connection.close();
