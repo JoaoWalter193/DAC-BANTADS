@@ -4,6 +4,7 @@ import { GerentesComponent } from './tabela-gerentes/gerentes.component';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { Router, RouterLink } from '@angular/router';
 import { TabelaTodosClientesComponent } from './tabela-todos-clientes/tabela-todos-clientes.component';
+import { FooterComponent } from '../../components/footer/footer.component';
 
 @Component({
   selector: 'app-tela-administrador',
@@ -15,6 +16,7 @@ import { TabelaTodosClientesComponent } from './tabela-todos-clientes/tabela-tod
     GerentesComponent,
     TabelaTodosClientesComponent,
     NavbarComponent,
+    FooterComponent,
     RouterLink,
   ],
 })

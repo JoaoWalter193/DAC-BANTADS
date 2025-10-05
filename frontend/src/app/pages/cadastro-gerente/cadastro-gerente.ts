@@ -6,15 +6,23 @@ import { RouterLink } from '@angular/router';
 import { Gerente } from '../../models/gerente.interface';
 import { Conta } from '../../models/conta.interface';
 import { MockService } from '../../services/mock.service';
-import { NavbarComponent } from "../../components/navbar/navbar.component";
+import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { MatButtonModule } from '@angular/material/button';
+import { FooterComponent } from '../../components/footer/footer.component';
 
 @Component({
   selector: 'app-cadastro-gerente',
   templateUrl: './cadastro-gerente.html',
   styleUrls: ['./cadastro-gerente.css'],
   standalone: true,
-  imports: [FormsModule, CommonModule, RouterLink, NavbarComponent, MatButtonModule],
+  imports: [
+    FormsModule,
+    CommonModule,
+    RouterLink,
+    NavbarComponent,
+    MatButtonModule,
+    FooterComponent,
+  ],
 })
 export class CadastroGerente {
   gerente: Gerente = {
@@ -30,7 +38,11 @@ export class CadastroGerente {
   tipoMensagem: 'sucesso' | 'erro' | '' = '';
   carregando: boolean = false;
 
-  constructor(private router: Router, private mockService: MockService, private location: Location) {}
+  constructor(
+    private router: Router,
+    private mockService: MockService,
+    private location: Location
+  ) {}
 
   private atribuirContaAoNovoGerente(novoGerente: Gerente) {
     const contas: Conta[] = JSON.parse(
@@ -196,7 +208,7 @@ export class CadastroGerente {
     };
   }
 
-    voltar(): void {
+  voltar(): void {
     this.location.back();
   }
 }

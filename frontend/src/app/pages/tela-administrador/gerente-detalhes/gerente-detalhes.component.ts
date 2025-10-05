@@ -5,11 +5,18 @@ import { NavbarComponent } from '../../../components/navbar/navbar.component';
 import { MockService } from '../../../services/mock.service';
 import { Gerente } from '../../../models';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
+import { FooterComponent } from '../../../components/footer/footer.component';
 
 @Component({
   selector: 'app-gerente-detalhes',
   standalone: true,
-  imports: [CommonModule, RouterLink, NavbarComponent, FormatarCpfPipe],
+  imports: [
+    CommonModule,
+    RouterLink,
+    NavbarComponent,
+    FormatarCpfPipe,
+    FooterComponent,
+  ],
   templateUrl: './gerente-detalhes.component.html',
   styleUrls: ['./gerente-detalhes.component.css'],
 })
