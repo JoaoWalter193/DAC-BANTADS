@@ -1,4 +1,4 @@
-package MSconta.repositories;
+package MSconta.repositories.cud;
 
 import MSconta.domain.ContaCUD;
 import org.springframework.data.jpa.repository.JpaRepository;
