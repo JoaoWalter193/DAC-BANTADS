@@ -17,6 +17,39 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class ContaR {
 
+
+    public ContaR(String cpfCliente,
+                    String nomeCliente,
+                    double saldo,
+                    double limite,
+                    String cpfGerente,
+                    String nomeGerente,
+                    LocalDate dataCriacao){
+
+        this.cpfCliente = cpfCliente;
+        this.nomeCliente = nomeCliente;
+        this.saldo = saldo;
+        this.limite = limite;
+        this.cpfGerente = cpfGerente;
+        this.nomeGerente = nomeGerente;
+        this.dataCriacao = dataCriacao;
+
+
+
+    }
+
+    public ContaR(ContaR contaTemp){
+        this.numConta = contaTemp.numConta;
+        this.cpfCliente = contaTemp.getCpfCliente();
+        this.nomeCliente = contaTemp.getNomeCliente();
+        this.saldo = contaTemp.getSaldo();
+        this.limite = contaTemp.getLimite();
+        this.cpfGerente = contaTemp.getCpfGerente();
+        this.nomeGerente = contaTemp.getNomeGerente();
+        this.dataCriacao = contaTemp.getDataCriacao();
+    }
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "numconta")
@@ -40,6 +73,14 @@ public class ContaR {
 
     @Column(name = "datacriacao")
     private LocalDate dataCriacao;
+
+    public ContaCUD virarContaCUD(){
+        return new ContaCUD(this.getNumConta(),this.getCpfCliente(),
+                this.getNomeCliente(), this.getSaldo(), this.getLimite(),
+                this.getCpfGerente(), this.getNomeGerente(), this.getDataCriacao());
+    }
+
+
 
 
 

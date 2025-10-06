@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 
 @Table(name = "conta", schema = "dbcontacud")
-@Entity(name = "contaCUD")
+@Entity(name = "conta")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,21 +19,26 @@ import java.time.ZoneId;
 public class ContaCUD {
 
 
-    public ContaCUD (String cpfCliente,
-                     String nomeCliente,
-                     double salario,
-                     String cpfGerente,
-                     String nomeGerente){
+    public ContaCUD(String cpfCliente,
+                    String nomeCliente,
+                    double salario,
+                    String cpfGerente,
+                    String nomeGerente){
+
+
         this.cpfCliente = cpfCliente;
         this.nomeCliente = nomeCliente;
+
+
         if (salario >= 2000){
             this.limite = salario/2;
         } else {
             throw new RuntimeException();
         }
+
         this.cpfGerente = cpfGerente;
         this.nomeGerente = nomeGerente;
-        this.dataCriacao = LocalDate.now();
+        this.dataCriacao = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
     }
 
 
@@ -61,6 +66,12 @@ public class ContaCUD {
     @Column(name = "datacriacao")
     private LocalDate dataCriacao;
 
+
+    public ContaR virarContaR(){
+        return new ContaR(this.getNumConta(),this.getCpfCliente(),
+                this.getNomeCliente(), this.getSaldo(), this.getLimite(),
+                this.getCpfGerente(), this.getNomeGerente(), this.getDataCriacao());
+    }
 
 
 }

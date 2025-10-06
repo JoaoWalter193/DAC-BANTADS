@@ -1,7 +1,7 @@
 package MSconta.domain;
 
 public record AdicionarContaDTO(String cpfCliente,
-                                String nomeCLiente,
+                                String nomeCliente,
                                 double salario,
                                 String cpfGerente,
                                 String nomeGerente) {
