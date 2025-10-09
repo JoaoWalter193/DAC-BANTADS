@@ -64,4 +64,19 @@ export class AuthService {
     localStorage.removeItem('currentUser');
     this.router.navigate(['']);
   }
+
+  isCliente(): boolean {
+    const session = this.getUserSession();
+    return session?.user.role === 'CLIENTE';
+  }
+
+  isGerente(): boolean {
+    const session = this.getUserSession();
+    return session?.user.role === 'GERENTE';
+  }
+
+  isAdmin(): boolean {
+    const session = this.getUserSession();
+    return session?.user.role === 'ADMIN';
+  }
 }
