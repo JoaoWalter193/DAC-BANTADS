@@ -1,4 +1,4 @@
-package MSconta.config;
+package msSaga.msSaga.Config;
 
 
 import org.springframework.context.annotation.Bean;
@@ -38,6 +38,6 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-    }1
+    }
 
 }

@@ -1,4 +1,4 @@
-package MSconta.domain.DTO;
+package MSconta.domain.DTOCqrs;
 
 import java.time.LocalDate;
 

@@ -3,17 +3,22 @@ package MSconta.consumer;
 
 
 import MSconta.domain.ContaR;
-import MSconta.domain.DTO.AtualizarDTO;
-import MSconta.domain.DTO.SaqueDepositoDTO;
+import MSconta.domain.DTOCqrs.AtualizarDTO;
+import MSconta.domain.DTOCqrs.SaqueDepositoDTO;
+import MSconta.domain.DTOCqrs.TransferenciaDTO;
 import MSconta.domain.movimentacoes.MovimentacoesR;
 import MSconta.repositories.r.ContaRRepository;
 import MSconta.repositories.r.MovimentacaoRRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -27,9 +32,18 @@ public class RabbitMQConsumer {
     @Autowired
     MovimentacaoRRepository movimentacaoRRepository;
 
-
-
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQConsumer.class);
+
+    private final ObjectMapper objectMapper;
+
+    public RabbitMQConsumer() {
+        this.objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    }
+
+
+
 
     @RabbitListener(queues = {"MsConta"})
     public void consume(String message) {
@@ -37,8 +51,27 @@ public class RabbitMQConsumer {
     }
 
 
-
     @RabbitListener(queues = {"BancoAtt"})
+    public void consumerCQRS(Map<String, Object> data) {
+        String tipo = (String) data.get("mensagemTipo");
+
+        if ("atualizar".equals(tipo)) {
+            AtualizarDTO dto = objectMapper.convertValue(data, AtualizarDTO.class);
+            leitorCqrsTeste(dto);
+        } else if ("acao".equals(tipo)) {
+            SaqueDepositoDTO dto = objectMapper.convertValue(data, SaqueDepositoDTO.class);
+            consumerSaqueDeposito(dto);
+        } else if ("transferir".equals(tipo)){
+
+            TransferenciaDTO dto = objectMapper.convertValue(data, TransferenciaDTO.class);
+            transferencia(dto);
+
+        } else {
+            LOGGER.warn("Mensagem desconhecida: " + data);
+        }
+    }
+
+
     public void leitorCqrsTeste(AtualizarDTO data){
         try {
             if (data.mensagemTipo().equals("atualizar")) {
@@ -55,7 +88,7 @@ public class RabbitMQConsumer {
     }
 
 
-    @RabbitListener(queues = {"BancoAtt"})
+
     public void consumerSaqueDeposito(SaqueDepositoDTO data){
         try {
             if (data.mensagemTipo().equals("acao")) {
@@ -72,40 +105,41 @@ public class RabbitMQConsumer {
                     movimentacaoRRepository.save(movimentacaoTemp);
                 }
             }
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-
-
-
-
-/*
-
-    @RabbitListener(queues = {"BancoAtt"})
-    public void leituraCQRS(MensagemGenericaDTO mensagem){
+    public void transferencia(TransferenciaDTO data){
         try {
-            ContaR contaRTemp = new ContaR(mensagem.contaR());
-            contaRRepository.save(contaRTemp);
+            if (data.mensagemTipo().equals("transferir")) {
+                Optional<ContaR> optContaTemp = contaRRepository.findByNumConta(String.valueOf(data.numConta()));
+                Optional<ContaR> optContaTemp2 = contaRRepository.findByNumConta(String.valueOf(data.numConta2()));
 
-            if (mensagem.movimentacoes() != null) {// null pois quando atualiza o limite ele não cria nenhuma movimentacao
-                MovimentacoesR movTemp = new MovimentacoesR(mensagem.movimentacoes());
-                movimentacaoRRepository.save(movTemp);
-            }
-            if (mensagem.contaRRecebedor() != null){
-                ContaR contaTempRecebe = new ContaR(mensagem.contaRRecebedor());
-                contaRRepository.save(contaTempRecebe);
-            }
+                if (optContaTemp.isPresent() && optContaTemp2.isPresent()) {
+                    ContaR contaTemp = optContaTemp.get();
+                    contaTemp.setSaldo(data.saldo());
 
-            LOGGER.info("Banco de leitura atualizado!!");
+                    ContaR contaTemp2 = optContaTemp2.get();
+                    contaTemp2.setSaldo(data.saldo2());
+
+                    MovimentacoesR movimentacaoTemp = new MovimentacoesR(data.dataHora(), data.tipo(),
+                            data.clienteOrigemNome(), data.clienteOrigameCpf(),
+                            data.clienteDestinoNome(), data.clieneDestinoCpf(),
+                            data.valor());
+
+                    contaRRepository.save(contaTemp2);
+                    contaRRepository.save(contaTemp);
+                    movimentacaoRRepository.save(movimentacaoTemp);
+                }
+            }
         } catch (Exception e) {
-            throw  new RuntimeException(e);
+            throw new RuntimeException(e);
         }
+
     }
 
- */
+
 
 
 }
