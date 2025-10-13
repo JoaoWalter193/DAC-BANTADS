@@ -39,3 +39,4 @@ private-key.pem
 public-key.pem
 microservicos/ms-auth/private-key.pem
 microservicos/ms-auth/public-key.pem
+microservicos/ms-auth/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
