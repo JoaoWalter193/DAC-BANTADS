@@ -130,6 +130,8 @@ public class ContaCUDService {
             contaCUDRepository.save(contaCUDDono);
             contaCUDRepository.save(contaCUDRecebedor);
 
+            rabbitMQProducer.sendMessageCQRSTransferir(contaCUDDono,movimentacoesTemp,contaCUDRecebedor);
+
 
 
             return ResponseEntity.ok("Saldo transferido com sucesso");

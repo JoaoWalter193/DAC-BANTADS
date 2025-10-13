@@ -2,9 +2,12 @@ package mscliente.services;
 
 
 import mscliente.domain.AdicionarClienteDTO;
+import mscliente.domain.AutocadastroDTO;
 import mscliente.domain.Cliente;
 import mscliente.domain.ClienteDTO;
+import mscliente.producer.RabbitMQProducer;
 import mscliente.repositories.ClienteRepository;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +25,11 @@ public class ClienteService {
 
     @Autowired
     ClienteRepository clienteRepository;
+
+    @Autowired
+    RabbitMQProducer rabbitMQProducer;
+
+
 
         // falar com o professor, pra saber se está válido isso aqui
     PasswordEncoder passwordEncoder = new StandardPasswordEncoder("razer");
@@ -48,7 +56,7 @@ public class ClienteService {
                 );
                 listaDTO.add(temp);
             }
-            return ResponseEntity.ok(listaDTO); // AGORA COM RETURN
+            return ResponseEntity.ok(listaDTO);
 
         } else if (filtro.equals("para_aprovar")){
 
@@ -101,11 +109,19 @@ public class ClienteService {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
-    public ResponseEntity<ClienteDTO> adicionarCliente(AdicionarClienteDTO data){
+    public ResponseEntity<ClienteDTO> adicionarCliente(AutocadastroDTO data){
         //implementar
+        //gerar Senha aleatoria
+        Optional<Cliente> optCliente = clienteRepository.findByCpf(data.cpf());
 
-        String senhaHasheada = passwordEncoder.encode(data.senha());
+        if (optCliente.isPresent()){
+            rabbitMQProducer.sendMessageSaga("MsCliente -> ERRO - Cliente já existe");
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
 
+
+        String senhaAleatoria = RandomStringUtils.random(5,true,true);
+        String senhaHasheada = passwordEncoder.encode(senhaAleatoria);
 
         Cliente clienteTemp = new Cliente(
                 data.cpf(),
@@ -120,8 +136,7 @@ public class ClienteService {
                 "AGUARDANDO"
         );
         clienteRepository.save(clienteTemp);
-
-
+        rabbitMQProducer.sendMessageSaga("MsCliente -> Cliente criado com sucesso!");
 
         return ResponseEntity.ok(new ClienteDTO(clienteTemp.getCpf(),
                 clienteTemp.getNome(),

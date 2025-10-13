@@ -60,10 +60,5 @@ public class GerenteController {
      }
 
 
-    @GetMapping("/teste")
-    public ResponseEntity<String> sendMessage(@RequestParam("mensagem") String message){
-        producer.sendMessage(message);
-        return ResponseEntity.ok("Mensgaem enviada para rabbitmq ");
-    }
 
 }

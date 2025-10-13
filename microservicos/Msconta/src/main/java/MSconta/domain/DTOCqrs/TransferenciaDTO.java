@@ -1,16 +1,12 @@
-package MSconta.domain.DTO;
+package MSconta.domain.DTOCqrs;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public record SaqueDepositoDTO(int numConta,
-                               String cpfCliente,
-                               String nomeCliente,
+
+// não vai precisar separar em tipos porque todos eles vão ser só inserções de dados
+// já tratdos/criados então tudo que usar isso só vai atualizar as duas coisas
+public record TransferenciaDTO(int numConta,
                                double saldo,
-                               double limite,
-                               String cpfGerente,
-                               String nomeGerente,
-                               LocalDate dataCriacao,
                                int idMov,
                                LocalDateTime dataHora,
                                String tipo,
@@ -19,5 +15,7 @@ public record SaqueDepositoDTO(int numConta,
                                String clienteDestinoNome,
                                String clieneDestinoCpf,
                                double valor,
+                               int numConta2,
+                               double saldo2,
                                String mensagemTipo) {
 }

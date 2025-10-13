@@ -1,6 +1,7 @@
 package mscliente.controllers;
 
 import mscliente.domain.AdicionarClienteDTO;
+import mscliente.domain.AutocadastroDTO;
 import mscliente.domain.ClienteDTO;
 import mscliente.services.ClienteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class ClienteController {
 
 
     @PostMapping
-    public ResponseEntity<ClienteDTO> adicionarCliente(@RequestBody AdicionarClienteDTO data){
+    public ResponseEntity<ClienteDTO> adicionarCliente(@RequestBody AutocadastroDTO data){
         return clienteService.adicionarCliente(data);
     }
 

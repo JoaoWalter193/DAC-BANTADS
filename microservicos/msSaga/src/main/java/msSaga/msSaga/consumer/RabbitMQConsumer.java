@@ -15,7 +15,13 @@ public class RabbitMQConsumer {
 
     @RabbitListener(queues = {"MsSaga"})
     public void consume(String message){
-        LOGGER.info(String.format("Menasgem consumida -> %s",message));
+
+        LOGGER.info(String.format("Menasgem consumida -> %s",message)
+
+
+
+
+        );
     }
 
 }
