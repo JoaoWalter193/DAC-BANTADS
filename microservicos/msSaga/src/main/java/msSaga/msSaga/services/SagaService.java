@@ -46,7 +46,7 @@ public class SagaService {
 
         //Depois do ms-auth tem que enviar para o ms-conta
 
-        return ResponseEntity.ok(new RespostaPadraoDTO("Conta criada com sucesso", HttpStatus.CREATED.value()));
+        return ResponseEntity.ok(new RespostaPadraoDTO("Processo de autocadastro iniciado, mais informações serão enviadas via e-mail", HttpStatus.CREATED.value()));
 
     }
 

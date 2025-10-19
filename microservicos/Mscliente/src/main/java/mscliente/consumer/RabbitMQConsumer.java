@@ -22,9 +22,7 @@ public class RabbitMQConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQConsumer.class);
 
     @RabbitListener(queues = {"MsCliente"})
-    public void consume(String message) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        AutocadastroDTO data = mapper.readValue(message, AutocadastroDTO.class);
+    public void consume(AutocadastroDTO data) throws JsonProcessingException {
 
         clienteService.adicionarCliente(data);
     }
