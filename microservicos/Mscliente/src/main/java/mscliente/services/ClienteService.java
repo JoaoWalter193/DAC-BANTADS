@@ -115,7 +115,7 @@ public class ClienteService {
         Optional<Cliente> optCliente = clienteRepository.findByCpf(data.cpf());
 
         if (optCliente.isPresent()){
-            rabbitMQProducer.sendMessageSaga("MsCliente -> ERRO - Cliente já existe");
+            rabbitMQProducer.sendMessageSaga(500, "000","Erro",0);
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
@@ -136,7 +136,7 @@ public class ClienteService {
                 "AGUARDANDO"
         );
         clienteRepository.save(clienteTemp);
-        rabbitMQProducer.sendMessageSaga("MsCliente -> Cliente criado com sucesso!");
+        rabbitMQProducer.sendMessageSaga(201, clienteTemp.getCpf(),clienteTemp.getNome(),clienteTemp.getSalario());
 
         return ResponseEntity.ok(new ClienteDTO(clienteTemp.getCpf(),
                 clienteTemp.getNome(),

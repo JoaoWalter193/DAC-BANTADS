@@ -2,13 +2,17 @@ package MSconta.consumer;
 
 
 
+import MSconta.domain.AdicionarContaDTO;
+import MSconta.domain.ContaCUD;
 import MSconta.domain.ContaR;
 import MSconta.domain.DTOCqrs.AtualizarDTO;
 import MSconta.domain.DTOCqrs.SaqueDepositoDTO;
 import MSconta.domain.DTOCqrs.TransferenciaDTO;
+import MSconta.domain.ResponseDTO;
 import MSconta.domain.movimentacoes.MovimentacoesR;
 import MSconta.repositories.r.ContaRRepository;
 import MSconta.repositories.r.MovimentacaoRRepository;
+import MSconta.services.ContaCUDService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -30,6 +34,9 @@ public class RabbitMQConsumer {
     ContaRRepository contaRRepository;
 
     @Autowired
+    ContaCUDService contaCUDService;
+
+    @Autowired
     MovimentacaoRRepository movimentacaoRRepository;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQConsumer.class);
@@ -46,8 +53,15 @@ public class RabbitMQConsumer {
 
 
     @RabbitListener(queues = {"MsConta"})
-    public void consume(String message) {
-        LOGGER.info(String.format("Menasgem consumida -> %s", message));
+    public void consume(ResponseDTO message) {
+
+        AdicionarContaDTO contaTemp = new AdicionarContaDTO(message.cpfCliente(),
+                message.nomeCliente(),
+                message.salario(),
+                "07762141988",
+                "Teste Nome gerente");
+
+        contaCUDService.adicionarConta(contaTemp);
     }
 
 
