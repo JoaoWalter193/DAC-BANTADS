@@ -71,3 +71,15 @@
     margin-bottom: 20px;
   }
 }
+
+@media (max-width: 480px) {
+  .footer-section h4 {
+    font-size: 14px;
+  }
+
+  .footer-section p,
+  .footer-section a,
+  .footer-section li {
+    font-size: 12px;
+  }
+}
