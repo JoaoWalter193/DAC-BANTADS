@@ -1,20 +1,15 @@
 const jwt = require('jsonwebtoken');
+const config = require('../config/services');
 
 function verifyJWT(req, res, next) {
-    const token = req.header['x-access-token'];
+  const token = req.headers['x-access-token'];
+  if (!token) return res.status(401).json({ message: 'Token não fornecido' });
 
-    if (!token) {
-        return res.status(401).json({ auth: false, message: 'Nenhum token fornecido.' });
-    }
-
-    jwt.verify(token, process.env.GATEWAY_JWT_SECRET || 'segredo', (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ auth: false, message: 'Falha ao autenticar.' });
-        }
-
-        req.userId = decoded.id;
-        next();
-    });
+  jwt.verify(token, config.JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(403).json({ message: 'Token inválido' });
+    req.user = decoded;
+    next();
+  });
 }
 
 module.exports = verifyJWT;
