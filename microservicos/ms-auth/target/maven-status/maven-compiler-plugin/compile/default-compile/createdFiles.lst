@@ -1,5 +1,5 @@
-msauth/ms_auth/repositories/UsuarioRepository.class
 msauth/ms_auth/dto/LoginResponse.class
+msauth/ms_auth/repositories/UsuarioRepository.class
 msauth/ms_auth/config/RabbitMQConnectionTest.class
 msauth/ms_auth/config/RsaKeyProperties.class
 msauth/ms_auth/MsAuthApplication.class
