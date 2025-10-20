@@ -44,5 +44,45 @@ function setupProxies(app) {
         pathRewrite: { '^/clientes': '' },
     }));
 
-    
+    app.use('/contas/:numero/saldo', verifyJWT, createProxyMiddleware({
+        target: process.env.CONTA_SERVICE_URL,
+        changeOrigin: true,
+        pathRewrite: { '^/contas': '' },
+    }));
+
+    app.use('/contas/:numero/depositar', verifyJWT, createProxyMiddleware({
+        target: process.env.CONTA_SERVICE_URL,
+        changeOrigin: true,
+        pathRewrite: { '^/contas': '' },
+    }));
+
+    app.use('/contas/:numero/sacar', verifyJWT, createProxyMiddleware({
+        target: process.env.CONTA_SERVICE_URL,
+        changeOrigin: true,
+        pathRewrite: { '^/contas': '' },
+    }));
+
+    app.use('/contas/:numero/transferir', verifyJWT, createProxyMiddleware({
+        target: process.env.CONTA_SERVICE_URL,
+        changeOrigin: true,
+        pathRewrite: { '^/contas': '' },
+    }));
+
+    app.use('/contas/:numero/extrato', verifyJWT, createProxyMiddleware({
+        target: process.env.CONTA_SERVICE_URL,
+        changeOrigin: true,
+        pathRewrite: { '^/contas': '' },
+    }));
+
+    app.use('/gerentes', verifyJWT, createProxyMiddleware({
+        target: process.env.GERENTE_SERVICE_URL,
+        changeOrigin: true,
+        pathRewrite: { '^/gerentes': '' },
+    }));
+
+    app.use('/gerentes/:cpf', verifyJWT, createProxyMiddleware({
+        target: process.env.GERENTE_SERVICE_URL,
+        changeOrigin: true,
+        pathRewrite: { '^/gerentes': '' },
+    }));
 }
