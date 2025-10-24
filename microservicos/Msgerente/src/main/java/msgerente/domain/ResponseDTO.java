@@ -1,4 +1,4 @@
-package mscliente.domain;
+package msgerente.domain;
 
 public record ResponseDTO(int cod,
                           String cpf,

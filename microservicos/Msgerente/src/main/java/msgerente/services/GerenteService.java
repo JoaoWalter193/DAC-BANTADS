@@ -1,10 +1,7 @@
 package msgerente.services;
 
 
-import msgerente.domain.AdicionarGerenteDTO;
-import msgerente.domain.AtualizarGerenteDTO;
-import msgerente.domain.Gerente;
-import msgerente.domain.GerenteDTO;
+import msgerente.domain.*;
 
 import msgerente.repositories.GerenteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +79,25 @@ public class GerenteService {
             return ResponseEntity.ok(dto);
     }
 
+    public ResponseEntity<GerenteDTO> inserirGerente (AdicionarGerenteDTO data){
+        Gerente gerenteTemp = new Gerente(data.cpf(), data.nome(), data.email(), data.senha(), data.tipo());
+
+        if (gerenteRepository.findByCpf(data.cpf()) != null){
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+
+        gerenteRepository.save(gerenteTemp);
+
+        // enviar gerente para adicionar contas no Ms-conta
+        ResponseDTO responseTemp = new ResponseDTO(201,
+                data.cpf(),
+                data.nome(),
+                0.0,
+                "msGerente-add");
+        rabbitMQProducer.sendMessageSaga(responseTemp);
+
+
+        return ResponseEntity.ok(new GerenteDTO(data.cpf(), data.nome(), data.email(), data.tipo()));
 public ResponseEntity<GerenteDTO> inserirGerente(AdicionarGerenteDTO data) {
     if (!validarCPF(data.cpf())) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -102,7 +118,18 @@ public ResponseEntity<GerenteDTO> inserirGerente(AdicionarGerenteDTO data) {
         Gerente gerenteTemp = gerenteRepository.findByCpf(cpf);
 
         if (gerenteTemp != null){
+
             gerenteRepository.delete(gerenteTemp);
+
+            //enviar gerente para excluir das contas
+            ResponseDTO responseTemp = new ResponseDTO(200,
+                    gerenteTemp.getCpf(),
+                    gerenteTemp.getNome(),
+                    0.0,
+                    "msGerente-excluir");
+            rabbitMQProducer.sendMessageSaga(responseTemp);
+
+
             GerenteDTO dto = new GerenteDTO(gerenteTemp.getCpf(),gerenteTemp.getNome(),gerenteTemp.getEmail(), gerenteTemp.getTipo());
             return ResponseEntity.ok(dto);
         }

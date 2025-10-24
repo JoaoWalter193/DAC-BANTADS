@@ -18,7 +18,8 @@ import java.time.LocalDate;
 public class ContaR {
 
 
-    public ContaR(String cpfCliente,
+    public ContaR(int numConta,
+                    String cpfCliente,
                     String nomeCliente,
                     double saldo,
                     double limite,
@@ -26,6 +27,7 @@ public class ContaR {
                     String nomeGerente,
                     LocalDate dataCriacao){
 
+        this.numConta = numConta;
         this.cpfCliente = cpfCliente;
         this.nomeCliente = nomeCliente;
         this.saldo = saldo;
@@ -51,7 +53,6 @@ public class ContaR {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "numconta")
     private int numConta;
 
@@ -74,12 +75,14 @@ public class ContaR {
     @Column(name = "datacriacao")
     private LocalDate dataCriacao;
 
+    @Column(name = "ativa")
+    private boolean ativa;
+
     public ContaCUD virarContaCUD(){
         return new ContaCUD(this.getNumConta(),this.getCpfCliente(),
                 this.getNomeCliente(), this.getSaldo(), this.getLimite(),
-                this.getCpfGerente(), this.getNomeGerente(), this.getDataCriacao());
+                this.getCpfGerente(), this.getNomeGerente(), this.getDataCriacao(), this.ativa);
     }
-
 
 
 

@@ -1,14 +1,10 @@
 package MSconta.consumer;
 
 
-
-import MSconta.domain.AdicionarContaDTO;
-import MSconta.domain.ContaCUD;
-import MSconta.domain.ContaR;
+import MSconta.domain.*;
 import MSconta.domain.DTOCqrs.AtualizarDTO;
 import MSconta.domain.DTOCqrs.SaqueDepositoDTO;
 import MSconta.domain.DTOCqrs.TransferenciaDTO;
-import MSconta.domain.ResponseDTO;
 import MSconta.domain.movimentacoes.MovimentacoesR;
 import MSconta.repositories.r.ContaRRepository;
 import MSconta.repositories.r.MovimentacaoRRepository;
@@ -50,23 +46,49 @@ public class RabbitMQConsumer {
     }
 
 
-
-
     @RabbitListener(queues = {"MsConta"})
     public void consume(ResponseDTO message) {
+        if (message.ms().equals("Criar conta")) {
+            AdicionarContaDTO contaTemp = new AdicionarContaDTO(message.cpf(),
+                    message.nome(),
+                    message.salario());
+            contaCUDService.adicionarConta(contaTemp);
+        }
 
-        AdicionarContaDTO contaTemp = new AdicionarContaDTO(message.cpfCliente(),
-                message.nomeCliente(),
-                message.salario(),
-                "07762141988",
-                "Teste Nome gerente");
 
-        contaCUDService.adicionarConta(contaTemp);
+        if (message.ms().equals("msCliente-aprovado")){
+            contaCUDService.aprovarCliente(message.cpf());
+        }
+
+
+
+
+        if (message.ms().equals("msGerente-criar")) {
+            GerenteDTO gerenteTemp = new GerenteDTO(message.cpf(), message.nome());
+            contaCUDService.adicionarGerente(gerenteTemp);
+        }
+
+        if (message.ms().equals("msGerente-deletar")) {
+            GerenteDTO gerenteTemp = new GerenteDTO(message.cpf(), message.nome());
+            contaCUDService.removerGerente(gerenteTemp);
+
+        }
+
+        if (message.ms().equals("msGerente-atualizar")){
+            GerenteDTO gerenteTemp = new GerenteDTO(message.cpf(), message.nome());
+            contaCUDService.atualizarGerente(gerenteTemp);
+        }
+
+
+
     }
 
 
     @RabbitListener(queues = {"BancoAtt"})
     public void consumerCQRS(Map<String, Object> data) {
+
+
+
         String tipo = (String) data.get("mensagemTipo");
 
         if ("atualizar".equals(tipo)) {
@@ -75,7 +97,7 @@ public class RabbitMQConsumer {
         } else if ("acao".equals(tipo)) {
             SaqueDepositoDTO dto = objectMapper.convertValue(data, SaqueDepositoDTO.class);
             consumerSaqueDeposito(dto);
-        } else if ("transferir".equals(tipo)){
+        } else if ("transferir".equals(tipo)) {
 
             TransferenciaDTO dto = objectMapper.convertValue(data, TransferenciaDTO.class);
             transferencia(dto);
@@ -86,14 +108,28 @@ public class RabbitMQConsumer {
     }
 
 
-    public void leitorCqrsTeste(AtualizarDTO data){
+    public void leitorCqrsTeste(AtualizarDTO data) {
         try {
             if (data.mensagemTipo().equals("atualizar")) {
-                ContaR contaTemp = new ContaR(data.cpfCliente(), data.nomeCliente(),
-                        data.saldo(), data.limite(), data.cpfGerente(),
-                        data.nomeGerente(), data.dataCriacao());
-                contaRRepository.save(contaTemp);
-                LOGGER.info("Conta adicionada/atualizada no banco com sucesso");
+                Optional<ContaR> contaTempOpt = contaRRepository.findByCpfCliente(data.cpfCliente());
+                if (contaTempOpt.isPresent()) {
+                    ContaR contaTemp = contaTempOpt.get();
+
+                    contaTemp.setNomeCliente(data.nomeCliente());
+                    contaTemp.setNomeGerente(data.nomeGerente());
+                    contaTemp.setCpfGerente(data.cpfGerente());
+                    contaTemp.setLimite(data.limite());
+                    contaTemp.setAtiva(data.ativa());
+                    contaRRepository.save(contaTemp);
+                    LOGGER.info("Conta atualizada no banco com sucesso");
+
+                } else{
+                    ContaR contaTemp = new ContaR(data.numConta(),data.cpfCliente(), data.nomeCliente(),
+                            data.saldo(), data.limite(), data.cpfGerente(),
+                            data.nomeGerente(), data.dataCriacao());
+                    contaRRepository.save(contaTemp);
+                    LOGGER.info("Conta adicionada no banco com sucesso");
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -102,8 +138,7 @@ public class RabbitMQConsumer {
     }
 
 
-
-    public void consumerSaqueDeposito(SaqueDepositoDTO data){
+    public void consumerSaqueDeposito(SaqueDepositoDTO data) {
         try {
             if (data.mensagemTipo().equals("acao")) {
                 Optional<ContaR> optContaTemp = contaRRepository.findByNumConta(String.valueOf(data.numConta()));
@@ -124,7 +159,7 @@ public class RabbitMQConsumer {
         }
     }
 
-    public void transferencia(TransferenciaDTO data){
+    public void transferencia(TransferenciaDTO data) {
         try {
             if (data.mensagemTipo().equals("transferir")) {
                 Optional<ContaR> optContaTemp = contaRRepository.findByNumConta(String.valueOf(data.numConta()));
@@ -152,8 +187,6 @@ public class RabbitMQConsumer {
         }
 
     }
-
-
 
 
 }
