@@ -16,6 +16,7 @@ import { TelaGerenteDashboardComponent } from './pages/tela-gerente-dashboard/te
 import { TabelaTodosClientesComponent } from './pages/tela-administrador/tabela-todos-clientes/tabela-todos-clientes.component';
 import { ClienteDetalhesComponent } from './pages/tela-gerente/cliente-detalhes/cliente-detalhes.component';
 import { GerenteDetalhesComponent } from './pages/tela-administrador/gerente-detalhes/gerente-detalhes.component';
+import { adminGuard, clienteGuard, gerenteGuard } from './guard';
 export const routes: Routes = [
   {
     path: '',
@@ -29,6 +30,7 @@ export const routes: Routes = [
   {
     path: 'tela-administrador',
     component: TelaAdministradorComponent,
+    canActivate: [adminGuard],
     children: [
       {
         path: 'gerentes',
@@ -44,6 +46,7 @@ export const routes: Routes = [
   {
     path: 'tela-gerente',
     component: TelaGerenteDashboardComponent,
+    canActivate: [gerenteGuard],
     children: [
       {
         path: '',
@@ -63,39 +66,35 @@ export const routes: Routes = [
   },
 
   {
-    path: 'consultar-cliente',
-    component: ConsultarClienteComponent,
-  },
-
-  {
-    path: 'melhores-clientes',
-    component: MelhoresClientesComponent,
-  },
-
-  {
     path: 'cadastro-gerente',
     component: CadastroGerente,
+    canActivate: [adminGuard],
   },
 
   {
     path: 'gerente-detalhes',
     component: GerenteDetalhesComponent,
+    canActivate: [adminGuard],
   },
 
   {
     path: 'home-cliente',
     component: HomeCliente,
+    canActivate: [clienteGuard],
   },
   {
     path: 'perfil',
     component: PerfilClienteComponent,
+    canActivate: [clienteGuard],
   },
   {
     path: 'editar-gerente/:cpf',
     component: EditarGerente,
+    canActivate: [adminGuard],
   },
   {
     path: 'clientes/:cpf',
     component: ClienteDetalhesComponent,
+    canActivate: [gerenteGuard],
   },
 ];

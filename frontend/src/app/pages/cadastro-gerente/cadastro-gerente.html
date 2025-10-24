@@ -61,7 +61,9 @@
       />
 
       <div class="btns">
-        <button class="btn-voltar" matButton="tonal" (click)="voltar()">Voltar</button>
+        <button class="btn-voltar" matButton="tonal" (click)="voltar()">
+          Voltar
+        </button>
 
         <button class="btn-cadastrar" type="submit" [disabled]="carregando">
           {{ carregando ? 'Processando...' : 'Cadastrar' }}
@@ -71,3 +73,4 @@
     </form>
   </div>
 </div>
+<app-footer></app-footer>

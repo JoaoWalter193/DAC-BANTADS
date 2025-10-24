@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtClaimAccessor;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -28,12 +28,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class TokenController {
     private final JwtEncoder jwtEncoder;
     private final UsuarioRepository usuarioRepository;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private PasswordEncoder passwordEncoder;
 
-    public TokenController(JwtEncoder jwtEncoder, UsuarioRepository usuarioRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public TokenController(JwtEncoder jwtEncoder, UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.jwtEncoder = jwtEncoder;
         this.usuarioRepository = usuarioRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/login")
@@ -42,7 +42,7 @@ public class TokenController {
         UsuarioEntity user = usuarioRepository.findByEmail(loginRequest.email())
                 .orElseThrow(() -> new BadCredentialsException("Usuário ou senha inválidos."));
 
-        if (!bCryptPasswordEncoder.matches(loginRequest.password(), user.getPassword())) {
+        if (!passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
             throw new BadCredentialsException("Usuário ou senha inválidos.");
         }
 

@@ -24,6 +24,32 @@ public class GerenteService {
 
     private String teste = "Teste 123";
 
+    private String sanitizeCpf(String cpf) {
+        return cpf == null ? "" : cpf.replaceAll("\\D", "");
+    }
+
+    private boolean validarCPF(String cpf) {
+        if (cpf == null) return false;
+        cpf = sanitizeCpf(cpf);
+        if (cpf.length() != 11 || cpf.matches("(\\d)\\1{10}")) return false;
+
+        try {
+            int sum = 0;
+            for (int i = 0; i < 9; i++) sum += Character.getNumericValue(cpf.charAt(i)) * (10 - i);
+            int firstCheck = (sum * 10) % 11;
+            if (firstCheck == 10) firstCheck = 0;
+            if (firstCheck != Character.getNumericValue(cpf.charAt(9))) return false;
+
+            sum = 0;
+            for (int i = 0; i < 10; i++) sum += Character.getNumericValue(cpf.charAt(i)) * (11 - i);
+            int secondCheck = (sum * 10) % 11;
+            if (secondCheck == 10) secondCheck = 0;
+            if (secondCheck != Character.getNumericValue(cpf.charAt(10))) return false;
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     public ResponseEntity<GerenteDTO> infoGerente(String cpf){
         Gerente gerenteTemp = gerenteRepository.findByCpf(cpf);
@@ -72,8 +98,19 @@ public class GerenteService {
 
 
         return ResponseEntity.ok(new GerenteDTO(data.cpf(), data.nome(), data.email(), data.tipo()));
-
+public ResponseEntity<GerenteDTO> inserirGerente(AdicionarGerenteDTO data) {
+    if (!validarCPF(data.cpf())) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
+
+    if (gerenteRepository.findByCpf(data.cpf()) != null) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    }
+
+    Gerente gerenteTemp = new Gerente(data.cpf(), data.nome(), data.email(), data.senha(), data.tipo());
+    gerenteRepository.save(gerenteTemp);
+    return ResponseEntity.ok(new GerenteDTO(data.cpf(), data.nome(), data.email(), data.tipo()));
+}
 
 
     public ResponseEntity<GerenteDTO> deletarGerente (String cpf){

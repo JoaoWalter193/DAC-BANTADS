@@ -16,10 +16,18 @@
         <td>{{ gerente.saldoPositivo | currency : "BRL" }}</td>
         <td>{{ gerente.saldoNegativo | currency : "BRL" }}</td>
         <td class="btns">
-          <button class="botaoEditar" type="button" (click)="editarGerente(gerente.cpf)">
+          <button
+            class="botaoEditar"
+            type="button"
+            (click)="editarGerente(gerente.cpf)"
+          >
             Editar
           </button>
-          <button class="botaoExcluir" type="button" (click)="excluirGerente(gerente)">
+          <button
+            class="botaoExcluir"
+            type="button"
+            (click)="excluirGerente(gerente)"
+          >
             Excluir
           </button>
         </td>
