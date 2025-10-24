@@ -1,15 +1,15 @@
 package MSconta.controllers;
 
 
-import MSconta.domain.AdicionarContaDTO;
-import MSconta.domain.ContaPadraoDTO;
-import MSconta.domain.ExtratoDTO;
-import MSconta.domain.TransferirDTO;
+import MSconta.domain.*;
+import MSconta.domain.GerentesDTOs.GerenteDashDTO;
 import MSconta.services.ContaCUDService;
 import MSconta.services.ContaRService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/contas")
@@ -59,6 +59,17 @@ public class ContaController {
 
 
 
+    // vai ser chamado para construir o dashboard
+    @GetMapping("/gerentes")
+    public ResponseEntity<List<GerenteDashDTO>> buscarGerentesDash (){
+        return contaRService.buscarGerentes();
+
+    }
+
+    @GetMapping("/melhoresClientes")
+    public ResponseEntity<List<ContaR>> buscarMelhoresClientes(){
+        return contaRService.buscarMelhoresClientes();
+    }
 
     @GetMapping("/{numConta}/extrato")
     public ResponseEntity<ExtratoDTO> buscarExtrato (@PathVariable String numConta){

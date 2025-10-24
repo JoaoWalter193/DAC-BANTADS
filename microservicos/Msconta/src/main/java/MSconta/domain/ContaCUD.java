@@ -1,14 +1,17 @@
 package MSconta.domain;
 
 
+import MSconta.repositories.r.ContaRRepository;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Random;
 
 @Table(name = "conta", schema = "dbcontacud")
 @Entity(name = "conta")
@@ -18,14 +21,15 @@ import java.time.ZoneId;
 @AllArgsConstructor
 public class ContaCUD {
 
-
-    public ContaCUD(String cpfCliente,
+    public ContaCUD(int numConta,
+            String cpfCliente,
                     String nomeCliente,
                     double salario,
                     String cpfGerente,
                     String nomeGerente){
 
 
+        this.numConta = numConta;
         this.cpfCliente = cpfCliente;
         this.nomeCliente = nomeCliente;
 
@@ -39,11 +43,12 @@ public class ContaCUD {
         this.cpfGerente = cpfGerente;
         this.nomeGerente = nomeGerente;
         this.dataCriacao = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
+        this.saldo = 0.0;
+        this.ativa = false;
     }
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "numconta")
     private int numConta;
 
@@ -66,11 +71,16 @@ public class ContaCUD {
     @Column(name = "datacriacao")
     private LocalDate dataCriacao;
 
+    @Column(name = "ativa")
+    private boolean ativa;
+
+
+
 
     public ContaR virarContaR(){
         return new ContaR(this.getNumConta(),this.getCpfCliente(),
                 this.getNomeCliente(), this.getSaldo(), this.getLimite(),
-                this.getCpfGerente(), this.getNomeGerente(), this.getDataCriacao());
+                this.getCpfGerente(), this.getNomeGerente(), this.getDataCriacao(), this.ativa);
     }
 
 

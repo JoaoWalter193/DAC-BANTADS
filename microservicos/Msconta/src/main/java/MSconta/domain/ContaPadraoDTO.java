@@ -9,5 +9,6 @@ public record ContaPadraoDTO(int numConta,
                              double limite,
                              String cpfGerente,
                              String nomeGerente,
-                             LocalDate dataCriacao) {
+                             LocalDate dataCriacao,
+                             boolean ativa) {
 }

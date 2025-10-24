@@ -35,30 +35,29 @@ public class GerenteController {
     private GerenteService gerenteService;
 
     @GetMapping
-    public ResponseEntity<List<Gerente>> listarGerentes(){
+    public ResponseEntity<List<Gerente>> listarGerentes() {
         return gerenteService.listarGerentes();
-     }
+    }
 
-     @GetMapping("/{cpf}")
-     public ResponseEntity<GerenteDTO>infoGerente(@PathVariable String cpf){
+    @GetMapping("/{cpf}")
+    public ResponseEntity<GerenteDTO> infoGerente(@PathVariable String cpf) {
         return gerenteService.infoGerente(cpf);
-     }
+    }
 
-     @PutMapping("/{cpf}")
-     public ResponseEntity<GerenteDTO> atualizarGerente(@PathVariable String cpf, @RequestBody AtualizarGerenteDTO data){
-        return gerenteService.atualizarGerente(cpf,data);
-     }
+    @PutMapping("/{cpf}")
+    public ResponseEntity<GerenteDTO> atualizarGerente(@PathVariable String cpf, @RequestBody AtualizarGerenteDTO data) {
+        return gerenteService.atualizarGerente(cpf, data);
+    }
 
-     @DeleteMapping("/{cpf}")
-     public ResponseEntity<GerenteDTO> deletarGerente (@PathVariable String cpf){
+    @DeleteMapping("/{cpf}")
+    public ResponseEntity<GerenteDTO> deletarGerente(@PathVariable String cpf) {
         return gerenteService.deletarGerente(cpf);
-     }
+    }
 
-     @PostMapping
-     public ResponseEntity<GerenteDTO> adicionarGerente(@RequestBody @Valid AdicionarGerenteDTO data){
+    @PostMapping
+    public ResponseEntity<GerenteDTO> adicionarGerente(@RequestBody @Valid AdicionarGerenteDTO data) {
         return gerenteService.inserirGerente(data);
-     }
-
+    }
 
 
 }

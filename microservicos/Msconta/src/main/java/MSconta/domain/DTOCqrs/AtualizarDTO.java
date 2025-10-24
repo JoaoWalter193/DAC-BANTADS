@@ -10,5 +10,6 @@ public record AtualizarDTO(int numConta,
                            String cpfGerente,
                            String nomeGerente,
                            LocalDate dataCriacao,
+                           boolean ativa,
                            String mensagemTipo) {
 }

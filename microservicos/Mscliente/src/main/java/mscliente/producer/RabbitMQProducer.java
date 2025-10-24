@@ -27,9 +27,9 @@ public class RabbitMQProducer {
 
 
 
-    public void sendMessageSaga(int cod, String cpfCliente, String nomeCliente, double salario){
-        ResponseDTO message = new ResponseDTO(cod, cpfCliente,nomeCliente,salario, "msCliente");
-        rabbitTemplate.convertAndSend(exchange,routingKeySaga,message);
+    public void sendClienteSaga(ResponseDTO data){
+        System.out.println("DEBUG - Nome recebido: " + data.nome());
+        System.out.println("DEBUG - CPF recebido: " + data.cpf());
+        rabbitTemplate.convertAndSend(exchange,routingKeySaga,data);
     }
-
 }

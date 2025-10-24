@@ -1,8 +1,8 @@
 package msSaga.msSaga.services;
 
 
-import msSaga.msSaga.DTO.AutocadastroDTO;
-import msSaga.msSaga.DTO.RespostaPadraoDTO;
+import jakarta.validation.Valid;
+import msSaga.msSaga.DTO.*;
 import msSaga.msSaga.consumer.RabbitMQConsumer;
 import msSaga.msSaga.producer.RabbitMQProducer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,4 +50,49 @@ public class SagaService {
 
     }
 
+    public ResponseEntity<String> sagaAprovarCliente(String cpf){
+
+        AutocadastroDTO data = new AutocadastroDTO(cpf,"Aprovar Conta",
+                null, 1.2,
+                null, null,
+                null, null);
+        rabbitMQProducer.sendContaCliente(data);
+
+        return ResponseEntity.ok("Saga enviada, API Gateway vai ter que juntar os dados para mostrar o que o prof pediu");
+    }
+
+    // PEGAR OS DADOS AQUI É UMA BUCHA, DEPOIS O API GATEWAY FAZ A PESQUISA DOS DADOS COM O GET E FAZ O QUE FOR NECESSÁRIO PARA MONTAR A RESPOSTA
+
+
+    public ResponseEntity<RespostaPadraoDTO> removerGerente(String cpf) {
+        //MS-Gerentes -> CPF
+        //MS-Conta -> CPF
+
+        GerenteMsDTO dtoTemp = new GerenteMsDTO(cpf, null,null,null,null, "Deletar");
+        rabbitMQProducer.sendGerenteMsGerente(dtoTemp);
+
+        return ResponseEntity.ok(new RespostaPadraoDTO("Development", 500));
+    }
+
+    public ResponseEntity<RespostaPadraoDTO> atualizarGerente(String cpf, @Valid GerenteAttDTO data) {
+
+        //MS-Gerentes -> (Nome, Email, Senha)
+        //MS-Conta -> (Nome)
+
+        GerenteMsDTO dtoTemp = new GerenteMsDTO(cpf, data.nome(), data.email(), null, data.senha(),"Atualizar");
+        rabbitMQProducer.sendGerenteMsGerente(dtoTemp);
+
+        return ResponseEntity.ok(new RespostaPadraoDTO("Development", 500));
+    }
+
+    public ResponseEntity<RespostaPadraoDTO> inserirGerente(@Valid GerenteMsDTO data) {
+
+        // MS-Gerentes -> Todos os Dados (Cpf, Nome, Email, Senha, Tipo)
+        // MS-Conta -> (Cpf, Nome)
+
+        GerenteMsDTO dtoTemp = new GerenteMsDTO(data.cpf(), data.nome(), data.email(), data.tipo(), data.senha(), "Criar");
+        rabbitMQProducer.sendGerenteMsGerente(dtoTemp);
+
+        return ResponseEntity.ok(new RespostaPadraoDTO("Development", 500));
+    }
 }
