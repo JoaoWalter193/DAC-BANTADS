@@ -3,7 +3,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   background-color: #0c2464;
   color: #fff;
   position: relative;
@@ -13,7 +13,7 @@
 
 .tela-gerente::before,
 .tela-gerente::after {
-  content: '';
+  content: "";
   position: absolute;
   border-radius: 50%;
   z-index: 1;
@@ -50,7 +50,7 @@
   font-size: 28px;
   font-weight: 600;
   margin-bottom: 15px;
-  color: #EDE654;
+  color: #ede654;
 }
 
 .section-links {
@@ -61,7 +61,7 @@
 
 .section-links a {
   text-decoration: none;
-  background-color: #EDE654;
+  background-color: #ede654;
   color: #0c2464;
   padding: 10px 20px;
   border-radius: 8px;
@@ -114,4 +114,38 @@
 
 .tabela-gerentes tbody tr:hover {
   background-color: #f1f1f1;
+}
+
+/* Botões padronizados */
+.botaoEditar,
+.botaoExcluir {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  color: #fff;
+}
+
+.btns {
+  display: flex;
+  gap: 8px;
+}
+
+.botaoEditar {
+  background-color: #ede654;
+  color: #0c2464;
+}
+.botaoEditar:hover {
+  background-color: #dada4f;
+}
+
+.botaoExcluir {
+  background-color: #e74c3c;
+}
+
+.botaoExcluir:hover {
+  background-color: #c0392b;
 }
