@@ -144,6 +144,50 @@ public class RabbitMQConfig {
     }
 
 
+// fila pro sucesso da alteracao perfil
+    @Value("AlteracaoPerfilSucesso")
+    private String filaAlteracaoPerfilSucesso;
+    @Bean
+    public Queue filaAlteracaoPerfil() {
+        return new Queue(filaAlteracaoPerfilSucesso);
+    }
+
+// key
+    @Value("keyAlteracaoPerfilSucesso")
+    private String routingKeyAlteracaoPerfil;
+
+// binding
+    @Bean
+    public Binding bindingAlteracaoPerfilSucesso() {
+        return BindingBuilder
+                .bind(filaAlteracaoPerfil())
+                .to(exchange())
+                .with(routingKeyAlteracaoPerfil);
+    }
+
+
+// fila pro sucesso da atualização da conta
+    @Value("AtualizacaoContaSucesso")
+    private String filaAtualizacaoContaSucesso;
+    @Bean
+    public Queue filaAtualizacaoConta() {
+        return new Queue(filaAtualizacaoContaSucesso);
+    }
+
+// key
+    @Value("keyAtualizacaoContaSucesso")
+    private String routingKeyAtualizacaoConta;
+
+// binding
+    @Bean
+    public Binding bindingAtualizacaoContaSucesso() {
+        return BindingBuilder
+                .bind(filaAtualizacaoConta())
+                .to(exchange())
+                .with(routingKeyAtualizacaoConta);
+    }
+
+
 
     // para fazer com que ele envie classes e coisas com JSON parser
     @Bean
