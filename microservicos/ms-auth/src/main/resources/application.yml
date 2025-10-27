@@ -29,7 +29,10 @@ jwt:
 
 rabbitmq:
     exchange:
-        name: exchangePrincipal
-    routingkey:
-        auth:
-            event: key.auth.created
+        saga: exchangePrincipal
+    queue:
+        auth-create: saga.auth.create.queue
+    key:
+        saga-create-auth: key.auth.created
+        saga-auth-success: saga.auth.success.key
+        saga-auth-fail: saga.auth.fail.key
