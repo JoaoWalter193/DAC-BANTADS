@@ -4,55 +4,58 @@ package mscliente.config;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String SAGA_EXCHANGE = "saga-exchange";
+    @Value("exchangePrincipal")
+    private String exchange;
 
-    // --- FILAS DE COMANDOS (que o ms-cliente OUVE) ---
-    public static final String CLIENTE_ATUALIZAR_CMD_QUEUE = "cliente-atualizar-cmd-queue";
-    public static final String CLIENTE_COMPENSAR_CMD_QUEUE = "cliente-compensar-cmd-queue";
-
-    // --- Declaração das filas ---
     @Bean
-    public Queue clienteAtualizarCmdQueue() { return new Queue(CLIENTE_ATUALIZAR_CMD_QUEUE); }
-    @Bean
-    public Queue clienteCompensarCmdQueue() { return new Queue(CLIENTE_COMPENSAR_CMD_QUEUE); }
-
-    // --- Exchange (a mesma do ms-saga) ---
-    @Bean
-    public TopicExchange exchange() {
-        return new TopicExchange(SAGA_EXCHANGE);
+    public TopicExchange exchange(){
+        return new TopicExchange(exchange);
     }
 
-    //
-    // atualização e compensação
-    //
-    // --- Ligações (Bindings) para as filas de COMANDO ---
-    // Liga a fila 'cliente-atualizar-cmd-queue' à exchange com a chave 'cliente.atualizar.cmd'
+
+// fila pra atualizar o ms-cliente
+    @Value("AtualizarCliente")
+    private String filaAtualizarCliente;
     @Bean
-    public Binding bindClienteAtualizar(TopicExchange exchange, Queue clienteAtualizarCmdQueue) {
-        return BindingBuilder.bind(clienteAtualizarCmdQueue).to(exchange).with("cliente.atualizar.cmd");
-    }
-    @Bean
-    public Binding bindClienteCompensar(TopicExchange exchange, Queue clienteCompensarCmdQueue) {
-        return BindingBuilder.bind(clienteCompensarCmdQueue).to(exchange).with("cliente.compensar.cmd");
+    public Queue filaAtualizarCliente() {
+        return new Queue(filaAtualizarCliente);
     }
 
-    // --- Configuração do Conversor de Mensagens (para JSON) ---
+// key
+    @Value("keyAtualizarCliente")
+    private String routingKeyAtualizarCliente;
+
+// binding
+    @Bean
+    public Binding bindingAtualizarCliente() {
+        return BindingBuilder
+                .bind(filaAtualizarCliente())
+                .to(exchange())
+                .with(routingKeyAtualizarCliente);
+    }
+
+
+
     @Bean
     public MessageConverter converter() {
-        return new JacksonJsonMessageConverter();
+        return new Jackson2JsonMessageConverter(new ObjectMapper());
     }
+
     @Bean
-    public AmqpTemplate amqpTemplate(ConnectionFactory connectionFactory) {
+    public AmqpTemplate amqpTemplate(ConnectionFactory connectionFactory, MessageConverter messageConverter) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMessageConverter(converter());
+        rabbitTemplate.setMessageConverter(messageConverter);
         return rabbitTemplate;
     }
 }

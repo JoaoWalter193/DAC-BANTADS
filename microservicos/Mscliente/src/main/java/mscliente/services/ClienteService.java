@@ -233,6 +233,8 @@ public class ClienteService {
 
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
     //
     // atualização e compensação
     //

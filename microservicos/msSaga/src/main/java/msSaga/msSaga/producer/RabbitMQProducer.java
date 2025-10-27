@@ -1,7 +1,9 @@
 package msSaga.msSaga.producer;
 
 
+import msSaga.msSaga.DTO.AlteracaoPerfilDTO;
 import msSaga.msSaga.DTO.AutocadastroDTO;
+import msSaga.msSaga.DTO.ClienteDTO;
 import msSaga.msSaga.DTO.ContaDTO;
 import msSaga.msSaga.DTO.GerenteMsDTO;
 import msSaga.msSaga.DTO.ResponseDTO;
@@ -27,6 +29,12 @@ public class RabbitMQProducer {
     @Value("keyGerente")
     private String routingKeyGerente;
 
+    @Value("keyAtualizarCliente") 
+    private String routingKeyAtualizarCliente;
+
+    @Value("keyAtualizarLimiteConta")
+    private String routingKeyAtualizarLimite;
+
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
@@ -51,6 +59,16 @@ public class RabbitMQProducer {
 
     public void sendGerenteMsGerente(GerenteMsDTO data){
         rabbitTemplate.convertAndSend(exchange,routingKeyGerente,data);
+    }
+
+    public void sendAtualizarCliente(AlteracaoPerfilDTO dados) {
+        System.out.println("teste cliente key: " + routingKeyAtualizarCliente);
+        rabbitTemplate.convertAndSend(exchange, routingKeyAtualizarCliente, dados);
+    }
+
+    public void sendAtualizarLimite(ClienteDTO dadosCliente) { 
+        System.out.println("teste limite key: " + routingKeyAtualizarLimite);
+        rabbitTemplate.convertAndSend(exchange, routingKeyAtualizarLimite, dadosCliente);
     }
 
 }
