@@ -1,8 +1,8 @@
 package mscliente.domain;
 
 public record ResponseDTO(int cod,
-                          String cpfCliente,
-                          String nomeCliente,
+                          String cpf,
+                          String nome,
                           Double salario,
                           String ms) {
 }

@@ -1,10 +1,7 @@
 package mscliente.services;
 
 
-import mscliente.domain.AdicionarClienteDTO;
-import mscliente.domain.AutocadastroDTO;
-import mscliente.domain.Cliente;
-import mscliente.domain.ClienteDTO;
+import mscliente.domain.*;
 import mscliente.producer.RabbitMQProducer;
 import mscliente.repositories.ClienteRepository;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -15,9 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.StandardPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 public class ClienteService {
@@ -29,9 +25,12 @@ public class ClienteService {
     @Autowired
     RabbitMQProducer rabbitMQProducer;
 
+    @Autowired
+    EmailService emailService;
 
 
-        // falar com o professor, pra saber se está válido isso aqui
+    private Map<String, String> cpfParaSenha = new HashMap<>();
+
     PasswordEncoder passwordEncoder = new StandardPasswordEncoder("razer");
 
 
@@ -80,6 +79,9 @@ public class ClienteService {
 
         } else if (filtro.equals("melhores_clientes")){
             //AQUI VOU TER QUE FAZER UMA LÓGICA ONDE O MS-CONTA VAI VER QUEM TEM MAIOR SALDO, BUSCAR OS 3 CPF'S PARA PODER PESQUISAR AQUI, (n faco ideia de como fazer ainda)
+            // ISSO AQUI TÁ IMPLANTADO LÁ NO MS-CONTA, SÓ CHAMAR COM GET /melhoresCLientes
+
+
             return ResponseEntity.ok(new ArrayList<>());
         } else {
             return ResponseEntity.ok(new ArrayList<>());
@@ -115,7 +117,6 @@ public class ClienteService {
         Optional<Cliente> optCliente = clienteRepository.findByCpf(data.cpf());
 
         if (optCliente.isPresent()){
-            rabbitMQProducer.sendMessageSaga(500, "000","Erro",0);
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
@@ -133,10 +134,12 @@ public class ClienteService {
                 data.cep(),
                 data.cidade(),
                 data.estado(),
-                "AGUARDANDO"
+                "AGUARDANDO",
+                ""
         );
         clienteRepository.save(clienteTemp);
-        rabbitMQProducer.sendMessageSaga(201, clienteTemp.getCpf(),clienteTemp.getNome(),clienteTemp.getSalario());
+
+        cpfParaSenha.put(clienteTemp.getCpf(),senhaAleatoria);
 
         return ResponseEntity.ok(new ClienteDTO(clienteTemp.getCpf(),
                 clienteTemp.getNome(),
@@ -175,6 +178,108 @@ public class ClienteService {
                     data.estado()));
         }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    public ResponseEntity<ClienteDTO> aprovarCliente(String cpf){
+
+        Optional<Cliente> optCliente = clienteRepository.findByCpf(cpf);
+        if (optCliente.isPresent()){
+            Cliente clienteTemp = optCliente.get();
+            clienteTemp.setStatus("APROVADO");
+
+            clienteRepository.save(clienteTemp);
+
+            ResponseDTO responseTemp = new ResponseDTO(200,
+                    clienteTemp.getCpf(),
+                    clienteTemp.getNome(),
+                    clienteTemp.getSalario(),
+                    "msCliente-aprovado");
+            rabbitMQProducer.sendClienteSaga(responseTemp);
+
+
+
+            //falta enviar o e-mail para o mano com a senha da conta confirmando que recebeu
+            String senhaDeshasheada = cpfParaSenha.remove(clienteTemp.getCpf());
+            emailService.sendPasswordEmail(clienteTemp.getEmail(),clienteTemp.getNome(), senhaDeshasheada);
+
+            return ResponseEntity.ok(new ClienteDTO(clienteTemp.getCpf(),
+                    clienteTemp.getNome(),
+                    clienteTemp.getEmail(),
+                    clienteTemp.getSalario(),
+                    clienteTemp.getEndereco(),
+                    clienteTemp.getCep(),
+                    clienteTemp.getCidade(),
+                    clienteTemp.getEstado()));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        }
+
+    }
+
+    public ResponseEntity<GeralDTO> rejeitarCliente (String cpf,String motivoRejeite){
+        Optional<Cliente> clienteOpt = clienteRepository.findByCpf(cpf);
+        if (clienteOpt.isPresent()){
+
+
+            Cliente clienteTemp = clienteOpt.get();
+            clienteTemp.setStatus("REJEITADO");
+            clienteTemp.setMotivoRejeite(motivoRejeite + " -- Hora do rejeite: " + LocalDateTime.now());
+            clienteRepository.save(clienteTemp);
+
+            emailService.sendRejeicao(clienteTemp.getEmail(),clienteTemp.getNome(),motivoRejeite);
+
+            return ResponseEntity.ok(new GeralDTO("200", "Cliente Rejeitado com o motivo de:" + motivoRejeite));
+
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    //
+    // atualização e compensação
+    //
+    public void atualizarClienteSaga(ClienteDTO dadosAtualizados) {
+        // Busca o cliente no banco de dados
+        Optional<Cliente> optCliente = clienteRepository.findByCpf(dadosAtualizados.cpf());
+
+        if (optCliente.isEmpty()) {
+            // Lança uma exceção que será capturada pelo consumidor do RabbitMQ
+            throw new RuntimeException("Cliente com CPF " + dadosAtualizados.cpf() + " não encontrado para atualização.");
+        }
+        
+        Cliente cliente = optCliente.get();
+        // Atualiza os campos necessários com os dados do DTO
+        cliente.setNome(dadosAtualizados.nome());
+        cliente.setSalario(dadosAtualizados.salario());
+        cliente.setEmail(dadosAtualizados.email());
+        cliente.setEndereco(dadosAtualizados.endereco());
+        cliente.setCep(dadosAtualizados.cep());
+        cliente.setCidade(dadosAtualizados.cidade());
+        cliente.setEstado(dadosAtualizados.estado());
+
+        // Salva as alterações no banco de dados
+        clienteRepository.save(cliente);
+    }
+
+    /**
+     * Reverte os dados de um cliente para um estado anterior. Chamado pela Saga em caso de compensação.
+     */
+    public void reverterPara(ClienteDTO dadosOriginais) {
+        Optional<Cliente> optCliente = clienteRepository.findByCpf(dadosOriginais.cpf());
+
+        if (optCliente.isPresent()) {
+            Cliente cliente = optCliente.get();
+            // Restaura os dados originais do cliente
+            cliente.setNome(dadosOriginais.nome());
+            cliente.setSalario(dadosOriginais.salario());
+            cliente.setEmail(dadosOriginais.email());
+            cliente.setEndereco(dadosOriginais.endereco());
+            cliente.setCep(dadosOriginais.cep());
+            cliente.setCidade(dadosOriginais.cidade());
+            cliente.setEstado(dadosOriginais.estado());
+            clienteRepository.save(cliente);
+        } else {
+            // Se o cliente não foi encontrado, a compensação pode ser simplesmente logar um aviso.
+            System.err.println("AVISO: Tentativa de compensação para um cliente não encontrado (CPF: " + dadosOriginais.cpf() + ").");
+        }
     }
 
 }

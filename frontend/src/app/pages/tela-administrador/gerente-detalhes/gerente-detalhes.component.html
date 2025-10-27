@@ -18,6 +18,7 @@
             <th>Nome</th>
             <th>CPF</th>
             <th>E-mail</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -25,6 +26,22 @@
             <td>{{ gerente.nome }}</td>
             <td>{{ gerente.cpf | formatarCpf }}</td>
             <td>{{ gerente.email }}</td>
+            <td class="btns">
+              <button
+                class="botaoEditar"
+                type="button"
+                (click)="editarGerente(gerente.cpf)"
+              >
+                Editar
+              </button>
+              <button
+                class="botaoExcluir"
+                type="button"
+                (click)="excluirGerente(gerente)"
+              >
+                Excluir
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>

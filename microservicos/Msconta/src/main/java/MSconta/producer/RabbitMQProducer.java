@@ -35,6 +35,7 @@ public class RabbitMQProducer {
                 contaCUD.getCpfGerente(),
                 contaCUD.getNomeGerente(),
                 contaCUD.getDataCriacao(),
+                contaCUD.isAtiva(),
                 "atualizar");
 
         rabbitTemplate.convertAndSend(exchange,routingKeyCQRS,dtoTemp);

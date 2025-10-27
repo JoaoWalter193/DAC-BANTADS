@@ -1,6 +1,7 @@
 package msgerente.producer;
 
 
+import msgerente.domain.ResponseDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -17,6 +18,10 @@ public class RabbitMQProducer {
     @Value("keyGerente")
     private String routingKey;
 
+    @Value("keySaga")
+    private String routingKeySaga;
+
+
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQProducer.class);
 
     @Autowired
@@ -26,6 +31,13 @@ public class RabbitMQProducer {
         LOGGER.info(String.format("Message sent -> %s, com routingKey: %s", message,routingKey));
         rabbitTemplate.convertAndSend(exchange,routingKey,message);
     }
+
+    public void sendMessageSaga(ResponseDTO data){
+        rabbitTemplate.convertAndSend(exchange, routingKeySaga, data);
+    }
+
+
+
 
 
 
