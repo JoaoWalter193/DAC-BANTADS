@@ -1,118 +1,56 @@
-const { createProxyMiddleware } = require('http-proxy-middleware');
-const verifyJWT = require('../middlewares/verifyJWT');
+const { createProxyMiddleware } = require("http-proxy-middleware");
 
 function setupProxies(app) {
-    app.get('/reboot', createProxyMiddleware({
-        target: process.env.DEVICE_SERVICE_URL,
-        changeOrigin: true,
-        pathRewrite: { '^/reboot': '' },
-    }))
-    
-    app.post('/login', createProxyMiddleware({
-        target: process.env.AUTH_SERVICE_URL || 'http://localhost:8082',
-        changeOrigin: true,
-        pathRewrite: { '^/login': '' },
-    }));
+  const services = {
+    login: process.env.AUTH_SERVICE_URL,
+    logout: process.env.AUTH_SERVICE_URL,
+    clientes: process.env.CLIENTE_SERVICE_URL,
+    contas: process.env.CONTA_SERVICE_URL,
+    gerentes: process.env.GERENTE_SERVICE_URL,
+  };
 
-    app.post('/logout', verifyJWT, createProxyMiddleware({
-        target: process.env.AUTH_SERVICE_URL || 'http://localhost:8082',
-        changeOrigin: true,
-        pathRewrite: { '^/logout': '' },
-    }));
+  console.log("🔍 Variáveis de ambiente carregadas:");
+  for (const [key, value] of Object.entries(services)) {
+    console.log(`${key.toUpperCase()}: ${value}`);
+  }
 
-    app.get('/clientes', verifyJWT, createProxyMiddleware({
-        target: process.env.CLIENTE_SERVICE_URL || 'http://localhost:8083',
-        changeOrigin: true,
-        pathRewrite: { '^/clientes': '' },
-    }));
-        
-    app.post('/clientes', createProxyMiddleware({
-        target: process.env.CLIENTE_SERVICE_URL || 'http://localhost:8083',
-        changeOrigin: true,
-        pathRewrite: { '^/clientes': '' },
-    }));
+  for (const [path, target] of Object.entries(services)) {
+    if (!target) {
+      console.error(
+        `❌ Variável de ambiente para ${path.toUpperCase()} não definida!`
+      );
+      continue;
+    }
 
-    app.get('/clientes/:cpf', verifyJWT, createProxyMiddleware({
-        target: process.env.CLIENTE_SERVICE_URL || 'http://localhost:8083',
-        changeOrigin: true,
-        pathRewrite: { '^/clientes': '' },
-    }));
+    // só registra se target válido
+    if (!/^https?:\/\//.test(target)) {
+      console.error(`❌ Target inválido para ${path}: ${target}`);
+      continue;
+    }
 
-    app.put('/clientes/:cpf', verifyJWT, createProxyMiddleware({
-        target: process.env.CLIENTE_SERVICE_URL || 'http://localhost:8083',
+    app.use(
+      `/${path}`,
+      createProxyMiddleware({
+        target,
         changeOrigin: true,
-        pathRewrite: { '^/clientes': '' },
-    }));
+        pathRewrite: {
+          [`^/${path}`] : "",
+        },
+        logLevel: "debug",
+        onError: (err, req, res) => {
+          console.error(`❌ Erro no proxy /${path}:`, err.message);
+          res
+            .status(500)
+            .json({ error: `Erro no serviço ${path.toUpperCase()}` });
+        },
+      })
+    );
 
-    app.post('/clientes/:cpf/aprovar', verifyJWT, createProxyMiddleware({
-        target: process.env.CLIENTE_SERVICE_URL || 'http://localhost:8083',
-        changeOrigin: true,
-        pathRewrite: { '^/clientes': '' },
-    }));
+    console.log(`🔗 Proxy montado para /${path} → ${target}`);
+  }
 
-    app.post('/clientes/:cpf/rejeitar', verifyJWT, createProxyMiddleware({
-        target: process.env.CLIENTE_SERVICE_URL || 'http://localhost:8083',
-        changeOrigin: true,
-        pathRewrite: { '^/clientes': '' },
-    }));
-
-    app.post('/contas/:numero/saldo', verifyJWT, createProxyMiddleware({
-        target: process.env.CONTA_SERVICE_URL || 'http://localhost:8080',
-        changeOrigin: true,
-        pathRewrite: { '^/contas': '' },
-    }));
-
-    app.post('/contas/:numero/depositar', verifyJWT, createProxyMiddleware({
-        target: process.env.CONTA_SERVICE_URL || 'http://localhost:8080',
-        changeOrigin: true,
-        pathRewrite: { '^/contas': '' },
-    }));
-
-    app.post('/contas/:numero/sacar', verifyJWT, createProxyMiddleware({
-        target: process.env.CONTA_SERVICE_URL || 'http://localhost:8080',
-        changeOrigin: true,
-        pathRewrite: { '^/contas': '' },
-    }));
-
-    app.post('/contas/:numero/transferir', verifyJWT, createProxyMiddleware({
-        target: process.env.CONTA_SERVICE_URL || 'http://localhost:8080',
-        changeOrigin: true,
-        pathRewrite: { '^/contas': '' },
-    }));
-
-    app.post('/contas/:numero/extrato', verifyJWT, createProxyMiddleware({
-        target: process.env.CONTA_SERVICE_URL || 'http://localhost:8080',
-        changeOrigin: true,
-        pathRewrite: { '^/contas': '' },
-    }));
-
-    app.get('/gerentes', verifyJWT, createProxyMiddleware({
-        target: process.env.GERENTE_SERVICE_URL || 'http://localhost:8081',
-        changeOrigin: true,
-        pathRewrite: { '^/gerentes': '' },
-    }));
-
-    app.post('/gerentes', verifyJWT, createProxyMiddleware({
-        target: process.env.GERENTE_SERVICE_URL  || 'http://localhost:8081',
-        changeOrigin: true,
-        pathRewrite: { '^/gerentes': '' },
-    }));
-
-    app.get('/gerentes/:cpf', verifyJWT, createProxyMiddleware({
-        target: process.env.GERENTE_SERVICE_URL  || 'http://localhost:8081',
-        changeOrigin: true,
-        pathRewrite: { '^/gerentes': '' },
-    }));
-
-    app.delete('/gerentes/:cpf', verifyJWT, createProxyMiddleware({
-        target: process.env.GERENTE_SERVICE_URL  || 'http://localhost:8081',
-        changeOrigin: true,
-        pathRewrite: { '^/gerentes': '' },
-    }));
-
-    app.put('/gerentes/:cpf', verifyJWT, createProxyMiddleware({
-        target: process.env.GERENTE_SERVICE_URL  || 'http://localhost:8081',
-        changeOrigin: true,
-        pathRewrite: { '^/gerentes': '' },
-    }));
+  // Rota de teste
+  app.get("/test", (req, res) => res.send("Gateway ativo"));
 }
+
+module.exports = setupProxies;
