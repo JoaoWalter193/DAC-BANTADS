@@ -1,56 +1,219 @@
 const { createProxyMiddleware } = require("http-proxy-middleware");
+const verifyJWT = require("../middlewares/verifyJWT");
 
 function setupProxies(app) {
-  const services = {
-    login: process.env.AUTH_SERVICE_URL,
-    logout: process.env.AUTH_SERVICE_URL,
-    clientes: process.env.CLIENTE_SERVICE_URL,
-    contas: process.env.CONTA_SERVICE_URL,
-    gerentes: process.env.GERENTE_SERVICE_URL,
-  };
+  const AUTH_SERVICE = process.env.AUTH_SERVICE_URL;
+  const CLIENTE_SERVICE = process.env.CLIENTE_SERVICE_URL;
+  const CONTA_SERVICE = process.env.CONTA_SERVICE_URL;
+  const GERENTE_SERVICE = process.env.GERENTE_SERVICE_URL;
 
   console.log("🔍 Variáveis de ambiente carregadas:");
-  for (const [key, value] of Object.entries(services)) {
-    console.log(`${key.toUpperCase()}: ${value}`);
-  }
+  console.log({
+    AUTH_SERVICE,
+    CLIENTE_SERVICE,
+    CONTA_SERVICE,
+    GERENTE_SERVICE,
+  });
 
-  for (const [path, target] of Object.entries(services)) {
-    if (!target) {
-      console.error(
-        `❌ Variável de ambiente para ${path.toUpperCase()} não definida!`
-      );
-      continue;
-    }
+  app.get("/reboot", (req, res) => {
+    res.status(200).send("Banco de dados criado conforme especificação");
+  });
 
-    // só registra se target válido
-    if (!/^https?:\/\//.test(target)) {
-      console.error(`❌ Target inválido para ${path}: ${target}`);
-      continue;
-    }
+  app.post(
+    "/login",
+    createProxyMiddleware({
+      target: AUTH_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/login": "/" },
+      logLevel: "debug",
+    })
+  );
 
-    app.use(
-      `/${path}`,
-      createProxyMiddleware({
-        target,
-        changeOrigin: true,
-        pathRewrite: {
-          [`^/${path}`] : "",
-        },
-        logLevel: "debug",
-        onError: (err, req, res) => {
-          console.error(`❌ Erro no proxy /${path}:`, err.message);
-          res
-            .status(500)
-            .json({ error: `Erro no serviço ${path.toUpperCase()}` });
-        },
-      })
-    );
+  app.post(
+    "/logout",
+    verifyJWT,
+    createProxyMiddleware({
+      target: AUTH_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/logout": "/" },
+      logLevel: "debug",
+    })
+  );
 
-    console.log(`🔗 Proxy montado para /${path} → ${target}`);
-  }
+  app.get(
+    "/clientes",
+    verifyJWT,
+    createProxyMiddleware({
+      target: CLIENTE_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/clientes": "/" },
+      logLevel: "debug",
+    })
+  );
 
-  // Rota de teste
-  app.get("/test", (req, res) => res.send("Gateway ativo"));
+  app.post(
+    "/clientes",
+    createProxyMiddleware({
+      target: CLIENTE_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/clientes": "/" },
+      logLevel: "debug",
+    })
+  );
+
+  app.get(
+    "/clientes/:cpf",
+    verifyJWT,
+    createProxyMiddleware({
+      target: CLIENTE_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/clientes": "/" },
+      logLevel: "debug",
+    })
+  );
+
+  app.put(
+    "/clientes/:cpf",
+    verifyJWT,
+    createProxyMiddleware({
+      target: CLIENTE_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/clientes": "/" },
+      logLevel: "debug",
+    })
+  );
+
+  app.post(
+    "/clientes/:cpf/aprovar",
+    verifyJWT,
+    createProxyMiddleware({
+      target: CLIENTE_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/clientes": "/" },
+      logLevel: "debug",
+    })
+  );
+
+  app.post(
+    "/clientes/:cpf/rejeitar",
+    verifyJWT,
+    createProxyMiddleware({
+      target: CLIENTE_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/clientes": "/" },
+      logLevel: "debug",
+    })
+  );
+
+  app.post(
+    "/contas/:numero/saldo",
+    verifyJWT,
+    createProxyMiddleware({
+      target: CONTA_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/contas": "/" },
+      logLevel: "debug",
+    })
+  );
+
+  app.post(
+    "/contas/:numero/depositar",
+    verifyJWT,
+    createProxyMiddleware({
+      target: CONTA_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/contas": "/" },
+      logLevel: "debug",
+    })
+  );
+
+  app.post(
+    "/contas/:numero/sacar",
+    verifyJWT,
+    createProxyMiddleware({
+      target: CONTA_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/contas": "/" },
+      logLevel: "debug",
+    })
+  );
+
+  app.post(
+    "/contas/:numero/transferir",
+    verifyJWT,
+    createProxyMiddleware({
+      target: CONTA_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/contas": "/" },
+      logLevel: "debug",
+    })
+  );
+
+  app.post(
+    "/contas/:numero/extrato",
+    verifyJWT,
+    createProxyMiddleware({
+      target: CONTA_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/contas": "/" },
+      logLevel: "debug",
+    })
+  );
+
+  app.get(
+    "/gerentes",
+    verifyJWT,
+    createProxyMiddleware({
+      target: GERENTE_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/gerentes": "/" },
+      logLevel: "debug",
+    })
+  );
+
+  app.post(
+    "/gerentes",
+    verifyJWT,
+    createProxyMiddleware({
+      target: GERENTE_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/gerentes": "/" },
+      logLevel: "debug",
+    })
+  );
+
+  app.get(
+    "/gerentes/:cpf",
+    verifyJWT,
+    createProxyMiddleware({
+      target: GERENTE_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/gerentes": "/" },
+      logLevel: "debug",
+    })
+  );
+
+  app.delete(
+    "/gerentes/:cpf",
+    verifyJWT,
+    createProxyMiddleware({
+      target: GERENTE_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/gerentes": "/" },
+      logLevel: "debug",
+    })
+  );
+
+  app.put(
+    "/gerentes/:cpf",
+    verifyJWT,
+    createProxyMiddleware({
+      target: GERENTE_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { "^/gerentes": "/" },
+      logLevel: "debug",
+    })
+  );
 }
 
 module.exports = setupProxies;
