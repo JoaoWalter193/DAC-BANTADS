@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import msSaga.msSaga.DTO.*;
 import msSaga.msSaga.services.SagaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,5 +41,13 @@ public class SagaController {
         return sagaService.sagaAprovarCliente(cpf);
     }
 
+
+    @PostMapping("/alterar-perfil")
+    public ResponseEntity<RespostaPadraoDTO> sagaAlteracaoPerfil(@RequestBody AlteracaoPerfilDTO dados) {
+        sagaService.executarSagaAlteracaoPerfil(dados);
+        return ResponseEntity
+                .status(HttpStatus.ACCEPTED)
+                .body(new RespostaPadraoDTO("teste3 alteração de perfil.", HttpStatus.ACCEPTED.value()));
+    }
 
 }
