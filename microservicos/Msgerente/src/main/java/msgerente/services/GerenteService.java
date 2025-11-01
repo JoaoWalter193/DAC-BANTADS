@@ -79,10 +79,10 @@ public class GerenteService {
             return ResponseEntity.ok(dto);
     }
 
-    public ResponseEntity<GerenteDTO> inserirGerente (AdicionarGerenteDTO data){
+    public ResponseEntity<GerenteDTO> inserirGerente (AdicionarGerenteDTO data) {
         Gerente gerenteTemp = new Gerente(data.cpf(), data.nome(), data.email(), data.senha(), data.tipo());
 
-        if (gerenteRepository.findByCpf(data.cpf()) != null){
+        if (gerenteRepository.findByCpf(data.cpf()) != null) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
@@ -96,45 +96,32 @@ public class GerenteService {
                 "msGerente-add");
         rabbitMQProducer.sendMessageSaga(responseTemp);
 
-
         return ResponseEntity.ok(new GerenteDTO(data.cpf(), data.nome(), data.email(), data.tipo()));
-public ResponseEntity<GerenteDTO> inserirGerente(AdicionarGerenteDTO data) {
-    if (!validarCPF(data.cpf())) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
-    if (gerenteRepository.findByCpf(data.cpf()) != null) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).build();
-    }
+        public ResponseEntity<GerenteDTO> deletarGerente (String cpf){
 
-    Gerente gerenteTemp = new Gerente(data.cpf(), data.nome(), data.email(), data.senha(), data.tipo());
-    gerenteRepository.save(gerenteTemp);
-    return ResponseEntity.ok(new GerenteDTO(data.cpf(), data.nome(), data.email(), data.tipo()));
-}
+            Gerente gerenteTemp = gerenteRepository.findByCpf(cpf);
 
+            if (gerenteTemp != null) {
 
-    public ResponseEntity<GerenteDTO> deletarGerente (String cpf){
+                gerenteRepository.delete(gerenteTemp);
 
-        Gerente gerenteTemp = gerenteRepository.findByCpf(cpf);
-
-        if (gerenteTemp != null){
-
-            gerenteRepository.delete(gerenteTemp);
-
-            //enviar gerente para excluir das contas
-            ResponseDTO responseTemp = new ResponseDTO(200,
-                    gerenteTemp.getCpf(),
-                    gerenteTemp.getNome(),
-                    0.0,
-                    "msGerente-excluir");
-            rabbitMQProducer.sendMessageSaga(responseTemp);
+                //enviar gerente para excluir das contas
+                ResponseDTO responseTemp = new ResponseDTO(200,
+                        gerenteTemp.getCpf(),
+                        gerenteTemp.getNome(),
+                        0.0,
+                        "msGerente-excluir");
+                rabbitMQProducer.sendMessageSaga(responseTemp);
 
 
-            GerenteDTO dto = new GerenteDTO(gerenteTemp.getCpf(),gerenteTemp.getNome(),gerenteTemp.getEmail(), gerenteTemp.getTipo());
-            return ResponseEntity.ok(dto);
+                GerenteDTO dto = new GerenteDTO(gerenteTemp.getCpf(), gerenteTemp.getNome(), gerenteTemp.getEmail(), gerenteTemp.getTipo());
+                return ResponseEntity.ok(dto);
+            }
+            else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    }
-
 
 }
