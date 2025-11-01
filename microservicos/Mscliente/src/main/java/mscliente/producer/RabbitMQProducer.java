@@ -38,17 +38,4 @@ public class RabbitMQProducer {
         rabbitTemplate.convertAndSend(exchange,routingKeySaga,message);
     }
 
-
-    //
-    // atualização e compensação
-    //
-    public void publicarEventoClienteAtualizadoSucesso(AlteracaoPerfilDTO dados) {
-        // Envia o evento de SUCESSO com a chave de roteamento correta
-        rabbitTemplate.convertAndSend(RabbitMQConfig.SAGA_EXCHANGE, "cliente.atualizado.sucesso", dados);
-    }
-
-    public void publicarEventoClienteAtualizadoFalha(AlteracaoPerfilDTO dados) {
-        // Envia o evento de FALHA com a chave de roteamento correta
-        rabbitTemplate.convertAndSend(RabbitMQConfig.SAGA_EXCHANGE, "cliente.atualizado.falha", dados);
-    }
 }
