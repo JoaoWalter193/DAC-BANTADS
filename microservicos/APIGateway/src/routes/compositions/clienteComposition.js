@@ -15,9 +15,8 @@ if (!CLIENTE || !CONTA || !GERENTE) {
   );
 }
 
-/**
- * Helper: obter conta por cpf, propaga erro se necessário.
- */
+
+
 async function fetchContaByCpf(cpf) {
   const url = `${CONTA}/contas/${encodeURIComponent(cpf)}`;
   const resp = await axiosInstance.get(url);
@@ -25,9 +24,6 @@ async function fetchContaByCpf(cpf) {
   return resp.data;
 }
 
-/**
- * Helper: obter gerente por cpf
- */
 async function fetchGerenteByCpf(cpf) {
   const url = `${GERENTE}/gerentes/${encodeURIComponent(cpf)}`;
   const resp = await axiosInstance.get(url);
@@ -35,27 +31,18 @@ async function fetchGerenteByCpf(cpf) {
   return resp.data;
 }
 
-/**
- * GET /clientes/:cpf
- * Composition: ms-clientes -> ms-conta -> ms-gerente
- * - Remove 'cep' do cliente final (seguindo Swagger)
- * - Se qualquer serviço retornar erro >=400 -> propaga (opção B)
- */
 router.get(
   "/clientes/:cpf",
   /* verifyJWT, */ async (req, res) => {
     const { cpf } = req.params;
 
     try {
-      // 1) ms-clientes
       const clienteUrl = `${CLIENTE}/clientes/${encodeURIComponent(cpf)}`;
       const clienteResp = await axiosInstance.get(clienteUrl);
       if (clienteResp.status >= 400)
         return propagateRemoteError(res, clienteResp);
 
       const cliente = clienteResp.data;
-      // remove cep intentionally (swagger doesn't include it)
-      // 2) ms-conta
       let conta;
       try {
         conta = await fetchContaByCpf(cpf);
@@ -63,10 +50,8 @@ router.get(
         return propagateRemoteError(res, e.remote);
       }
 
-      // 3) ms-gerente -> use cpfGerente from conta
       const cpfGerente = conta.cpfGerente || conta.cpfGerente;
       if (!cpfGerente) {
-        // se não vier cpfGerente, considerar 404 conforme regra B
         return res.status(404).end();
       }
 
@@ -77,7 +62,6 @@ router.get(
         return propagateRemoteError(res, e.remote);
       }
 
-      // Monta resposta exatamente conforme Swagger (sem 'cep'), na ordem desejada
       const result = {
         cpf: cliente.cpf,
         nome: cliente.nome,
@@ -106,28 +90,16 @@ router.get(
   }
 );
 
-/**
- * GET /clientes  with filtro=adm_relatorio_clientes
- * Behavior:
- * - calls ms-clientes?filtro=adm_relatorio_clientes
- * - for each cliente, fetch conta (/contas/{cpf}) -> if any error propagate
- * - for each conta, fetch gerente (/gerentes/{cpfGerente}) -> if error propagate
- * - compose array of objects like in the Swagger (cliente + conta + gerente fields)
- *
- * Note: this may produce many requests; we run them with Promise.all per batch.
- */
 router.get(
   "/clientes",
   /* verifyJWT, */ async (req, res) => {
     const filtro = req.query.filtro;
 
-    // If not the special filter, let proxies handle it (so composition only for adm_relatorio_clientes)
     if (!filtro || filtro !== "adm_relatorio_clientes") {
-      return res.status(204).end(); // signal: not handled by composition (index.js will let proxies run)
+      return res.status(204).end();
     }
 
     try {
-      // 1) obter clientes com filtro
       const clientesUrl = `${CLIENTE}/clientes?filtro=adm_relatorio_clientes`;
       const clientesResp = await axiosInstance.get(clientesUrl);
       if (clientesResp.status >= 400)
@@ -135,18 +107,15 @@ router.get(
 
       const clientes = clientesResp.data || [];
 
-      // 2) Para cada cliente, buscar conta (em paralelo)
       const contasPromises = clientes.map((c) =>
         axiosInstance.get(`${CONTA}/contas/${encodeURIComponent(c.cpf)}`)
       );
       const contasResponses = await Promise.all(contasPromises);
 
-      // Verificar erros em contas
       for (const cr of contasResponses) {
         if (cr.status >= 400) return propagateRemoteError(res, cr);
       }
 
-      // 3) Para cada conta, buscar gerente (em paralelo)
       const contasData = contasResponses.map((r) => r.data);
       const gerentesPromises = contasData.map((conta) =>
         axiosInstance.get(
@@ -161,8 +130,6 @@ router.get(
 
       const gerentesData = gerentesResponses.map((r) => r.data);
 
-      // 4) construir array final: para cada cliente combinar cliente + conta + gerente
-      // Preservando campos conforme Swagger
       const final = clientes.map((cliente, idx) => {
         const conta = contasData[idx];
         const gerente = gerentesData[idx];
@@ -174,7 +141,7 @@ router.get(
           endereco: cliente.endereco,
           cidade: cliente.cidade,
           estado: cliente.estado,
-          salario: cliente.salario ?? null, // cliente list may not include salario; keep null if not present
+          salario: cliente.salario ?? null,
           conta: String(conta.numConta),
           saldo: conta.saldo,
           limite: conta.limite,

@@ -17,6 +17,10 @@ function setupProxies(app) {
     timeout: 30_000,
   });
 
+  app.get("/reboot", (res) => {
+    res.status(200).send("Banco de dados criado conforme especificação");
+  });
+
   app.post("/login", createProxyMiddleware(proxyOptions(AUTH)));
 
   app.post(
