@@ -23,7 +23,7 @@ public class RabbitMQConfig {
         return new TopicExchange(exchange);
     }
 
-
+// teste pedro alteracaoperfil
 // fila pra atualizar o ms-cliente
     @Value("AtualizarCliente")
     private String filaAtualizarCliente;
