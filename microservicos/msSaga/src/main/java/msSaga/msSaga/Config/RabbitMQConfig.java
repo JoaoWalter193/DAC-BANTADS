@@ -144,6 +144,7 @@ public class RabbitMQConfig {
     }
 
 
+// teste pedro alteracaoperfil
 // fila pro sucesso da alteracao perfil
     @Value("AlteracaoPerfilSucesso")
     private String filaAlteracaoPerfilSucesso;

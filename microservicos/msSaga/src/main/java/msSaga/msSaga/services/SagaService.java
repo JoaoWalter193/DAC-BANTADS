@@ -96,10 +96,10 @@ public class SagaService {
         return ResponseEntity.ok(new RespostaPadraoDTO("Development", 500));
     }
 
-
+// teste pedro alteracaoperfil
     public void executarSagaAlteracaoPerfil(AlteracaoPerfilDTO dados) {
-        System.out.println("teste saga service 1");
+        System.out.println("teste saga service 1 - recebe HTTP Req");
+        
         rabbitMQProducer.sendAtualizarCliente(dados);
-        System.out.println("teste saga service 2");
     }
 }

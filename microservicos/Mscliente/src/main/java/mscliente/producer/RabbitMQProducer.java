@@ -21,6 +21,11 @@ public class RabbitMQProducer {
     @Value("keySaga")
     private String routingKeySaga;
 
+    // teste pedro alteracaoperfil
+    @Value("keyAlteracaoPerfilSucesso")
+    private String routingKeyAlteracaoPerfilSucesso;
+
+
     public RabbitMQProducer(RabbitTemplate rabbitTemplate){
         this.rabbitTemplate = rabbitTemplate;
     }
@@ -36,6 +41,14 @@ public class RabbitMQProducer {
     public void sendMessageSaga(int cod, String cpfCliente, String nomeCliente, double salario){
         ResponseDTO message = new ResponseDTO(cod, cpfCliente,nomeCliente,salario, "msCliente");
         rabbitTemplate.convertAndSend(exchange,routingKeySaga,message);
+    }
+
+
+    // teste pedro alteracaoperfil
+    public void clienteAtualizadoSucesso(AlteracaoPerfilDTO dados) {
+        System.out.println("cliente->saga teste evento de sucesso para a chave");
+        
+        rabbitTemplate.convertAndSend(exchange, routingKeyAlteracaoPerfilSucesso, dados);
     }
 
 }

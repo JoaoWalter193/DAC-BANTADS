@@ -41,7 +41,7 @@ public class SagaController {
         return sagaService.sagaAprovarCliente(cpf);
     }
 
-
+// teste pedro alteracaoperfil
     @PostMapping("/alterar-perfil")
     public ResponseEntity<RespostaPadraoDTO> sagaAlteracaoPerfil(@RequestBody AlteracaoPerfilDTO dados) {
         sagaService.executarSagaAlteracaoPerfil(dados);
