@@ -8,9 +8,12 @@
 /app/src/main/java/msauth/ms_auth/controllers/TokenController.java
 /app/src/main/java/msauth/ms_auth/dto/LoginRequest.java
 /app/src/main/java/msauth/ms_auth/dto/LoginResponse.java
+/app/src/main/java/msauth/ms_auth/dto/SagaEvent.java
+/app/src/main/java/msauth/ms_auth/dto/SagaRequest.java
 /app/src/main/java/msauth/ms_auth/dto/UsuarioCriadoDTO.java
 /app/src/main/java/msauth/ms_auth/dto/UsuarioResponse.java
 /app/src/main/java/msauth/ms_auth/entities/Role.java
 /app/src/main/java/msauth/ms_auth/entities/UsuarioEntity.java
 /app/src/main/java/msauth/ms_auth/producer/AuthProducer.java
 /app/src/main/java/msauth/ms_auth/repositories/UsuarioRepository.java
+/app/src/main/java/msauth/ms_auth/service/AuthService.java
