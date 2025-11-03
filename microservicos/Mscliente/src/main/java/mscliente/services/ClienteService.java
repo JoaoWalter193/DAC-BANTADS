@@ -235,20 +235,17 @@ public class ClienteService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
-    //
+
+    // teste pedro alteracaoperfil
     // atualização e compensação
     //
     public void atualizarClienteSaga(ClienteDTO dadosAtualizados) {
-        // Busca o cliente no banco de dados
         Optional<Cliente> optCliente = clienteRepository.findByCpf(dadosAtualizados.cpf());
-
         if (optCliente.isEmpty()) {
-            // Lança uma exceção que será capturada pelo consumidor do RabbitMQ
             throw new RuntimeException("Cliente com CPF " + dadosAtualizados.cpf() + " não encontrado para atualização.");
         }
         
         Cliente cliente = optCliente.get();
-        // Atualiza os campos necessários com os dados do DTO
         cliente.setNome(dadosAtualizados.nome());
         cliente.setSalario(dadosAtualizados.salario());
         cliente.setEmail(dadosAtualizados.email());
@@ -261,15 +258,12 @@ public class ClienteService {
         clienteRepository.save(cliente);
     }
 
-    /**
-     * Reverte os dados de um cliente para um estado anterior. Chamado pela Saga em caso de compensação.
-     */
+    // reverte em caso de erro
     public void reverterPara(ClienteDTO dadosOriginais) {
         Optional<Cliente> optCliente = clienteRepository.findByCpf(dadosOriginais.cpf());
 
         if (optCliente.isPresent()) {
             Cliente cliente = optCliente.get();
-            // Restaura os dados originais do cliente
             cliente.setNome(dadosOriginais.nome());
             cliente.setSalario(dadosOriginais.salario());
             cliente.setEmail(dadosOriginais.email());
@@ -279,7 +273,7 @@ public class ClienteService {
             cliente.setEstado(dadosOriginais.estado());
             clienteRepository.save(cliente);
         } else {
-            // Se o cliente não foi encontrado, a compensação pode ser simplesmente logar um aviso.
+            //se não encontrar ocliente emite o aviso
             System.err.println("AVISO: Tentativa de compensação para um cliente não encontrado (CPF: " + dadosOriginais.cpf() + ").");
         }
     }

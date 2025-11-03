@@ -2,6 +2,8 @@ package mscliente.consumer;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import mscliente.domain.AlteracaoPerfilDTO;
 import mscliente.domain.AutocadastroDTO;
 import mscliente.domain.ResponseDTO;
 import mscliente.producer.RabbitMQProducer;
@@ -33,6 +35,24 @@ public class RabbitMQConsumer {
 
             ResponseDTO responseTemp = new ResponseDTO(201, data.cpf(), data.nome(), data.salario(), "msCliente");
             rabbitMQProducer.sendClienteSaga(responseTemp);
+        }
+    }
+
+
+    //teste pedro alteracaoperfil
+    @RabbitListener(queues = {"AtualizarCliente"})
+    public void atualizarCliente(AlteracaoPerfilDTO dados) {
+        LOGGER.info(String.format("saga->cliente teste 'AtualizarCliente' CPF: %s", dados.dadosAtualizados().cpf()));
+        
+        try {
+            clienteService.atualizarClienteSaga(dados.dadosAtualizados());
+            LOGGER.info("Cliente atualizado com sucesso. Publicando evento de sucesso.");
+            rabbitMQProducer.clienteAtualizadoSucesso(dados);
+
+        } catch (Exception e) {
+            LOGGER.error("Falha ao atualizar cliente. Publicando evento de falha.", e);
+            // Descomentar quando implementar falha
+            // rabbitMQProducer.clienteAtualizadoFalha(dados);
         }
     }
 
