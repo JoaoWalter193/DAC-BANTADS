@@ -54,6 +54,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue authCreateQueue() {
+        return new Queue(authCreateQueue);
+    }
+
+    @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
             ConnectionFactory connectionFactory,
             SimpleRabbitListenerContainerFactoryConfigurer configurer) {

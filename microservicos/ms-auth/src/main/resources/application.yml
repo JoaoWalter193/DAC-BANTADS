@@ -33,6 +33,6 @@ rabbitmq:
     queue:
         auth-create: saga.auth.create.queue
     key:
-        saga-create-auth: key.auth.created
-        saga-auth-success: saga.auth.success.key
-        saga-auth-fail: saga.auth.fail.key
+        saga-create-auth: saga.auth.created
+        saga-create-success: saga.auth.success
+        saga-create-fail: saga.auth.fail
