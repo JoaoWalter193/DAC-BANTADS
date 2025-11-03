@@ -31,7 +31,7 @@ public class ClienteService {
 
     private Map<String, String> cpfParaSenha = new HashMap<>();
 
-    PasswordEncoder passwordEncoder = new StandardPasswordEncoder("razer");
+    // PasswordEncoder passwordEncoder = new StandardPasswordEncoder("razer");
 
 
 
@@ -122,13 +122,14 @@ public class ClienteService {
 
 
         String senhaAleatoria = RandomStringUtils.random(5,true,true);
-        String senhaHasheada = passwordEncoder.encode(senhaAleatoria);
+        // String senhaHasheada = passwordEncoder.encode(senhaAleatoria);
 
         Cliente clienteTemp = new Cliente(
                 data.cpf(),
                 data.nome(),
                 data.email(),
-                senhaHasheada, // classe que pega a senha, joga pra SHA256 + SALT e retorna o HASH
+                "",
+                // senhaHasheada, // classe que pega a senha, joga pra SHA256 + SALT e retorna o HASH
                 data.salario(),
                 data.endereco(),
                 data.cep(),
@@ -140,6 +141,9 @@ public class ClienteService {
         clienteRepository.save(clienteTemp);
 
         cpfParaSenha.put(clienteTemp.getCpf(),senhaAleatoria);
+
+        AuthRequest authRequest = new AuthRequest(data.email(), senhaAleatoria);
+        rabbitMQProducer.sendAuthSaga(authRequest);
 
         return ResponseEntity.ok(new ClienteDTO(clienteTemp.getCpf(),
                 clienteTemp.getNome(),
