@@ -1,4 +1,5 @@
 package msauth.ms_auth.producer;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,6 @@ import msauth.ms_auth.dto.SagaEvent;
 @Service
 public class AuthProducer {
 
-    private final TopicExchange sagaExchange_1;
 
     @Value("${rabbitmq.exchange.saga}")
     private String sagaExchange;
@@ -21,12 +21,10 @@ public class AuthProducer {
     @Value("${rabbitmq.key.saga-create-fail}")
     private String sagaAuthFailKey;
 
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
+    private final AmqpTemplate rabbitTemplate;
 
-    public AuthProducer(RabbitTemplate rabbitTemplate, TopicExchange sagaExchange_1) {
+    public AuthProducer(AmqpTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
-        this.sagaExchange_1 = sagaExchange_1;
     }
 
     public void sendSuccessEvent(String sagaId, String payload) {
@@ -38,7 +36,5 @@ public class AuthProducer {
         SagaEvent message = new SagaEvent(sagaExchange, "AUTH_FAIL", errorMessage);
         rabbitTemplate.convertAndSend(sagaExchange, sagaAuthFailKey, message);
     }
-
-
 
 }
