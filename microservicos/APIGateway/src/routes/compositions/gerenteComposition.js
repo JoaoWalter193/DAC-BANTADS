@@ -1,6 +1,5 @@
 const express = require("express");
 const { axiosInstance, propagateRemoteError } = require("./shared");
-// const { verifyJWT, requireRoles } = require('../../middlewares/verifyJWT'); // ready but disabled
 
 const router = express.Router();
 
@@ -10,23 +9,19 @@ const GERENTE = process.env.GERENTE_SERVICE_URL;
 
 if (!CLIENTE || !CONTA || !GERENTE) {
   console.warn(
-    "Composition (gerente): alguma SERVICE_URL não está definida (CLIENTE/CONTA/GERENTE)."
+    "⚠️ Composition (gerente): alguma SERVICE_URL não está definida."
   );
 }
 
-router.get(
-  "/gerentes",
-  /* verifyJWT, requireRoles(['ADMINISTRADOR']), */ async (req, res) => {
-    const numero = req.query.numero;
+router.get("/", async (req, res, next) => {
+  const { filtro } = req.query;
 
-    if (!numero || numero !== "dashboard") {
-      return res.status(204).end();
-    }
-
+  if (filtro === "dashboard") {
     try {
       const gerentesResp = await axiosInstance.get(`${GERENTE}/gerentes`);
       if (gerentesResp.status >= 400)
         return propagateRemoteError(res, gerentesResp);
+
       const gerentes = gerentesResp.data || [];
 
       const clientesResp = await axiosInstance.get(
@@ -34,42 +29,44 @@ router.get(
       );
       if (clientesResp.status >= 400)
         return propagateRemoteError(res, clientesResp);
+
       const clientes = clientesResp.data || [];
 
-      const contasPromises = clientes.map((c) =>
-        axiosInstance.get(`${CONTA}/contas/${encodeURIComponent(c.cpf)}`)
+      const contasResponses = await Promise.all(
+        clientes.map((c) =>
+          axiosInstance.get(`${CONTA}/contas/${encodeURIComponent(c.cpf)}`)
+        )
       );
-      const contasResponses = await Promise.all(contasPromises);
 
-      for (const cr of contasResponses) {
-        if (cr.status >= 400) return propagateRemoteError(res, cr);
+      for (const r of contasResponses) {
+        if (r.status >= 400) return propagateRemoteError(res, r);
       }
 
       const contas = contasResponses.map((r) => r.data);
 
-      const agrupamento = {};
+      const contasPorGerente = {};
       contas.forEach((conta) => {
-        const cpfG = conta.cpfGerente;
-        if (!agrupamento[cpfG]) agrupamento[cpfG] = [];
-        agrupamento[cpfG].push(conta);
+        const cpfGerente = conta.cpfGerente;
+        if (!contasPorGerente[cpfGerente]) contasPorGerente[cpfGerente] = [];
+        contasPorGerente[cpfGerente].push(conta);
       });
 
       const final = gerentes.map((gerente) => {
-        const contasDoGerente = agrupamento[gerente.cpf] || [];
+        const contasDoGerente = contasPorGerente[gerente.cpf] || [];
 
-        const clientesDoGerente = contasDoGerente.map((ct) => ({
-          cliente: ct.cpfCliente,
-          numero: String(ct.numConta),
-          saldo: ct.saldo,
-          limite: ct.limite,
-          gerente: ct.cpfGerente,
-          criacao: ct.dataCriacao,
+        const clientesDoGerente = contasDoGerente.map((c) => ({
+          cliente: c.cpfCliente,
+          numero: String(c.numConta),
+          saldo: c.saldo,
+          limite: c.limite,
+          gerente: c.cpfGerente,
+          criacao: c.dataCriacao,
         }));
 
         let saldoPositivo = 0;
         let saldoNegativo = 0;
-        contasDoGerente.forEach((ct) => {
-          const s = Number(ct.saldo) || 0;
+        contasDoGerente.forEach((c) => {
+          const s = Number(c.saldo) || 0;
           if (s >= 0) saldoPositivo += s;
           else saldoNegativo += s;
         });
@@ -89,13 +86,16 @@ router.get(
 
       return res.status(200).json(final);
     } catch (err) {
-      console.error("Erro composition GET /gerentes?numero=dashboard", err);
+      console.error("❌ Erro composition GET /gerentes?filtro=dashboard", err);
       if (err && err.remote) return propagateRemoteError(res, err.remote);
-      return res
-        .status(500)
-        .json({ cod: 500, mensagem: "Erro interno no API Gateway" });
+      return res.status(500).json({ mensagem: "Erro interno no API Gateway" });
     }
   }
-);
+
+  return require("http-proxy-middleware").createProxyMiddleware({
+    target: GERENTE,
+    changeOrigin: true,
+  })(req, res, next);
+});
 
 module.exports = router;

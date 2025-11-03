@@ -15,8 +15,6 @@ if (!CLIENTE || !CONTA || !GERENTE) {
   );
 }
 
-
-
 async function fetchContaByCpf(cpf) {
   const url = `${CONTA}/contas/${encodeURIComponent(cpf)}`;
   const resp = await axiosInstance.get(url);
@@ -32,7 +30,7 @@ async function fetchGerenteByCpf(cpf) {
 }
 
 router.get(
-  "/clientes/:cpf",
+  "/:cpf",
   /* verifyJWT, */ async (req, res) => {
     const { cpf } = req.params;
 
@@ -81,58 +79,42 @@ router.get(
       return res.status(200).json(result);
     } catch (err) {
       console.error("Erro composition GET /clientes/:cpf", err);
-      // if thrown remote error earlier handled, else generic 500
       if (err && err.remote) return propagateRemoteError(res, err.remote);
-      return res
-        .status(500)
-        .json({ cod: 500, mensagem: "Erro interno no API Gateway" });
+      return res.status(500).json({ mensagem: "Erro interno no API Gateway" });
     }
   }
 );
 
-router.get(
-  "/clientes",
-  /* verifyJWT, */ async (req, res) => {
-    const filtro = req.query.filtro;
+router.get("/", async (req, res, next) => {
+  const { filtro } = req.query;
 
-    if (!filtro || filtro !== "adm_relatorio_clientes") {
-      return res.status(204).end();
-    }
-
+  if (filtro === "adm_relatorio_clientes") {
     try {
       const clientesUrl = `${CLIENTE}/clientes?filtro=adm_relatorio_clientes`;
       const clientesResp = await axiosInstance.get(clientesUrl);
+
       if (clientesResp.status >= 400)
         return propagateRemoteError(res, clientesResp);
 
       const clientes = clientesResp.data || [];
 
       const contasPromises = clientes.map((c) =>
-        axiosInstance.get(`${CONTA}/contas/${encodeURIComponent(c.cpf)}`)
+        axiosInstance.get(`${CONTA}/contas/${c.cpf}`)
       );
       const contasResponses = await Promise.all(contasPromises);
 
-      for (const cr of contasResponses) {
-        if (cr.status >= 400) return propagateRemoteError(res, cr);
-      }
-
       const contasData = contasResponses.map((r) => r.data);
+
       const gerentesPromises = contasData.map((conta) =>
-        axiosInstance.get(
-          `${GERENTE}/gerentes/${encodeURIComponent(conta.cpfGerente)}`
-        )
+        axiosInstance.get(`${GERENTE}/gerentes/${conta.cpfGerente}`)
       );
       const gerentesResponses = await Promise.all(gerentesPromises);
 
-      for (const gr of gerentesResponses) {
-        if (gr.status >= 400) return propagateRemoteError(res, gr);
-      }
-
       const gerentesData = gerentesResponses.map((r) => r.data);
 
-      const final = clientes.map((cliente, idx) => {
-        const conta = contasData[idx];
-        const gerente = gerentesData[idx];
+      const final = clientes.map((cliente, i) => {
+        const conta = contasData[i];
+        const gerente = gerentesData[i];
 
         return {
           cpf: cliente.cpf,
@@ -154,15 +136,18 @@ router.get(
       return res.status(200).json(final);
     } catch (err) {
       console.error(
-        "Erro composition GET /clientes?filtro=adm_relatorio_clientes",
+        "Erro composition /clientes?filtro=adm_relatorio_clientes",
         err
       );
       if (err && err.remote) return propagateRemoteError(res, err.remote);
-      return res
-        .status(500)
-        .json({ cod: 500, mensagem: "Erro interno no API Gateway" });
+      return res.status(500).json({ mensagem: "Erro interno no API Gateway" });
     }
   }
-);
+
+  return createProxyMiddleware({
+    target: CLIENTE,
+    changeOrigin: true,
+  })(req, res, next);
+});
 
 module.exports = router;

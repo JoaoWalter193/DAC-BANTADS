@@ -2,6 +2,7 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 const { verifyJWT, requireRoles } = require("../middlewares/verifyJWT");
 
 function setupProxies(app) {
+  const LOCAL = process.env.LOCAL_SERVICE_URL;
   const AUTH = process.env.AUTH_SERVICE_URL;
   const CLIENTE = process.env.CLIENTE_SERVICE_URL;
   const CONTA = process.env.CONTA_SERVICE_URL;
@@ -10,15 +11,17 @@ function setupProxies(app) {
   console.log("🔍 Variáveis de ambiente carregadas:");
   console.log({ AUTH, CLIENTE, CONTA, GERENTE });
 
-  const proxyOptions = (target, rewritePrefix) => ({
+  const proxyOptions = (target) => ({
     target,
     changeOrigin: true,
     proxyTimeout: 30_000,
     timeout: 30_000,
   });
 
-  app.get("/reboot", (res) => {
-    res.status(200).send("Banco de dados criado conforme especificação");
+  app.get("/reboot", async (req, res) => {
+    res.status(200).json({
+      mensagem: "Banco de dados criado conforme especificação",
+    });
   });
 
   app.post("/login", createProxyMiddleware(proxyOptions(AUTH)));
@@ -29,16 +32,9 @@ function setupProxies(app) {
     createProxyMiddleware(proxyOptions(AUTH))
   );
 
-  app.get(
-    "/clientes",
-    //verifyJWT,
-    createProxyMiddleware(proxyOptions(CLIENTE))
-  );
+  app.get("/clientes", require("./compositions/clienteComposition"));
 
-  app.post(
-    "/clientes",
-    createProxyMiddleware(proxyOptions(CLIENTE))
-  );
+  app.post("/clientes", createProxyMiddleware(proxyOptions(CLIENTE)));
 
   app.put(
     "/clientes/:cpf",
