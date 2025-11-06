@@ -1,6 +1,7 @@
 package MSconta.producer;
 
 
+import MSconta.domain.ClienteDTO;
 import MSconta.domain.ContaCUD;
 import MSconta.domain.DTOCqrs.AtualizarDTO;
 import MSconta.domain.DTOCqrs.SaqueDepositoDTO;
@@ -21,6 +22,10 @@ public class RabbitMQProducer {
 
     @Value("keySaga")
     private String routingKeySaga;
+
+// teste pedro alteracaopedril
+    @Value("keyAtualizacaoContaSucesso")
+    private String routingKeySagaContaSucesso;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -76,4 +81,9 @@ public class RabbitMQProducer {
     }
 
 
+// teste pedro alteracaoperfil
+    public void publicarEventoLimiteAtualizadoSucesso(ClienteDTO dadosCliente) {
+        System.out.println("conta->saga teste sucesso ");
+        rabbitTemplate.convertAndSend(exchange, routingKeySagaContaSucesso, dadosCliente);
+    }
 }

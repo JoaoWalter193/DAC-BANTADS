@@ -2,6 +2,8 @@ package msSaga.msSaga.consumer;
 
 
 
+import msSaga.msSaga.DTO.AlteracaoPerfilDTO;
+import msSaga.msSaga.DTO.ClienteDTO;
 import msSaga.msSaga.DTO.ResponseDTO;
 import msSaga.msSaga.producer.RabbitMQProducer;
 import org.slf4j.Logger;
@@ -63,11 +65,34 @@ public class RabbitMQConsumer {
             rabbitMQProducer.sendContaConta(message);
         }
 
+    }
 
-
-
-
-
+// teste pedro alteracaoperfil
+    @RabbitListener(queues = {"AlteracaoPerfilSucesso"})
+    public void clienteAtualizadoSucesso(AlteracaoPerfilDTO dados) {
+        LOGGER.info(String.format("cliente->saga teste recebe evento alteracao "));
+        
+        try {
+            LOGGER.info("saga->conta alterar limite.");
+            
+            // Extrai o ClienteDTO (com os dados atualizados)
+            ClienteDTO dadosClienteAtualizados = dados.dadosAtualizados();
+            
+            // envia o comando pra atualizar limite
+            rabbitMQProducer.sendAtualizarLimite(dadosClienteAtualizados);
+            
+        } catch (Exception e) {
+            LOGGER.error("[ms-saga] Consumer: ERRO ao processar 'onClienteAtualizadoSucesso'.", e);
+            // Aqui entraria a lógica de compensação (que implementaremos depois)
+            // producer.enviarComandoCompensarCliente(dados.dadosOriginais());
+        }
+    }
+    
+    // ouve a fila de sucesso pra confirmar que funcionou
+    @RabbitListener(queues = {"AtualizacaoContaSucesso"})
+    public void contaAtualizadaSucesso(ClienteDTO dadosConta) { 
+        LOGGER.info(String.format("conta->saga teste confirmacao sucesso"));
+        LOGGER.info("--- [ms-saga] SAGA DE ALTERAÇÃO DE PERFIL CONCLUÍDA COM SUCESSO ---");
     }
 
 }

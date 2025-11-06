@@ -6,6 +6,7 @@ import MSconta.domain.DTOCqrs.AtualizarDTO;
 import MSconta.domain.DTOCqrs.SaqueDepositoDTO;
 import MSconta.domain.DTOCqrs.TransferenciaDTO;
 import MSconta.domain.movimentacoes.MovimentacoesR;
+import MSconta.producer.RabbitMQProducer;
 import MSconta.repositories.r.ContaRRepository;
 import MSconta.repositories.r.MovimentacaoRRepository;
 import MSconta.services.ContaCUDService;
@@ -34,6 +35,10 @@ public class RabbitMQConsumer {
 
     @Autowired
     MovimentacaoRRepository movimentacaoRRepository;
+
+// teste pedro alteracaoperfil
+    @Autowired
+    RabbitMQProducer rabbitMQProducer;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQConsumer.class);
 
@@ -186,6 +191,25 @@ public class RabbitMQConsumer {
             throw new RuntimeException(e);
         }
 
+    }
+
+
+// teste pedro alteracaoperfil
+    @RabbitListener(queues = {"AtualizarLimiteConta"})
+    public void atualizarLimite(ClienteDTO dadosCliente) {
+        LOGGER.info(String.format("saga->conta atualizar limite"));
+        
+        try {
+            contaCUDService.alteracaoPerfilLimite(dadosCliente.cpf(), dadosCliente.salario());
+            
+            LOGGER.info("conta->saga limite alterado suceesso");
+            rabbitMQProducer.publicarEventoLimiteAtualizadoSucesso(dadosCliente);
+
+        } catch (Exception e) {
+            LOGGER.error("[ms-conta] Consumer: ERRO ao atualizar limite: " + e.getMessage(), e);
+            // 3. Se falhou, publica o evento de FALHA (será usado no caminho triste)
+            // rabbitMQProducer.publicarEventoLimiteAtualizadoFalha(...);
+        }
     }
 
 
