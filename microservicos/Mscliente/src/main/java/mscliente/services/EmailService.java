@@ -47,5 +47,21 @@ public class EmailService {
         mailSender.send(message);
     }
 
+    public void sendEmailErro(String toEmail, String nome) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("dindintads@gmail.com");
+        message.setTo(toEmail);
+        message.setSubject("DinDin - Erro no processamento de conta");
+
+        String emailContent = String.format(
+                "Olá %s,\n\n" +
+                "A equipe do DinDin sente em informar que houve um erro no cadstro de sua conta, para mais informações, retorne este email\n\n" +
+                "Agradecimentos, DinDin");
+
+        message.setText(emailContent);
+
+        mailSender.send(message);
+    }
+
 
 }
