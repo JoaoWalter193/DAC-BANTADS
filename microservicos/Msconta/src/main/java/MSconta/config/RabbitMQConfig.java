@@ -26,24 +26,24 @@ public class RabbitMQConfig {
 
 
 // fila pra atualizar o limite da conta
-    @Value("AtualizarLimiteConta")
-    private String filaAtualizarLimiteConta;
+    @Value("AtualizarConta")
+    private String filaAtualizarConta;
     @Bean
-    public Queue filaAtualizarLimiteConta() {
-        return new Queue(filaAtualizarLimiteConta);
+    public Queue filaAtualizarConta() {
+        return new Queue(filaAtualizarConta);
     }
 
 // key
-    @Value("keyAtualizarLimiteConta")
-    private String routingKeyAtualizarLimiteConta;
+    @Value("keyAtualizarConta")
+    private String routingKeyAtualizarConta;
 
 // binding
     @Bean
-    public Binding bindingAtualizarLimiteConta() {
+    public Binding bindingAtualizarConta() {
         return BindingBuilder
-                .bind(filaAtualizarLimiteConta()) 
+                .bind(filaAtualizarConta()) 
                 .to(exchange())
-                .with(routingKeyAtualizarLimiteConta);
+                .with(routingKeyAtualizarConta);
     }
 
 

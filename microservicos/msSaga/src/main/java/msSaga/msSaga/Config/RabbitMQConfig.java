@@ -146,20 +146,20 @@ public class RabbitMQConfig {
 
 // teste pedro alteracaoperfil
 // fila pro sucesso da alteracao perfil
-    @Value("AlteracaoPerfilSucesso")
-    private String filaAlteracaoPerfilSucesso;
+    @Value("AtualizacaoClienteSucesso")
+    private String filaAtualizacaoClienteSucesso;
     @Bean
     public Queue filaAlteracaoPerfil() {
-        return new Queue(filaAlteracaoPerfilSucesso);
+        return new Queue(filaAtualizacaoClienteSucesso);
     }
 
 // key
-    @Value("keyAlteracaoPerfilSucesso")
+    @Value("keyAtualizacaoClienteSucesso")
     private String routingKeyAlteracaoPerfil;
 
 // binding
     @Bean
-    public Binding bindingAlteracaoPerfilSucesso() {
+    public Binding bindingAtualizacaoClienteSucesso() {
         return BindingBuilder
                 .bind(filaAlteracaoPerfil())
                 .to(exchange())
@@ -167,7 +167,7 @@ public class RabbitMQConfig {
     }
 
 
-// fila pro sucesso da atualização da conta
+// fila pro sucesso da alteracao da conta
     @Value("AtualizacaoContaSucesso")
     private String filaAtualizacaoContaSucesso;
     @Bean
@@ -186,6 +186,27 @@ public class RabbitMQConfig {
                 .bind(filaAtualizacaoConta())
                 .to(exchange())
                 .with(routingKeyAtualizacaoConta);
+    }
+
+// Fila pra falha
+    @Value("AtualizacaoContaFalha")
+    private String filaAtualizacaoContaFalha;
+    @Bean
+    public Queue filaAtualizacaoContaFalha() {
+        return new Queue(filaAtualizacaoContaFalha);
+    }
+
+    // Key
+    @Value("keyAtualizacaoContaFalha")
+    private String routingKeyAtualizacaoContaFalha;
+
+    // Binding
+    @Bean
+    public Binding bindingAtualizacaoContaFalha() {
+        return BindingBuilder
+                .bind(filaAtualizacaoContaFalha())
+                .to(exchange())
+                .with(routingKeyAtualizacaoContaFalha);
     }
 
 

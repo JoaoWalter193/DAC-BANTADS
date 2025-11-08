@@ -68,31 +68,40 @@ public class RabbitMQConsumer {
     }
 
 // teste pedro alteracaoperfil
-    @RabbitListener(queues = {"AlteracaoPerfilSucesso"})
+    @RabbitListener(queues = {"AtualizacaoClienteSucesso"})
     public void clienteAtualizadoSucesso(AlteracaoPerfilDTO dados) {
-        LOGGER.info(String.format("cliente->saga teste recebe evento alteracao "));
+        System.out.println("cliente->saga teste recebe evento alteracao ");
         
         try {
-            LOGGER.info("saga->conta alterar limite.");
-            
-            // Extrai o ClienteDTO (com os dados atualizados)
-            ClienteDTO dadosClienteAtualizados = dados.dadosAtualizados();
-            
+            System.out.println("saga->conta teste clienteAtualizadoSucesso saga consumer.");
+
             // envia o comando pra atualizar limite
-            rabbitMQProducer.sendAtualizarLimite(dadosClienteAtualizados);
+            rabbitMQProducer.sendAtualizarLimite(dados);
             
         } catch (Exception e) {
-            LOGGER.error("[ms-saga] Consumer: ERRO ao processar 'onClienteAtualizadoSucesso'.", e);
-            // Aqui entraria a lógica de compensação (que implementaremos depois)
-            // producer.enviarComandoCompensarCliente(dados.dadosOriginais());
+            System.out.println("saga consumer -> ERRO");
+            rabbitMQProducer.sendAtualizarFalha(dados.dadosOriginais());
         }
     }
     
     // ouve a fila de sucesso pra confirmar que funcionou
     @RabbitListener(queues = {"AtualizacaoContaSucesso"})
-    public void contaAtualizadaSucesso(ClienteDTO dadosConta) { 
-        LOGGER.info(String.format("conta->saga teste confirmacao sucesso"));
-        LOGGER.info("--- [ms-saga] SAGA DE ALTERAÇÃO DE PERFIL CONCLUÍDA COM SUCESSO ---");
+    public void contaAtualizadaSucesso(AlteracaoPerfilDTO dados) { 
+        System.out.println("conta->saga teste confirmacao sucesso");
     }
-
+//listener pra falha
+    @RabbitListener(queues = {"AtualizacaoContaFalha"})
+    public void contaAtualizadaFalha(AlteracaoPerfilDTO dados) {
+        System.out.println("saga consumer -> erro AtualizacaoContaFalha");
+        
+        try {
+            System.out.println("saga consumer -> reverter cliente");
+            
+            ClienteDTO dadosClienteOriginais = dados.dadosOriginais();            
+            rabbitMQProducer.sendAtualizarFalha(dadosClienteOriginais);
+            
+        } catch (Exception e) {
+            System.out.println("saga consumer -> falha reversao.");
+        }
+    }
 }

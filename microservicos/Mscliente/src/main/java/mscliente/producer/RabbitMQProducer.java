@@ -22,9 +22,11 @@ public class RabbitMQProducer {
     private String routingKeySaga;
 
     // teste pedro alteracaoperfil
-    @Value("keyAlteracaoPerfilSucesso")
-    private String routingKeyAlteracaoPerfilSucesso;
+    @Value("keyAtualizacaoClienteSucesso")
+    private String routingKeyAtualizacaoClienteSucesso;
 
+    @Value("keyAtualizarClienteFalha")
+    private String routingKeyAlteracaoPerfilFalha;
 
     public RabbitMQProducer(RabbitTemplate rabbitTemplate){
         this.rabbitTemplate = rabbitTemplate;
@@ -46,9 +48,12 @@ public class RabbitMQProducer {
 
     // teste pedro alteracaoperfil
     public void clienteAtualizadoSucesso(AlteracaoPerfilDTO dados) {
-        System.out.println("cliente->saga teste evento de sucesso para a chave");
-        
-        rabbitTemplate.convertAndSend(exchange, routingKeyAlteracaoPerfilSucesso, dados);
+        System.out.println("cliente->saga teste clienteAtualizadoSucesso cliente producer");
+        rabbitTemplate.convertAndSend(exchange, routingKeyAtualizacaoClienteSucesso, dados);
     }
 
+    public void clienteAtualizadoFalha(AlteracaoPerfilDTO dados) {
+        System.out.println("cliente->saga teste clienteAtualizadoFALHA cliente producer");
+        rabbitTemplate.convertAndSend(exchange, routingKeyAlteracaoPerfilFalha, dados);
+    }
 }

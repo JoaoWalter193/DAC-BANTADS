@@ -287,6 +287,7 @@ public class ContaCUDService {
 // no atualizarLimite ele recebe o numConta, 
 // na saga de alteracao só tenho os dados do cliente entao usei cpf
     public ContaCUD alteracaoPerfilLimite(String cpfCliente, double novoSalario) {
+        // throw new RuntimeException("testar falha e reversao");
         Optional<ContaR> contaOpt = contaRRepository.findByCpfCliente(cpfCliente);
         if (contaOpt.isEmpty()) {
             throw new RuntimeException("Conta não encontrada");

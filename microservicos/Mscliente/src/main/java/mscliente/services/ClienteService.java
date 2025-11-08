@@ -237,12 +237,11 @@ public class ClienteService {
     }
 
     // teste pedro alteracaoperfil
-    // atualização e compensação
-    //
+    // atualizacao e reversao
     public void atualizarClienteSaga(ClienteDTO dadosAtualizados) {
         Optional<Cliente> optCliente = clienteRepository.findByCpf(dadosAtualizados.cpf());
         if (optCliente.isEmpty()) {
-            throw new RuntimeException("Cliente com CPF " + dadosAtualizados.cpf() + " não encontrado para atualização.");
+            throw new RuntimeException("Cliente nao encontrado.");
         }
         
         Cliente cliente = optCliente.get();
@@ -254,7 +253,7 @@ public class ClienteService {
         cliente.setCidade(dadosAtualizados.cidade());
         cliente.setEstado(dadosAtualizados.estado());
 
-        // Salva as alterações no banco de dados
+        // salva no banco de dados
         clienteRepository.save(cliente);
     }
 
@@ -273,8 +272,8 @@ public class ClienteService {
             cliente.setEstado(dadosOriginais.estado());
             clienteRepository.save(cliente);
         } else {
-            //se não encontrar ocliente emite o aviso
-            System.err.println("AVISO: Tentativa de compensação para um cliente não encontrado (CPF: " + dadosOriginais.cpf() + ").");
+            //se nao encontrar ocliente emite o aviso
+            System.err.println("Cliente para reversao nao encontrado.");
         }
     }
 

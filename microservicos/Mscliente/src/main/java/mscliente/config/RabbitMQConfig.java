@@ -45,6 +45,27 @@ public class RabbitMQConfig {
                 .with(routingKeyAtualizarCliente);
     }
 
+// falha, reverter
+    @Value("AtualizarClienteFalha")
+    private String filaAtualizarClienteFalha;
+    @Bean
+    public Queue filaAtualizarClienteFalha() {
+        return new Queue(filaAtualizarClienteFalha);
+    }
+
+    // Key
+    @Value("keyAtualizarClienteFalha")
+    private String routingKeyAtualizarClienteFalha;
+
+    // Binding
+    @Bean
+    public Binding bindingAtualizarClienteFalha() {
+        return BindingBuilder
+                .bind(filaAtualizarClienteFalha())
+                .to(exchange())
+                .with(routingKeyAtualizarClienteFalha);
+    }
+
 
 
     @Bean

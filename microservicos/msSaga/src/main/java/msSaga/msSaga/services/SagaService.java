@@ -98,7 +98,7 @@ public class SagaService {
 
 // teste pedro alteracaoperfil
     public void executarSagaAlteracaoPerfil(AlteracaoPerfilDTO dados) {
-        System.out.println("teste saga service 1 - recebe HTTP Req");
+        System.out.println("saga service - recebe HTTP Req");
         
         rabbitMQProducer.sendAtualizarCliente(dados);
     }

@@ -195,20 +195,20 @@ public class RabbitMQConsumer {
 
 
 // teste pedro alteracaoperfil
-    @RabbitListener(queues = {"AtualizarLimiteConta"})
-    public void atualizarLimite(ClienteDTO dadosCliente) {
-        LOGGER.info(String.format("saga->conta atualizar limite"));
+    @RabbitListener(queues = {"AtualizarConta"})
+    public void atualizarLimite(AlteracaoPerfilDTO dados) {
+        ClienteDTO dadosCliente = dados.dadosAtualizados();
+        System.out.println("saga->conta atualizar limite");
         
         try {
             contaCUDService.alteracaoPerfilLimite(dadosCliente.cpf(), dadosCliente.salario());
             
-            LOGGER.info("conta->saga limite alterado suceesso");
-            rabbitMQProducer.publicarEventoLimiteAtualizadoSucesso(dadosCliente);
+            System.out.println("conta->saga limite alterado suceesso");
+            rabbitMQProducer.publicarEventoLimiteAtualizadoSucesso(dados);
 
         } catch (Exception e) {
-            LOGGER.error("[ms-conta] Consumer: ERRO ao atualizar limite: " + e.getMessage(), e);
-            // 3. Se falhou, publica o evento de FALHA (será usado no caminho triste)
-            // rabbitMQProducer.publicarEventoLimiteAtualizadoFalha(...);
+            System.out.println("conta->saga falha limite ");
+            rabbitMQProducer.publicarEventoLimiteAtualizadoFalha(dados);
         }
     }
 
