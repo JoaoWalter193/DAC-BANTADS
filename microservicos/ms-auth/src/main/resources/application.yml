@@ -20,11 +20,29 @@ spring:
             resourceserver:
                 jwt:
                     issuer-uri: BANTADS-AUTH-API
+    mail:
+        host: smtp.gmail.com
+        port: 587
+        username: dindinbantads@gmail.com
+        password: occn bylm ewoy dqhx
+        properties:
+            mail:
+                smtp:
+                    auth: true
+                    starttls:
+                        enable: true
+                    connectiontimeout: 5000
+                    timeout: 5000
+                    writetimeout: 5000
+
 
 
 jwt:
     private-key: file:private-key.pem
     public-key: file:public-key.pem
+
+
+
 
 
 rabbitmq:
@@ -33,6 +51,6 @@ rabbitmq:
     queue:
         auth-create: saga.auth.create.queue
     key:
-        saga-create-auth: key.auth.created
-        saga-auth-success: saga.auth.success.key
-        saga-auth-fail: saga.auth.fail.key
+        saga-create-auth: saga.auth.created
+        saga-create-success: saga.auth.success
+        saga-create-fail: saga.auth.fail

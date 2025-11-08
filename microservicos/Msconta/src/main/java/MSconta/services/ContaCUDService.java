@@ -50,11 +50,12 @@ public class ContaCUDService {
 
         Optional<ContaR> contaVerifica = contaRRepository.findByCpfCliente(data.cpfCliente());
         if (contaVerifica.isEmpty()){
-            contaCUDRepository.save(contaCUDTemp);
+                contaCUDRepository.save(contaCUDTemp);
 
-            rabbitMQProducer.sendMessageCQRSAddUpdateConta(contaCUDTemp);
+                rabbitMQProducer.sendMessageCQRSAddUpdateConta(contaCUDTemp);
 
-            return ResponseEntity.ok("Conta criada com sucesso!");
+                return ResponseEntity.ok("Conta criada com sucesso!");
+
         }
 
 

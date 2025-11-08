@@ -3,6 +3,7 @@ package MSconta.producer;
 
 import MSconta.domain.AlteracaoPerfilDTO;
 import MSconta.domain.ClienteDTO;
+import MSconta.domain.AutocadastroDTO;
 import MSconta.domain.ContaCUD;
 import MSconta.domain.DTOCqrs.AtualizarDTO;
 import MSconta.domain.DTOCqrs.SaqueDepositoDTO;
@@ -24,11 +25,15 @@ public class RabbitMQProducer {
     @Value("keySaga")
     private String routingKeySaga;
 
+    @Value("keyCliente")
+    private String routingKeyCliente;
+
 // teste pedro alteracaopedril
     @Value("keyAtualizacaoContaSucesso")
     private String routingKeySagaContaSucesso;
     @Value("keyAtualizacaoContaFalha")
     private String routingKeySagaContaFalha;
+
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -81,6 +86,16 @@ public class RabbitMQProducer {
                 contaCUDTemp2.getSaldo(),
                 "transferir");
         rabbitTemplate.convertAndSend(exchange,routingKeyCQRS,dtoTemp);
+    }
+
+    public void sendMessageErroCliente(String cpf){
+
+        AutocadastroDTO dto = new AutocadastroDTO(cpf,"Erro conta",
+                null, 0,
+                null,null,
+                null,null);
+        rabbitTemplate.convertAndSend(exchange, routingKeyCliente,dto);
+
     }
 
 

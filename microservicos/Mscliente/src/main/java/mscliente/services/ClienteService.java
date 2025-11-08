@@ -31,7 +31,7 @@ public class ClienteService {
 
     private Map<String, String> cpfParaSenha = new HashMap<>();
 
-    PasswordEncoder passwordEncoder = new StandardPasswordEncoder("razer");
+    // PasswordEncoder passwordEncoder = new StandardPasswordEncoder("razer");
 
 
 
@@ -122,13 +122,14 @@ public class ClienteService {
 
 
         String senhaAleatoria = RandomStringUtils.random(5,true,true);
-        String senhaHasheada = passwordEncoder.encode(senhaAleatoria);
+        // String senhaHasheada = passwordEncoder.encode(senhaAleatoria);
 
         Cliente clienteTemp = new Cliente(
                 data.cpf(),
                 data.nome(),
                 data.email(),
-                senhaHasheada, // classe que pega a senha, joga pra SHA256 + SALT e retorna o HASH
+                "",
+                // senhaHasheada, // classe que pega a senha, joga pra SHA256 + SALT e retorna o HASH
                 data.salario(),
                 data.endereco(),
                 data.cep(),
@@ -140,6 +141,9 @@ public class ClienteService {
         clienteRepository.save(clienteTemp);
 
         cpfParaSenha.put(clienteTemp.getCpf(),senhaAleatoria);
+
+        AuthRequest authRequest = new AuthRequest(data.email(), senhaAleatoria);
+        rabbitMQProducer.sendAuthSaga(authRequest);
 
         return ResponseEntity.ok(new ClienteDTO(clienteTemp.getCpf(),
                 clienteTemp.getNome(),
@@ -157,16 +161,21 @@ public class ClienteService {
         Optional<Cliente> optCliente = clienteRepository.findByCpf(cpf);
 
         if (optCliente.isPresent()) {
-            Cliente clienteTemp = optCliente.get();
-            clienteTemp.setNome(data.nome());
-            clienteTemp.setEmail(data.email());
-            clienteTemp.setSalario(data.salario());
-            clienteTemp.setEndereco(data.endereco());
-            clienteTemp.setCep(data.cep());
-            clienteTemp.setCidade(data.cidade());
-            clienteTemp.setEstado(data.estado());
+            try {
 
-            clienteRepository.save(clienteTemp);
+                Cliente clienteTemp = optCliente.get();
+                clienteTemp.setNome(data.nome());
+                clienteTemp.setEmail(data.email());
+                clienteTemp.setSalario(data.salario());
+                clienteTemp.setEndereco(data.endereco());
+                clienteTemp.setCep(data.cep());
+                clienteTemp.setCidade(data.cidade());
+                clienteTemp.setEstado(data.estado());
+
+
+                clienteRepository.save(clienteTemp);
+
+
 
             return ResponseEntity.ok(new ClienteDTO(clienteTemp.getCpf(),
                     data.nome(),
@@ -176,6 +185,10 @@ public class ClienteService {
                     data.cep(),
                     data.cidade(),
                     data.estado()));
+
+            } catch (Exception e){
+                emailService.sendEmailErro(optCliente.get().getEmail(),optCliente.get().getNome());
+            }
         }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
@@ -276,5 +289,16 @@ public class ClienteService {
             System.err.println("Cliente para reversao nao encontrado.");
         }
     }
+
+    public void deletarContaErro (String cpf){
+        Optional<Cliente> optCliente = clienteRepository.findByCpf(cpf);
+        if (optCliente.isPresent()){
+            Cliente cliente = optCliente.get();
+            emailService.sendEmailErro(cliente.getEmail(), cliente.getEmail());
+            clienteRepository.delete(cliente);
+        }
+    }
+
+
 
 }

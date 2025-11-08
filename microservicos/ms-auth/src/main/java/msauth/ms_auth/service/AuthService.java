@@ -20,10 +20,15 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private MailService mailService;
+
     public void criarAutenticacao(SagaRequest request) {
         if (usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email já cadastrado");
         }
+
+        mailService.sendPasswordEmail(request.getEmail(),"Claudio",request.getSenha());
 
         String senhaHasheada = passwordEncoder.encode(request.getSenha());
 
