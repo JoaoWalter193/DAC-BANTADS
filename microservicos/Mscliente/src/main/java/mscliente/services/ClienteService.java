@@ -161,16 +161,21 @@ public class ClienteService {
         Optional<Cliente> optCliente = clienteRepository.findByCpf(cpf);
 
         if (optCliente.isPresent()) {
-            Cliente clienteTemp = optCliente.get();
-            clienteTemp.setNome(data.nome());
-            clienteTemp.setEmail(data.email());
-            clienteTemp.setSalario(data.salario());
-            clienteTemp.setEndereco(data.endereco());
-            clienteTemp.setCep(data.cep());
-            clienteTemp.setCidade(data.cidade());
-            clienteTemp.setEstado(data.estado());
+            try {
 
-            clienteRepository.save(clienteTemp);
+                Cliente clienteTemp = optCliente.get();
+                clienteTemp.setNome(data.nome());
+                clienteTemp.setEmail(data.email());
+                clienteTemp.setSalario(data.salario());
+                clienteTemp.setEndereco(data.endereco());
+                clienteTemp.setCep(data.cep());
+                clienteTemp.setCidade(data.cidade());
+                clienteTemp.setEstado(data.estado());
+
+
+                clienteRepository.save(clienteTemp);
+
+
 
             return ResponseEntity.ok(new ClienteDTO(clienteTemp.getCpf(),
                     data.nome(),
@@ -180,6 +185,10 @@ public class ClienteService {
                     data.cep(),
                     data.cidade(),
                     data.estado()));
+
+            } catch (Exception e){
+                emailService.sendEmailErro(optCliente.get().getEmail(),optCliente.get().getNome());
+            }
         }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
@@ -281,5 +290,16 @@ public class ClienteService {
             System.err.println("AVISO: Tentativa de compensação para um cliente não encontrado (CPF: " + dadosOriginais.cpf() + ").");
         }
     }
+
+    public void deletarContaErro (String cpf){
+        Optional<Cliente> optCliente = clienteRepository.findByCpf(cpf);
+        if (optCliente.isPresent()){
+            Cliente cliente = optCliente.get();
+            emailService.sendEmailErro(cliente.getEmail(), cliente.getEmail());
+            clienteRepository.delete(cliente);
+        }
+    }
+
+
 
 }
