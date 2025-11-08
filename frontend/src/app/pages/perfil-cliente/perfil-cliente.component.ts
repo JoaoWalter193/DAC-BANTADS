@@ -1,4 +1,4 @@
-import { Endereco } from './../../models/endereco.interface';
+import { Endereco } from '../../models/cliente/endereco.interface';
 import { ClienteService } from './../../services/cliente.service';
 import { AuthService } from './../../services/auth.service';
 import { Component, OnInit } from '@angular/core';

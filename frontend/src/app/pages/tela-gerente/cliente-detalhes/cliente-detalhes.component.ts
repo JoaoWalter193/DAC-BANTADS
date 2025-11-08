@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MockService } from '../../../services/mock.service';
 import { Cliente } from '../../../models/cliente.interface';
 import { Conta } from '../../../models/conta.interface';
-import { Gerente } from '../../../models/gerente.interface';
+import { Gerente } from '../../../models/gerente/gerente.interface';
 
 @Component({
   selector: 'app-cliente-detalhes',

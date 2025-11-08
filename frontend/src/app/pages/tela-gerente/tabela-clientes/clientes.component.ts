@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Conta } from '../../../models/conta.interface';
-import { Gerente } from '../../../models/gerente.interface';
+import { Gerente } from '../../../models/gerente/gerente.interface';
 import { Cliente } from '../../../models/cliente.interface';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import { FormsModule } from '@angular/forms';

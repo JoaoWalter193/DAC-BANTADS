@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Gerente } from '../models/gerente.interface';
+import { Gerente } from '../models/gerente/gerente.interface';
 
 @Injectable({
   providedIn: 'root',

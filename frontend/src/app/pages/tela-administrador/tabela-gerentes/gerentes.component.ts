@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MockService } from '../../../services/mock.service';
-import { Gerente } from '../../../models/gerente.interface';
+import { Gerente } from '../../../models/gerente/gerente.interface';
 import { Conta } from '../../../models/conta.interface';
 import { Router } from '@angular/router';
 import { RefreshService } from '../../../services/refresh.service';
