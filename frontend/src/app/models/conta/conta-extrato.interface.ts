@@ -1,4 +1,4 @@
-import { Transacao } from "./transacao.interface";
+import { Transacao } from './transacao.interface';
 
 export interface ContaExtrato {
   conta: string;

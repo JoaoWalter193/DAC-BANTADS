@@ -1,9 +1,7 @@
-import { Cliente } from '../cliente/cliente.interface';
-
 export interface Gerente {
   cpf: string;
   nome: string;
   email: string;
-  tipo: 'GERENTE';
-  clientes?: Cliente[];
+  tipo: 'GERENTE' | 'ADMINISTRADOR';
+  clientes?: any[]; // no dashboard a API retorna outro formato
 }
