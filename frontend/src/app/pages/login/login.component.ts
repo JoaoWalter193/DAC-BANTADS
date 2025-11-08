@@ -1,6 +1,11 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -8,7 +13,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../services/auth.service';
 import { MockService } from '../../services/mock.service';
-import { Conta, UserSession } from '../../models';
 
 @Component({
   selector: 'app-login',
@@ -19,12 +23,11 @@ import { Conta, UserSession } from '../../models';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
   ],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.css'],
 })
-
 export class LoginComponent {
   loginForm: FormGroup;
   hidePassword = true;
@@ -36,20 +39,22 @@ export class LoginComponent {
   ) {
     this.loginForm = this.fb.group({
       account: ['', [Validators.required]],
-      password: ['', [Validators.required]]
+      password: ['', [Validators.required]],
     });
   }
 
   onSubmit(): void {
-    if (this.loginForm.invalid) {
-      return;
-    }
+    if (this.loginForm.invalid) return;
 
     const { account, password } = this.loginForm.value;
-    this.authService.login(account, password);
+
+    this.authService.login(account, password).subscribe((resp) => {
+      if (!resp) {
+        alert('Credenciais inválidas.');
+      }
+    });
   }
 
-  // reseta o mock para corrigir valores e contas
   resetMockData(): void {
     this.mockService.resetMockData();
   }

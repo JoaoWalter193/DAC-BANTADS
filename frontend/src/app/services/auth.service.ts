@@ -1,82 +1,129 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { UserSession } from '../models';
+import { Observable, of, tap, catchError } from 'rxjs';
 import { MockService } from './mock.service';
+import { LoginResponse } from '../models/auth/login-response.interface';
+import { environment } from '../environments/environment';
+import { UserSession } from '../models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  constructor(private router: Router, private mockService: MockService) {}
+  private storageKey = 'currentUser';
 
-  // login-logout com localStorage
-  login(email: string, password: string): void {
-    let user = this.mockService.autenticarUsuario(email, password);
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private mockService: MockService
+  ) {}
 
-    if (user) {
-      let conta;
-      if (user.role === 'CLIENTE') {
-        // 🔹 Busca cliente atualizado
-        const clienteAtualizado = this.mockService.findClienteCpf(user.cpf);
-        if (clienteAtualizado) {
-          user = clienteAtualizado;
+  login(email: string, senha: string): Observable<LoginResponse | null> {
+    // ✅ Ambiente de teste usando mock
+    if (environment.useMockService) {
+      const user = this.mockService.autenticarUsuario(email, senha);
+
+      if (!user) return of(null);
+
+      const fake: LoginResponse = {
+        access_token: 'MOCK_TOKEN',
+        token_type: 'bearer',
+        tipo: user.role || 'CLIENTE',
+        usuario: user,
+      };
+
+      this.salvarSessao(fake);
+      this.redirecionarPorTipo(fake.tipo);
+
+      return of(fake);
+    }
+
+    // ✅ Login real via Gateway
+    const url = `${environment.apiUrl}/login`;
+
+    return this.http.post<LoginResponse>(url, { email, senha }).pipe(
+      tap((resp) => {
+        if (resp?.access_token) {
+          this.salvarSessao(resp);
+          this.redirecionarPorTipo(resp.tipo);
         }
-        conta = this.mockService.findContaCpf(user.cpf);
-      }
-      const userSession: UserSession = { user, conta };
-      localStorage.setItem('currentUser', JSON.stringify(userSession));
-      alert('Login realizado com sucesso!');
+      }),
+      catchError((err) => {
+        console.error('Erro no login:', err);
+        return of(null);
+      })
+    );
+  }
 
-      const role = user.role;
-      if (role === 'ADMIN') {
-        this.router.navigate(['/tela-administrador']);
-      } else if (role === 'GERENTE') {
-        this.router.navigate(['/tela-gerente']);
-      } else if (role === 'CLIENTE') {
+  private salvarSessao(resp: LoginResponse) {
+    const sessao: UserSession = {
+      token: resp.access_token,
+      tipo: resp.tipo,
+      usuario: resp.usuario,
+    };
+
+    localStorage.setItem(this.storageKey, JSON.stringify(sessao));
+  }
+
+  private redirecionarPorTipo(tipo: string) {
+    switch (tipo) {
+      case 'CLIENTE':
         this.router.navigate(['/home-cliente']);
-      }
-    } else {
-      alert('Email ou senha inválidos.');
+        break;
+
+      case 'GERENTE':
+        this.router.navigate(['/tela-gerente']);
+        break;
+
+      case 'ADMINISTRADOR':
+        this.router.navigate(['/tela-administrador']);
+        break;
+
+      default:
+        this.router.navigate(['']);
     }
   }
 
   getUserSession(): UserSession | null {
-    const session = localStorage.getItem('currentUser');
+    const session = localStorage.getItem(this.storageKey);
     return session ? JSON.parse(session) : null;
   }
 
-  // buscar usuário logado para usar em outros componentes
   getUsuarioLogado() {
-    const session = this.getUserSession();
-    return session ? session.user : null;
+    return this.getUserSession()?.usuario ?? null;
   }
 
-  // atualizar sessao depois de editar perfil de cliente
-  updateSession(clienteAtualizado: any): void {
+  getToken(): string | null {
+    return this.getUserSession()?.token ?? null;
+  }
+
+  atualizarSessao(usuarioAtualizado: any): void {
     const session = this.getUserSession();
     if (session) {
-      session.user = clienteAtualizado;
-      localStorage.setItem('currentUser', JSON.stringify(session));
+      session.usuario = usuarioAtualizado;
+      localStorage.setItem(this.storageKey, JSON.stringify(session));
     }
   }
 
   logout(): void {
-    localStorage.removeItem('currentUser');
+    localStorage.removeItem(this.storageKey);
     this.router.navigate(['']);
   }
 
   isCliente(): boolean {
-    const session = this.getUserSession();
-    return session?.user.role === 'CLIENTE';
+    return this.getUserSession()?.tipo === 'CLIENTE';
   }
 
   isGerente(): boolean {
-    const session = this.getUserSession();
-    return session?.user.role === 'GERENTE';
+    return this.getUserSession()?.tipo === 'GERENTE';
   }
 
   isAdmin(): boolean {
-    const session = this.getUserSession();
-    return session?.user.role === 'ADMIN';
+    return this.getUserSession()?.tipo === 'ADMINISTRADOR';
+  }
+
+  estaAutenticado(): boolean {
+    return !!this.getToken();
   }
 }
