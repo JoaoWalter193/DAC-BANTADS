@@ -1,12 +1,11 @@
 import { CommonModule, registerLocaleData } from '@angular/common';
 import { Component } from '@angular/core';
-import { Cliente } from '../../../models';
-import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import localePt from '@angular/common/locales/pt';
 import localePtExtra from '@angular/common/locales/extra/pt';
-import { ClienteService } from '../../../services/cliente.service';
 import { FormsModule } from '@angular/forms';
 import emailjs, { EmailJSResponseStatus } from '@emailjs/browser';
+import { Cliente } from '../../../models';
+import { ClienteService } from '../../../services/cliente.service';
 import { MockService } from '../../../services/mock.service';
 
 registerLocaleData(localePt, 'pt-BR', localePtExtra);

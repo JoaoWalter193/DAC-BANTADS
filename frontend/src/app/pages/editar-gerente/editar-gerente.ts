@@ -2,9 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
-import { Gerente } from '../../models/gerente/gerente.interface';
+import { Gerente } from '../../models';
 import { MockService } from '../../services/mock.service';
-import { Conta } from '../../models/conta.interface';
 
 @Component({
   selector: 'app-editar-gerente',

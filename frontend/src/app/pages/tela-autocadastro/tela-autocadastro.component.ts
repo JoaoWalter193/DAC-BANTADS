@@ -9,7 +9,6 @@ import {
   ValidationErrors,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Cliente } from '../../models/cliente.interface';
 import { RouterLink } from '@angular/router';
 import { MockService } from '../../services/mock.service';
 

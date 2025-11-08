@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { Cliente, Conta } from '../../../models';
-import { ClienteService } from '../../../services/cliente.service';
-import { MockService } from '../../../services/mock.service';
 import { CommonModule } from '@angular/common';
-import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Cliente } from '../../../models';
+import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
+import { ClienteService } from '../../../services/cliente.service';
+import { MockService } from '../../../services/mock.service';
 
 interface ClienteDashboardDTO extends Cliente {
   conta: string;

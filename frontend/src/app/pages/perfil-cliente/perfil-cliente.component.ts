@@ -1,6 +1,3 @@
-import { Endereco } from '../../models/cliente/endereco.interface';
-import { ClienteService } from './../../services/cliente.service';
-import { AuthService } from './../../services/auth.service';
 import { Component, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
 import {
@@ -12,11 +9,12 @@ import {
 } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { MatButton } from '@angular/material/button';
 import { Cliente } from '../../models/cliente.interface';
 import { CommonModule } from '@angular/common';
 import { NgxMaskDirective } from 'ngx-mask';
+import { ClienteService } from '../../services/cliente.service';
+import { NavbarComponent } from '../../components/navbar/navbar.component';
 
 @Component({
   selector: 'app-perfil-cliente',

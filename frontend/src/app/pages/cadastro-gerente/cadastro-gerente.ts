@@ -3,12 +3,11 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { RouterLink } from '@angular/router';
-import { Gerente } from '../../models/gerente/gerente.interface';
-import { Conta } from '../../models/conta.interface';
-import { MockService } from '../../services/mock.service';
-import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { MatButtonModule } from '@angular/material/button';
+import { Conta, Gerente } from '../../models';
 import { FooterComponent } from '../../components/footer/footer.component';
+import { NavbarComponent } from '../../components/navbar/navbar.component';
+import { MockService } from '../../services/mock.service';
 
 @Component({
   selector: 'app-cadastro-gerente',

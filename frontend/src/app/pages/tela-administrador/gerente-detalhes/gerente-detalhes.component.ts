@@ -2,11 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { NavbarComponent } from '../../../components/navbar/navbar.component';
-import { MockService } from '../../../services/mock.service';
-import { Gerente } from '../../../models/gerente/gerente.interface';
-import { Conta } from '../../../models/conta.interface';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import { FooterComponent } from '../../../components/footer/footer.component';
+import { Conta, Gerente } from '../../../models';
+import { MockService } from '../../../services/mock.service';
 import { RefreshService } from '../../../services/refresh.service';
 
 @Component({

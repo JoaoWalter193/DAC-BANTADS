@@ -1,10 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Cliente, Conta, Gerente } from '../../../models';
 import { MockService } from '../../../services/mock.service';
-import { Cliente } from '../../../models/cliente.interface';
-import { Conta } from '../../../models/conta.interface';
-import { Gerente } from '../../../models/gerente/gerente.interface';
 
 @Component({
   selector: 'app-cliente-detalhes',

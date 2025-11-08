@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { ClientesComponent } from './tabela-clientes/clientes.component';
 import { RouterLink } from '@angular/router';
+import { ClientesComponent } from './tabela-clientes/clientes.component';
 import { AprovarClienteComponent } from './tabela-aprovar-cliente/aprovar-cliente.component';
 
 @Component({
