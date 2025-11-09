@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Admin, Cliente, Conta, Gerente, Endereco } from '../models';
 import { TipoTransacao } from '../models/conta/tipo-transacao.enum';
+import { Cliente } from '../models/cliente/cliente.interface';
+import { Gerente } from '../models/gerente/gerente.interface';
+import { Admin } from '../models/admin/admin.interface';
+import { Conta } from '../models/conta/conta.interface';
 
 const LS_CHAVE = 'contaCliente';
 const LS_CHAVE_CLIENTE = 'cliente';

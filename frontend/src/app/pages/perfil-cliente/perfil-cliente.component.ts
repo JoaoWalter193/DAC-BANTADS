@@ -10,11 +10,11 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButton } from '@angular/material/button';
-import { Cliente } from '../../models/cliente.interface';
 import { CommonModule } from '@angular/common';
 import { NgxMaskDirective } from 'ngx-mask';
 import { ClienteService } from '../../services/cliente.service';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
+import { Cliente } from '../../models/cliente/cliente.interface';
 
 @Component({
   selector: 'app-perfil-cliente',

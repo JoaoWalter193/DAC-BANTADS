@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Cliente, Conta, Gerente } from '../../../models';
+import { Cliente } from '../../../models/cliente/cliente.interface';
+import { Conta } from '../../../models/conta/conta.interface';
+import { Gerente } from '../../../models/gerente/gerente.interface';
 import { MockService } from '../../../services/mock.service';
 
 @Component({

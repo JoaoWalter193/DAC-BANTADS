@@ -11,6 +11,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MockService } from '../../services/mock.service';
+import { Cliente } from '../../models/cliente/cliente.interface';
 
 @Component({
   selector: 'app-tela-autocadastro',

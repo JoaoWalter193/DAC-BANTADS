@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, of } from 'rxjs';
-import { switchMap, map } from 'rxjs/operators';
-
-import { ClienteDashboardDTO } from '../dto/cliente-dashboard.dto';
-import { Cliente, Conta, Gerente } from '../models';
-
+import { map } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { MockService } from './mock.service';
-import { environment } from '../../environments/environment';
+import { Cliente } from '../models/cliente/cliente.interface';
+import { Gerente } from '../models/gerente/gerente.interface';
+import { Conta } from '../models/conta/conta.interface';
+import { environment } from '../environments/environment';
+import { ClienteDashboardDTO } from '../models/cliente/dto/cliente-dashboard.dto';
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +24,7 @@ export class ClienteService {
   ) {}
 
   getClienteLogado() {
-    if (environment.useMock) {
+    if (environment.useMockService) {
       return this.getClienteLogadoMock();
     }
 
@@ -40,7 +40,7 @@ export class ClienteService {
   }
 
   carregarClientes() {
-    if (environment.useMock) {
+    if (environment.useMockService) {
       const data = this.carregarClientesMock();
       this.clientesSubject.next(data);
       return;
@@ -92,7 +92,7 @@ export class ClienteService {
   }
 
   updateCliente(cliente: Cliente) {
-    if (environment.useMock) {
+    if (environment.useMockService) {
       const updated = this.mock.updateCliente(cliente);
       this.carregarClientes();
       return of(updated);
@@ -105,7 +105,7 @@ export class ClienteService {
   }
 
   getClientesPendentes(cpfGerente: string) {
-    if (environment.useMock) {
+    if (environment.useMockService) {
       return of(
         this.mock
           .getClientesDoGerente(cpfGerente)

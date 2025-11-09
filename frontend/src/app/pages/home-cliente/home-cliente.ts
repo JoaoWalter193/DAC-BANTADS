@@ -7,7 +7,8 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { MatDialog } from '@angular/material/dialog';
 import { ContaService } from '../../services/conta.service';
 import { ExtratoComponent } from '../../modals/extrato/extrato.component';
-import { Conta } from '../../models';
+import { Conta } from '../../models/conta/conta.interface';
+import { NavbarComponent } from '../../components/navbar/navbar.component';
 
 @Component({
   selector: 'app-home-cliente',

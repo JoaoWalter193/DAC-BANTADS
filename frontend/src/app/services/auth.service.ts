@@ -5,7 +5,7 @@ import { Observable, of, tap, catchError } from 'rxjs';
 import { MockService } from './mock.service';
 import { LoginResponse } from '../models/auth/login-response.interface';
 import { environment } from '../environments/environment';
-import { UserSession } from '../models';
+import { UserSession } from '../models/auth/user-session.interface';
 
 @Injectable({
   providedIn: 'root',

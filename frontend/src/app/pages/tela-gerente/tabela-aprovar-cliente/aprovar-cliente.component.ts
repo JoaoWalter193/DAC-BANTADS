@@ -4,9 +4,10 @@ import localePt from '@angular/common/locales/pt';
 import localePtExtra from '@angular/common/locales/extra/pt';
 import { FormsModule } from '@angular/forms';
 import emailjs, { EmailJSResponseStatus } from '@emailjs/browser';
-import { Cliente } from '../../../models';
+import { Cliente } from '../../../models/cliente/cliente.interface';
 import { ClienteService } from '../../../services/cliente.service';
 import { MockService } from '../../../services/mock.service';
+import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 
 registerLocaleData(localePt, 'pt-BR', localePtExtra);
 

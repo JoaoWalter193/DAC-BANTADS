@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Conta, Gerente } from '../../../models';
 import { MockService } from '../../../services/mock.service';
+import { Gerente } from '../../../models/gerente/gerente.interface';
+import { Conta } from '../../../models/conta/conta.interface';
 
 interface GerenteView extends Gerente {
   qtdClientes: number;
@@ -19,8 +20,7 @@ interface GerenteView extends Gerente {
 export class GerentesComponent {
   gerentes: GerenteView[] = [];
 
-  constructor(
-    private mockService: MockService  ) {
+  constructor(private mockService: MockService) {
     this.carregarGerentes();
   }
 
