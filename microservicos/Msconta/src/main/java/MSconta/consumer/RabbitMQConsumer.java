@@ -6,6 +6,7 @@ import MSconta.domain.DTOCqrs.AtualizarDTO;
 import MSconta.domain.DTOCqrs.SaqueDepositoDTO;
 import MSconta.domain.DTOCqrs.TransferenciaDTO;
 import MSconta.domain.movimentacoes.MovimentacoesR;
+import MSconta.producer.RabbitMQProducer;
 import MSconta.repositories.r.ContaRRepository;
 import MSconta.repositories.r.MovimentacaoRRepository;
 import MSconta.services.ContaCUDService;
@@ -34,6 +35,10 @@ public class RabbitMQConsumer {
 
     @Autowired
     MovimentacaoRRepository movimentacaoRRepository;
+
+// teste pedro alteracaoperfil
+    @Autowired
+    RabbitMQProducer rabbitMQProducer;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQConsumer.class);
 
@@ -186,6 +191,25 @@ public class RabbitMQConsumer {
             throw new RuntimeException(e);
         }
 
+    }
+
+
+// teste pedro alteracaoperfil
+    @RabbitListener(queues = {"AtualizarConta"})
+    public void atualizarLimite(AlteracaoPerfilDTO dados) {
+        ClienteDTO dadosCliente = dados.dadosAtualizados();
+        System.out.println("saga->conta atualizar limite");
+        
+        try {
+            contaCUDService.alteracaoPerfilLimite(dadosCliente.cpf(), dadosCliente.salario());
+            
+            System.out.println("conta->saga limite alterado suceesso");
+            rabbitMQProducer.publicarEventoLimiteAtualizadoSucesso(dados);
+
+        } catch (Exception e) {
+            System.out.println("conta->saga falha limite ");
+            rabbitMQProducer.publicarEventoLimiteAtualizadoFalha(dados);
+        }
     }
 
 

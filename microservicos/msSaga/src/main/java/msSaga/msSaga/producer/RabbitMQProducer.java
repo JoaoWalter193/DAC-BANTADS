@@ -29,11 +29,15 @@ public class RabbitMQProducer {
     @Value("keyGerente")
     private String routingKeyGerente;
 
+// teste pedro alteracaoperfil
     @Value("keyAtualizarCliente") 
     private String routingKeyAtualizarCliente;
 
-    @Value("keyAtualizarLimiteConta")
+    @Value("keyAtualizarConta")
     private String routingKeyAtualizarLimite;
+
+    @Value("keyAtualizarClienteFalha")
+    private String routingKeyAtualizarClienteFalha;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -63,13 +67,18 @@ public class RabbitMQProducer {
 
 // teste pedro alteracaoperfil
     public void sendAtualizarCliente(AlteracaoPerfilDTO dados) {
-        System.out.println("teste saga->cliente");
+        System.out.println("saga->cliente teste sendAtualizarCliente saga producer");
         rabbitTemplate.convertAndSend(exchange, routingKeyAtualizarCliente, dados);
     }
 
-    public void sendAtualizarLimite(ClienteDTO dadosCliente) { 
-        System.out.println("teste saga->conta limite");
-        rabbitTemplate.convertAndSend(exchange, routingKeyAtualizarLimite, dadosCliente);
+    public void sendAtualizarLimite(AlteracaoPerfilDTO dados) { 
+        System.out.println("saga->conta teste sendAtualizarLimite saga producer");
+        rabbitTemplate.convertAndSend(exchange, routingKeyAtualizarLimite, dados);
+    }
+
+    public void sendAtualizarFalha(ClienteDTO dadosOriginais) {
+        System.out.println("saga->conta teste sendAtualizarFalha saga producer ");
+        rabbitTemplate.convertAndSend(exchange, routingKeyAtualizarClienteFalha, dadosOriginais);
     }
 
 }

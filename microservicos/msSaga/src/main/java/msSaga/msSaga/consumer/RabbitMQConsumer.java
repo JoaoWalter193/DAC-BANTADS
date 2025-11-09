@@ -2,6 +2,8 @@ package msSaga.msSaga.consumer;
 
 
 
+import msSaga.msSaga.DTO.AlteracaoPerfilDTO;
+import msSaga.msSaga.DTO.ClienteDTO;
 import msSaga.msSaga.DTO.ResponseDTO;
 import msSaga.msSaga.producer.RabbitMQProducer;
 import org.slf4j.Logger;
@@ -63,11 +65,43 @@ public class RabbitMQConsumer {
             rabbitMQProducer.sendContaConta(message);
         }
 
-
-
-
-
-
     }
 
+// teste pedro alteracaoperfil
+    @RabbitListener(queues = {"AtualizacaoClienteSucesso"})
+    public void clienteAtualizadoSucesso(AlteracaoPerfilDTO dados) {
+        System.out.println("cliente->saga teste recebe evento alteracao ");
+        
+        try {
+            System.out.println("saga->conta teste clienteAtualizadoSucesso saga consumer.");
+
+            // envia o comando pra atualizar limite
+            rabbitMQProducer.sendAtualizarLimite(dados);
+            
+        } catch (Exception e) {
+            System.out.println("saga consumer -> ERRO");
+            rabbitMQProducer.sendAtualizarFalha(dados.dadosOriginais());
+        }
+    }
+    
+    // ouve a fila de sucesso pra confirmar que funcionou
+    @RabbitListener(queues = {"AtualizacaoContaSucesso"})
+    public void contaAtualizadaSucesso(AlteracaoPerfilDTO dados) { 
+        System.out.println("conta->saga teste confirmacao sucesso");
+    }
+//listener pra falha
+    @RabbitListener(queues = {"AtualizacaoContaFalha"})
+    public void contaAtualizadaFalha(AlteracaoPerfilDTO dados) {
+        System.out.println("saga consumer -> erro AtualizacaoContaFalha");
+        
+        try {
+            System.out.println("saga consumer -> reverter cliente");
+            
+            ClienteDTO dadosClienteOriginais = dados.dadosOriginais();            
+            rabbitMQProducer.sendAtualizarFalha(dadosClienteOriginais);
+            
+        } catch (Exception e) {
+            System.out.println("saga consumer -> falha reversao.");
+        }
+    }
 }

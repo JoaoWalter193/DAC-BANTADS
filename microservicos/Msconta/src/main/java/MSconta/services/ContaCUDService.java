@@ -12,7 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -284,6 +284,30 @@ public class ContaCUDService {
     }
 
 
+// teste pedro alteracaoperfil
+// no atualizarLimite ele recebe o numConta, 
+// na saga de alteracao só tenho os dados do cliente entao usei cpf
+    public ContaCUD alteracaoPerfilLimite(String cpfCliente, double novoSalario) {
+        // throw new RuntimeException("testar falha e reversao");
+        Optional<ContaR> contaOpt = contaRRepository.findByCpfCliente(cpfCliente);
+        if (contaOpt.isEmpty()) {
+            throw new RuntimeException("Conta não encontrada");
+        }
+        ContaCUD conta = contaOpt.get().virarContaCUD();
 
+        // calculo refeito pq recebo so o valor do novo salario
+        double novoLimite = 0;
+        if (novoSalario >= 2000) {
+            novoLimite = novoSalario / 2;
+        }
+        if (conta.getSaldo() < 0 && novoLimite < Math.abs(conta.getSaldo())) {
+            novoLimite = Math.abs(conta.getSaldo());
+        }
+        conta.setLimite(novoLimite);
+
+        ContaCUD contaSalva = contaCUDRepository.save(conta);
+        rabbitMQProducer.sendMessageCQRSAddUpdateConta(contaSalva);
+        return contaSalva;
+    }
 
 }

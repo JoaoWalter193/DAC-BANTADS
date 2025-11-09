@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import mscliente.domain.AlteracaoPerfilDTO;
 import mscliente.domain.AutocadastroDTO;
+import mscliente.domain.ClienteDTO;
 import mscliente.domain.ResponseDTO;
 import mscliente.producer.RabbitMQProducer;
 import mscliente.services.ClienteService;
@@ -46,20 +47,32 @@ public class RabbitMQConsumer {
     }
 
 
-    //teste pedro alteracaoperfil
+//teste pedro alteracaoperfil
     @RabbitListener(queues = {"AtualizarCliente"})
     public void atualizarCliente(AlteracaoPerfilDTO dados) {
-        LOGGER.info(String.format("saga->cliente teste 'AtualizarCliente' CPF: %s", dados.dadosAtualizados().cpf()));
+        System.out.println("saga->cliente teste atualizarCliente cliente consumer ");
         
         try {
             clienteService.atualizarClienteSaga(dados.dadosAtualizados());
-            LOGGER.info("Cliente atualizado com sucesso. Publicando evento de sucesso.");
+            System.out.println("cliente->saga atualizarCliente cliente consumer.");
             rabbitMQProducer.clienteAtualizadoSucesso(dados);
-
+        
         } catch (Exception e) {
-            LOGGER.error("Falha ao atualizar cliente. Publicando evento de falha.", e);
-            // Descomentar quando implementar falha
-            // rabbitMQProducer.clienteAtualizadoFalha(dados);
+            System.out.println("Falha ao atualizar cliente. cliente consumer.");
+            rabbitMQProducer.clienteAtualizadoFalha(dados);
+        }
+    }
+
+    @RabbitListener(queues = {"AtualizarClienteFalha"}) 
+    public void atualizarClienteFalha(ClienteDTO dadosOriginais) {
+        System.out.println("saga->cliente teste atualizarClienteFalha cliente consumer");
+        
+        try {
+            clienteService.reverterPara(dadosOriginais);
+            System.out.println("teste reverter - cliente consumer.");
+            
+        } catch (Exception e) {
+            System.out.println("Falha na reversao.");
         }
     }
 
