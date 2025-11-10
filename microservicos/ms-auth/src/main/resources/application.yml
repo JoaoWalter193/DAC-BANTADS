@@ -43,7 +43,16 @@ jwt:
 
 
 
-
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "health,info,prometheus"
+    endpoint:
+        health:
+            show-details: always
+    server:
+        port: 9090
 
 rabbitmq:
     exchange:

@@ -13,6 +13,11 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import msauth.ms_auth.dto.LoginRequest;
 import msauth.ms_auth.dto.LoginResponse;
 import msauth.ms_auth.dto.UsuarioResponse;
@@ -25,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
+@Tag(name = "Login", description = "Endpoints para autenticação de usuários (cliente, gerente e admin)")
 public class TokenController {
     private final JwtEncoder jwtEncoder;
     private final UsuarioRepository usuarioRepository;
@@ -36,6 +42,12 @@ public class TokenController {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Operation(summary = "Efetua o login do usuário", 
+               description = "Autentica o usuário e retorna um token")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Login efetuado com sucesso"),
+        @ApiResponse(responseCode = "401", description = "Usuário e/ou senha inválidos", content = @Content)
+    })
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
 
