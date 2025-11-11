@@ -1,82 +1,94 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { UserSession } from '../models';
-import { MockService } from './mock.service';
+import { Observable, of, tap, catchError } from 'rxjs';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  constructor(private router: Router, private mockService: MockService) {}
+  private storageKey = 'currentUser';
 
-  // login-logout com localStorage
-  login(email: string, password: string): void {
-    let user = this.mockService.autenticarUsuario(email, password);
+  constructor(private http: HttpClient, private router: Router) {}
 
-    if (user) {
-      let conta;
-      if (user.role === 'CLIENTE') {
-        // 🔹 Busca cliente atualizado
-        const clienteAtualizado = this.mockService.findClienteCpf(user.cpf);
-        if (clienteAtualizado) {
-          user = clienteAtualizado;
+  login(email: string, senha: string): Observable<any | null> {
+    const url = `${environment.apiUrl}/login`;
+
+    return this.http.post<any>(url, { email, senha }).pipe(
+      tap((resp) => {
+        if (resp?.token) {
+          this.salvarSessao(resp);
+          this.redirecionarPorRole(resp.role);
         }
-        conta = this.mockService.findContaCpf(user.cpf);
-      }
-      const userSession: UserSession = { user, conta };
-      localStorage.setItem('currentUser', JSON.stringify(userSession));
-      alert('Login realizado com sucesso!');
+      }),
+      catchError((err) => {
+        console.error('Erro no login:', err);
+        return of(null);
+      })
+    );
+  }
 
-      const role = user.role;
-      if (role === 'ADMIN') {
-        this.router.navigate(['/tela-administrador']);
-      } else if (role === 'GERENTE') {
-        this.router.navigate(['/tela-gerente']);
-      } else if (role === 'CLIENTE') {
+  private salvarSessao(resp: any) {
+    const sessao = {
+      token: resp.token,
+      role: resp.role,
+      usuario: resp.usuario,
+    };
+
+    localStorage.setItem(this.storageKey, JSON.stringify(sessao));
+  }
+
+  private redirecionarPorRole(role: string) {
+    switch (role) {
+      case 'CLIENTE':
         this.router.navigate(['/home-cliente']);
-      }
-    } else {
-      alert('Email ou senha inválidos.');
+        break;
+
+      case 'GERENTE':
+        this.router.navigate(['/tela-gerente']);
+        break;
+
+      case 'ADMIN':
+        this.router.navigate(['/tela-administrador']);
+        break;
+
+      default:
+        this.router.navigate(['/']);
     }
   }
 
-  getUserSession(): UserSession | null {
-    const session = localStorage.getItem('currentUser');
+  getUserSession() {
+    const session = localStorage.getItem(this.storageKey);
     return session ? JSON.parse(session) : null;
   }
 
-  // buscar usuário logado para usar em outros componentes
   getUsuarioLogado() {
-    const session = this.getUserSession();
-    return session ? session.user : null;
+    return this.getUserSession()?.usuario ?? null;
   }
 
-  // atualizar sessao depois de editar perfil de cliente
-  updateSession(clienteAtualizado: any): void {
-    const session = this.getUserSession();
-    if (session) {
-      session.user = clienteAtualizado;
-      localStorage.setItem('currentUser', JSON.stringify(session));
-    }
+  getToken(): string | null {
+    return this.getUserSession()?.token ?? null;
   }
 
   logout(): void {
-    localStorage.removeItem('currentUser');
-    this.router.navigate(['']);
+    localStorage.removeItem(this.storageKey);
+    this.router.navigate(['/']);
   }
 
   isCliente(): boolean {
-    const session = this.getUserSession();
-    return session?.user.role === 'CLIENTE';
+    return this.getUserSession()?.role === 'CLIENTE';
   }
 
   isGerente(): boolean {
-    const session = this.getUserSession();
-    return session?.user.role === 'GERENTE';
+    return this.getUserSession()?.role === 'GERENTE';
   }
 
   isAdmin(): boolean {
-    const session = this.getUserSession();
-    return session?.user.role === 'ADMIN';
+    return this.getUserSession()?.role === 'ADMIN';
+  }
+
+  estaAutenticado(): boolean {
+    return !!this.getToken();
   }
 }

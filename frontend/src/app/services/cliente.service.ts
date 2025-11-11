@@ -1,79 +1,51 @@
-import { AuthService } from './auth.service';
 import { Injectable } from '@angular/core';
-import { MockService } from './mock.service';
-import { Cliente, Conta, Gerente } from '../models';
-import { BehaviorSubject } from 'rxjs';
-
-interface ClienteDashboardDTO extends Cliente {
-  conta: string;
-  saldo: number;
-  limite: number;
-  cpfGerente: string;
-  nomeGerente: string;
-}
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../environments/environment';
+import { ClienteListaDTO } from '../models/cliente/dto/cliente-lista.dto';
+import { ClienteAprovarDTO } from '../models/cliente/dto/cliente-aprovar.dto';
+import { ClienteRejeitarDTO } from '../models/cliente/dto/cliente-rejeitar.dto';
+import { ClienteDetalhesDTO } from '../models/cliente/dto/cliente-detalhes.dto';
+import { ClienteAtualizarDTO } from '../models/cliente/dto/cliente-atualizar.dto';
+import { ClienteAutocadastroDTO } from '../models/cliente/dto/cliente-autocadastro.dto';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ClienteService {
-  constructor(
-    private mockService: MockService,
-    private authService: AuthService
-  ) {}
+  private api = environment.apiUrl;
 
-  getClienteLogado(): Cliente | null {
-    const userSession = this.authService.getUserSession();
-    if (userSession && userSession.user.role === 'CLIENTE') {
-      const clientes = this.mockService.getClientes();
-      return clientes.find((c) => c.cpf === userSession.user.cpf) || null;
+  constructor(private http: HttpClient) {}
+
+  autocadastrar(dto: ClienteAutocadastroDTO): Observable<any> {
+    return this.http.post(`${this.api}/clientes`, dto);
+  }
+
+  consultarCliente(cpf: string): Observable<ClienteDetalhesDTO> {
+    return this.http.get<ClienteDetalhesDTO>(`${this.api}/clientes/${cpf}`);
+  }
+
+  atualizarCliente(cpf: string, dto: ClienteAtualizarDTO): Observable<any> {
+    return this.http.put(`${this.api}/clientes/${cpf}`, dto);
+  }
+
+  listarClientes(filtro?: string): Observable<ClienteListaDTO[]> {
+    if (filtro) {
+      return this.http.get<ClienteListaDTO[]>(
+        `${this.api}/clientes?filtro=${filtro}`
+      );
     }
-    return null;
+    return this.http.get<ClienteListaDTO[]>(`${this.api}/clientes`);
   }
 
-  updateCliente(cliente: Cliente) {
-    const updated = this.mockService.updateCliente(cliente);
-    this.carregarClientes();
-    return updated;
+  aprovarCliente(cpf: string): Observable<ClienteAprovarDTO> {
+    return this.http.post<ClienteAprovarDTO>(
+      `${this.api}/clientes/${cpf}/aprovar`,
+      {}
+    );
   }
 
-  getClientesPendentes(gerenteCpf: string): Cliente[] {
-    return this.mockService
-      .getClientesDoGerente(gerenteCpf)
-      .filter((c) => c.status === 'pendente');
-  }
-
-  private clientesSubject = new BehaviorSubject<ClienteDashboardDTO[]>([]);
-  clientes$ = this.clientesSubject.asObservable();
-
-  carregarClientes() {
-    const currentUserJSON = localStorage.getItem('currentUser');
-    const contasJSON = localStorage.getItem('contaCliente');
-
-    if (!currentUserJSON || !contasJSON) {
-      this.clientesSubject.next([]);
-      return [];
-    }
-
-    const gerente: Gerente = JSON.parse(currentUserJSON).user;
-    const contas: Conta[] = JSON.parse(contasJSON);
-
-    const lista = (gerente.clientes || [])
-      .filter((cliente) => cliente.status === 'aprovado')
-      .map((cliente) => {
-        const conta = contas.find((c) => c.cliente.cpf === cliente.cpf);
-
-        return {
-          ...cliente,
-          conta: conta ? conta.numeroConta : '',
-          saldo: conta ? conta.saldo : 0,
-          limite: conta ? conta.limite : 0,
-          cpfGerente: gerente.cpf,
-          nomeGerente: gerente.nome,
-        } as ClienteDashboardDTO;
-      })
-      .sort((a, b) => a.nome.localeCompare(b.nome));
-
-    this.clientesSubject.next(lista);
-    return lista;
+  rejeitarCliente(cpf: string, dto: ClienteRejeitarDTO): Observable<any> {
+    return this.http.post(`${this.api}/clientes/${cpf}/rejeitar`, dto);
   }
 }

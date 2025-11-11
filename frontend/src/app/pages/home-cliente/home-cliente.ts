@@ -2,13 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
-import { ContaService } from '../../services/conta.service';
 import { RouterLink } from '@angular/router';
-import { NavbarComponent } from "../../components/navbar/navbar.component";
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Conta } from '../../models';
 import { MatDialog } from '@angular/material/dialog';
+import { ContaService } from '../../services/conta.service';
 import { ExtratoComponent } from '../../modals/extrato/extrato.component';
+import { Conta } from '../../models/conta/conta.interface';
+import { NavbarComponent } from '../../components/navbar/navbar.component';
 
 @Component({
   selector: 'app-home-cliente',
@@ -38,7 +38,7 @@ export class HomeCliente implements OnInit {
               }
 
   ngOnInit(): void {
-    this.conta = this.contaService.getConta();
+    this.conta = this.contaService.obterSaldo();
   }
 
   expandirOperacao(
@@ -119,7 +119,7 @@ export class HomeCliente implements OnInit {
       return;
     }
     try {
-      const extratoData = this.contaService.gerarExtrato(new Date(dataInicioReal), new Date(dataFimReal));
+      const extratoData = this.contaService.obterExtrato(new Date(dataInicioReal), new Date(dataFimReal));
 
       this.dialog.open(ExtratoComponent, {
         width: '800px',

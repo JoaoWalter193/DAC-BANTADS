@@ -1,6 +1,6 @@
-import { AuthService } from './../../services/auth.service';
 import { Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-navbar',

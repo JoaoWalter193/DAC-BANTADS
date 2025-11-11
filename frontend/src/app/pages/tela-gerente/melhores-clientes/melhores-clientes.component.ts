@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
-import { Cliente, Conta, Gerente } from '../../../models';
 import { CommonModule } from '@angular/common';
-import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Cliente } from '../../../models/cliente/cliente.interface';
+import { Conta } from '../../../models/conta/conta.interface';
+import { Gerente } from '../../../models/gerente/gerente.interface';
+import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 
 interface ClienteDashboardDTO extends Cliente {
   conta: string;

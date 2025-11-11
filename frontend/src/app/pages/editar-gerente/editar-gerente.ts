@@ -1,17 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { RouterLink, ActivatedRoute, Router } from '@angular/router';
-import { Gerente } from '../../models/gerente.interface';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Gerente } from '../../models/gerente/gerente.interface';
 import { MockService } from '../../services/mock.service';
-import { Conta } from '../../models/conta.interface';
 
 @Component({
   selector: 'app-editar-gerente',
   templateUrl: './editar-gerente.html',
   styleUrls: ['./editar-gerente.css'],
   standalone: true,
-  imports: [FormsModule, CommonModule, RouterLink],
+  imports: [FormsModule, CommonModule],
 })
 export class EditarGerente implements OnInit {
   gerente: Gerente = {

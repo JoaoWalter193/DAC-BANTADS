@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { GerentesComponent } from './tabela-gerentes/gerentes.component';
-import { NavbarComponent } from '../../components/navbar/navbar.component';
-import { Router, RouterLink } from '@angular/router';
 import { TabelaTodosClientesComponent } from './tabela-todos-clientes/tabela-todos-clientes.component';
+import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { FooterComponent } from '../../components/footer/footer.component';
 
 @Component({

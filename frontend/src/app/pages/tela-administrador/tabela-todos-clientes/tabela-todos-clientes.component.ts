@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MockService } from '../../../services/mock.service';
-import { Conta } from '../../../models/conta.interface';
-import { Gerente } from '../../../models/gerente.interface';
-import { Cliente } from '../../../models/cliente.interface';
 import { RefreshService } from '../../../services/refresh.service';
+import { Cliente } from '../../../models/cliente/cliente.interface';
+import { Gerente } from '../../../models/gerente/gerente.interface';
+import { Conta } from '../../../models/conta/conta.interface';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 
 interface ClienteView {
