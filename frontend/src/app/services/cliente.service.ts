@@ -1,120 +1,51 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, of } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { AuthService } from './auth.service';
-import { MockService } from './mock.service';
-import { Cliente } from '../models/cliente/cliente.interface';
-import { Gerente } from '../models/gerente/gerente.interface';
-import { Conta } from '../models/conta/conta.interface';
+import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
-import { ClienteDashboardDTO } from '../models/cliente/dto/cliente-dashboard.dto';
+import { ClienteListaDTO } from '../models/cliente/dto/cliente-lista.dto';
+import { ClienteAprovarDTO } from '../models/cliente/dto/cliente-aprovar.dto';
+import { ClienteRejeitarDTO } from '../models/cliente/dto/cliente-rejeitar.dto';
+import { ClienteDetalhesDTO } from '../models/cliente/dto/cliente-detalhes.dto';
+import { ClienteAtualizarDTO } from '../models/cliente/dto/cliente-atualizar.dto';
+import { ClienteAutocadastroDTO } from '../models/cliente/dto/cliente-autocadastro.dto';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ClienteService {
-  private clientesSubject = new BehaviorSubject<ClienteDashboardDTO[]>([]);
-  clientes$ = this.clientesSubject.asObservable();
+  private api = environment.apiUrl;
 
-  constructor(
-    private http: HttpClient,
-    private mock: MockService,
-    private auth: AuthService
-  ) {}
+  constructor(private http: HttpClient) {}
 
-  getClienteLogado() {
-    if (environment.useMockService) {
-      return this.getClienteLogadoMock();
-    }
-
-    return this.http.get<Cliente>(`${environment.apiUrl}/cliente/logado`);
+  autocadastrar(dto: ClienteAutocadastroDTO): Observable<any> {
+    return this.http.post(`${this.api}/clientes`, dto);
   }
 
-  private getClienteLogadoMock(): Cliente | null {
-    const session = this.auth.getUserSession();
-    if (!session || session.user.role !== 'CLIENTE') return null;
-
-    const clientes = this.mock.getClientes();
-    return clientes.find((c) => c.cpf === session.user.cpf) || null;
+  consultarCliente(cpf: string): Observable<ClienteDetalhesDTO> {
+    return this.http.get<ClienteDetalhesDTO>(`${this.api}/clientes/${cpf}`);
   }
 
-  carregarClientes() {
-    if (environment.useMockService) {
-      const data = this.carregarClientesMock();
-      this.clientesSubject.next(data);
-      return;
-    }
-
-    const gerenteCpf = this.auth.getUserSession()?.user?.cpf;
-
-    this.http
-      .get<any[]>(`${environment.apiUrl}/clientes/gerente/${gerenteCpf}`)
-      .pipe(
-        map((clientes) =>
-          clientes.map((c) => ({
-            ...c,
-            conta: c.conta?.numeroConta || '',
-            saldo: c.conta?.saldo || 0,
-            limite: c.conta?.limite || 0,
-            cpfGerente: c.gerente?.cpf,
-            nomeGerente: c.gerente?.nome,
-          }))
-        )
-      )
-      .subscribe((data) => this.clientesSubject.next(data));
+  atualizarCliente(cpf: string, dto: ClienteAtualizarDTO): Observable<any> {
+    return this.http.put(`${this.api}/clientes/${cpf}`, dto);
   }
 
-  private carregarClientesMock(): ClienteDashboardDTO[] {
-    const currentUserJSON = localStorage.getItem('currentUser');
-    const contasJSON = localStorage.getItem('contaCliente');
-
-    if (!currentUserJSON || !contasJSON) return [];
-
-    const gerente: Gerente = JSON.parse(currentUserJSON).user;
-    const contas: Conta[] = JSON.parse(contasJSON);
-
-    return (gerente.clientes || [])
-      .filter((c) => c.status === 'aprovado')
-      .map((cliente) => {
-        const conta = contas.find((conta) => conta.cliente.cpf === cliente.cpf);
-
-        return {
-          ...cliente,
-          conta: conta?.numeroConta || '',
-          saldo: conta?.saldo || 0,
-          limite: conta?.limite || 0,
-          cpfGerente: gerente.cpf,
-          nomeGerente: gerente.nome,
-        };
-      })
-      .sort((a, b) => a.nome.localeCompare(b.nome));
-  }
-
-  updateCliente(cliente: Cliente) {
-    if (environment.useMockService) {
-      const updated = this.mock.updateCliente(cliente);
-      this.carregarClientes();
-      return of(updated);
-    }
-
-    return this.http.put(
-      `${environment.apiUrl}/clientes/${cliente.cpf}`,
-      cliente
-    );
-  }
-
-  getClientesPendentes(cpfGerente: string) {
-    if (environment.useMockService) {
-      return of(
-        this.mock
-          .getClientesDoGerente(cpfGerente)
-          .filter((c) => c.status === 'pendente')
+  listarClientes(filtro?: string): Observable<ClienteListaDTO[]> {
+    if (filtro) {
+      return this.http.get<ClienteListaDTO[]>(
+        `${this.api}/clientes?filtro=${filtro}`
       );
     }
+    return this.http.get<ClienteListaDTO[]>(`${this.api}/clientes`);
+  }
 
-    return this.http.get(
-      `${environment.apiUrl}/clientes/pendentes/${cpfGerente}`
+  aprovarCliente(cpf: string): Observable<ClienteAprovarDTO> {
+    return this.http.post<ClienteAprovarDTO>(
+      `${this.api}/clientes/${cpf}/aprovar`,
+      {}
     );
+  }
+
+  rejeitarCliente(cpf: string, dto: ClienteRejeitarDTO): Observable<any> {
+    return this.http.post(`${this.api}/clientes/${cpf}/rejeitar`, dto);
   }
 }

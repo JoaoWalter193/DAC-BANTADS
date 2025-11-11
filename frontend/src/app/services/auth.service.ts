@@ -2,10 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, of, tap, catchError } from 'rxjs';
-import { MockService } from './mock.service';
-import { LoginResponse } from '../models/auth/login-response.interface';
 import { environment } from '../environments/environment';
-import { UserSession } from '../models/auth/user-session.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -13,40 +10,16 @@ import { UserSession } from '../models/auth/user-session.interface';
 export class AuthService {
   private storageKey = 'currentUser';
 
-  constructor(
-    private http: HttpClient,
-    private router: Router,
-    private mockService: MockService
-  ) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
-  login(email: string, senha: string): Observable<LoginResponse | null> {
-    // ✅ Ambiente de teste usando mock
-    if (environment.useMockService) {
-      const user = this.mockService.autenticarUsuario(email, senha);
-
-      if (!user) return of(null);
-
-      const fake: LoginResponse = {
-        access_token: 'MOCK_TOKEN',
-        token_type: 'bearer',
-        tipo: user.role || 'CLIENTE',
-        usuario: user,
-      };
-
-      this.salvarSessao(fake);
-      this.redirecionarPorTipo(fake.tipo);
-
-      return of(fake);
-    }
-
-    // ✅ Login real via Gateway
+  login(email: string, senha: string): Observable<any | null> {
     const url = `${environment.apiUrl}/login`;
 
-    return this.http.post<LoginResponse>(url, { email, senha }).pipe(
+    return this.http.post<any>(url, { email, senha }).pipe(
       tap((resp) => {
-        if (resp?.access_token) {
+        if (resp?.token) {
           this.salvarSessao(resp);
-          this.redirecionarPorTipo(resp.tipo);
+          this.redirecionarPorRole(resp.role);
         }
       }),
       catchError((err) => {
@@ -56,18 +29,18 @@ export class AuthService {
     );
   }
 
-  private salvarSessao(resp: LoginResponse) {
-    const sessao: UserSession = {
-      token: resp.access_token,
-      tipo: resp.tipo,
+  private salvarSessao(resp: any) {
+    const sessao = {
+      token: resp.token,
+      role: resp.role,
       usuario: resp.usuario,
     };
 
     localStorage.setItem(this.storageKey, JSON.stringify(sessao));
   }
 
-  private redirecionarPorTipo(tipo: string) {
-    switch (tipo) {
+  private redirecionarPorRole(role: string) {
+    switch (role) {
       case 'CLIENTE':
         this.router.navigate(['/home-cliente']);
         break;
@@ -76,16 +49,16 @@ export class AuthService {
         this.router.navigate(['/tela-gerente']);
         break;
 
-      case 'ADMINISTRADOR':
+      case 'ADMIN':
         this.router.navigate(['/tela-administrador']);
         break;
 
       default:
-        this.router.navigate(['']);
+        this.router.navigate(['/']);
     }
   }
 
-  getUserSession(): UserSession | null {
+  getUserSession() {
     const session = localStorage.getItem(this.storageKey);
     return session ? JSON.parse(session) : null;
   }
@@ -98,29 +71,21 @@ export class AuthService {
     return this.getUserSession()?.token ?? null;
   }
 
-  atualizarSessao(usuarioAtualizado: any): void {
-    const session = this.getUserSession();
-    if (session) {
-      session.usuario = usuarioAtualizado;
-      localStorage.setItem(this.storageKey, JSON.stringify(session));
-    }
-  }
-
   logout(): void {
     localStorage.removeItem(this.storageKey);
-    this.router.navigate(['']);
+    this.router.navigate(['/']);
   }
 
   isCliente(): boolean {
-    return this.getUserSession()?.tipo === 'CLIENTE';
+    return this.getUserSession()?.role === 'CLIENTE';
   }
 
   isGerente(): boolean {
-    return this.getUserSession()?.tipo === 'GERENTE';
+    return this.getUserSession()?.role === 'GERENTE';
   }
 
   isAdmin(): boolean {
-    return this.getUserSession()?.tipo === 'ADMINISTRADOR';
+    return this.getUserSession()?.role === 'ADMIN';
   }
 
   estaAutenticado(): boolean {

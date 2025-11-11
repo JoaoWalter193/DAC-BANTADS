@@ -5,21 +5,20 @@ import {
   Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../services/auth.service';
-import { MockService } from '../../services/mock.service';
 
 @Component({
   selector: 'app-login',
+  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
@@ -35,7 +34,7 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private mockService: MockService
+    private router: Router
   ) {
     this.loginForm = this.fb.group({
       account: ['', [Validators.required]],
@@ -48,14 +47,34 @@ export class LoginComponent {
 
     const { account, password } = this.loginForm.value;
 
-    this.authService.login(account, password).subscribe((resp) => {
-      if (!resp) {
-        alert('Credenciais inválidas.');
-      }
-    });
-  }
+    this.authService.login(account, password).subscribe({
+      next: (resp) => {
+        if (!resp || !resp.token) {
+          alert('Credenciais inválidas.');
+          return;
+        }
 
-  resetMockData(): void {
-    this.mockService.resetMockData();
+        // redirecionamento por role
+        switch (resp.role) {
+          case 'CLIENTE':
+            this.router.navigate(['/cliente/dashboard']);
+            break;
+
+          case 'GERENTE':
+            this.router.navigate(['/gerente/pendentes']);
+            break;
+
+          case 'ADMIN':
+            this.router.navigate(['/admin/painel']);
+            break;
+
+          default:
+            alert('Role desconhecida.');
+        }
+      },
+      error: () => {
+        alert('Erro ao tentar logar. Verifique as credenciais.');
+      },
+    });
   }
 }
