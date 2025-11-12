@@ -54,10 +54,18 @@ public class RabbitMQProducer {
         rabbitTemplate.convertAndSend(exchange,routingKeySaga,data);
     }
     public void sendMessageSaga(int cod, String cpfCliente, String nomeCliente, double salario){
-        ResponseDTO message = new ResponseDTO(cod, cpfCliente,nomeCliente,salario, "msCliente");
+        ResponseDTO message = new ResponseDTO(cod, cpfCliente,nomeCliente,salario, "msCliente",null);
         rabbitTemplate.convertAndSend(exchange,routingKeySaga,message);
     }
 
+    public void sendErrorSaga(String email){
+
+        ResponseDTO message = new ResponseDTO(500,email,
+                null ,null,
+                "Erro ms-conta -- criar cliente -- ms-cliente",
+                null);;
+        rabbitTemplate.convertAndSend(exchange,routingKeySaga,message);
+    }
 
     // teste pedro alteracaoperfil
     public void clienteAtualizadoSucesso(AlteracaoPerfilDTO dados) {

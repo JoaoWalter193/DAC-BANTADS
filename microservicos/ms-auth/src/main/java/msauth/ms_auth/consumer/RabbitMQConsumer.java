@@ -1,6 +1,9 @@
 package msauth.ms_auth.consumer;
 
 
+import msauth.ms_auth.dto.AuthRequest;
+import msauth.ms_auth.dto.ResponseDTO;
+import msauth.ms_auth.dto.SagaEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -38,4 +41,41 @@ public class RabbitMQConsumer {
             authProducer.sendFailEvent(sagaId, "Falha no ms-auth: " + e.getMessage());
         }
     }
+
+
+    // AQUI ELE ESTÁ OUVINDO NA FILA MSAUTH PARA RECEBER A RESPOSTA PADRÃO QUE EU ESTOU USANDO PARA TUDO :D
+    @RabbitListener(queues = {"MsAuth"})
+       public void receber(ResponseDTO data){
+
+       if (data.ms().equals("Erro ms-conta -- criar cliente -- ms-cliente")){
+           authService.deletarAutenticacao(data.cpf());
+       } else {
+
+           LOGGER.info("Recebido na queue MsAuth " + data.senha());
+
+           String[] parts = data.senha().split("-");
+
+
+           SagaRequest request = new SagaRequest("idFalso",
+                   parts[1],
+                   parts[0]);
+
+           try {
+               authService.criarAutenticacao(request);
+               LOGGER.info("Autenticação criada com sucesso para Saga ID: {}", parts[1] + " -- " + parts[0]);
+
+               ResponseDTO temp = new ResponseDTO(201, data.cpf(),
+                       data.nome(), data.salario(),
+                       "ms-auth", null);
+               authProducer.sendSagaConta(temp);
+
+
+           } catch (Exception e) {
+               LOGGER.info("ERRO: " + e);
+           }
+       }
+   }
+
+
+
 }

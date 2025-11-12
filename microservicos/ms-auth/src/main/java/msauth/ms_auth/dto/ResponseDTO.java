@@ -1,4 +1,4 @@
-package mscliente.domain;
+package msauth.ms_auth.dto;
 
 public record ResponseDTO(int cod,
                           String cpf,

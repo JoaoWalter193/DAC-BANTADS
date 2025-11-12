@@ -1,10 +1,7 @@
 package MSconta.producer;
 
 
-import MSconta.domain.AlteracaoPerfilDTO;
-import MSconta.domain.ClienteDTO;
-import MSconta.domain.AutocadastroDTO;
-import MSconta.domain.ContaCUD;
+import MSconta.domain.*;
 import MSconta.domain.DTOCqrs.AtualizarDTO;
 import MSconta.domain.DTOCqrs.SaqueDepositoDTO;
 import MSconta.domain.DTOCqrs.TransferenciaDTO;
@@ -90,11 +87,10 @@ public class RabbitMQProducer {
 
     public void sendMessageErroCliente(String cpf){
 
-        AutocadastroDTO dto = new AutocadastroDTO(cpf,"Erro conta",
-                null, 0,
+        ResponseDTO dto = new ResponseDTO(500,cpf,
                 null,null,
-                null,null);
-        rabbitTemplate.convertAndSend(exchange, routingKeyCliente,dto);
+                "Erro ms-conta -- criar cliente");
+        rabbitTemplate.convertAndSend(exchange, routingKeySaga,dto);
 
     }
 

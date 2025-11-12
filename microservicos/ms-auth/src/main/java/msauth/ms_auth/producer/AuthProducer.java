@@ -1,4 +1,5 @@
 package msauth.ms_auth.producer;
+import msauth.ms_auth.dto.ResponseDTO;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -21,6 +22,9 @@ public class AuthProducer {
     @Value("${rabbitmq.key.saga-create-fail}")
     private String sagaAuthFailKey;
 
+    @Value("routingKeySaga")
+    public String routingKeySaga;
+
     private final AmqpTemplate rabbitTemplate;
 
     public AuthProducer(AmqpTemplate rabbitTemplate) {
@@ -35,6 +39,11 @@ public class AuthProducer {
     public void sendFailEvent(String sagaId, String errorMessage) {
         SagaEvent message = new SagaEvent(sagaExchange, "AUTH_FAIL", errorMessage);
         rabbitTemplate.convertAndSend(sagaExchange, sagaAuthFailKey, message);
+    }
+
+   // apenas para enviar para a Saga
+    public void sendSagaConta(ResponseDTO data){
+        rabbitTemplate.convertAndSend(sagaExchange, routingKeySaga,data);
     }
 
 }

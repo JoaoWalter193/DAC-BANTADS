@@ -3,6 +3,7 @@ package msSaga.msSaga.consumer;
 
 
 import msSaga.msSaga.DTO.AlteracaoPerfilDTO;
+import msSaga.msSaga.DTO.AutocadastroDTO;
 import msSaga.msSaga.DTO.ClienteDTO;
 import msSaga.msSaga.DTO.ResponseDTO;
 import msSaga.msSaga.producer.RabbitMQProducer;
@@ -30,15 +31,43 @@ public class RabbitMQConsumer {
             System.out.println(">>> PROCESSANDO: msCliente - Criar conta");
 
             // lógica após adicionar cliente em Cliente
-            // VOU FAZER MOMENTANEAMENTE A LÓGICA DE ENVIAR DIRETO PARA CONTA MAS DEPOIS AQUI TEM QUE SER ONDE ENVIA O MS-AUTH E RECEBENDO DO AUTH ELE ENVIA PRA CONTA
-            ResponseDTO respostaTemp = new ResponseDTO(00, message.cpf(),
-                    message.nome(),
-                    message.salario(),
-                    "Criar conta");
-            rabbitMQProducer.sendContaConta(respostaTemp);
+            rabbitMQProducer.sendContaAuth(message);
+
 
         }
 
+        if (message.cod() == 201 && message.ms().equals("ms-auth")){
+            //enviar para conta
+            ResponseDTO respostaTemp = new ResponseDTO(00, message.cpf(),
+                    message.nome(),
+                    message.salario(),
+                    "Criar conta",
+                    message.senha());
+            rabbitMQProducer.sendContaConta(respostaTemp);
+        }
+
+
+        // Lógica de enviar o erro para os MS excluir a conta
+        if (message.cod() == 500 && message.ms().equals("Erro ms-conta -- criar cliente")){
+            AutocadastroDTO data = new AutocadastroDTO(message.cpf(),
+                    message.ms(),
+                    null,
+                    0.0,
+                    null,
+                    null,
+                    null, null);
+            rabbitMQProducer.sendContaCliente(data);
+        }
+
+        if (message.cod() == 500 && message.ms().equals("Erro ms-conta -- criar cliente -- ms-cliente")){
+            // agora preciso que ele vá e delete do ms-auth finalizando esse processo, eu tenho o cpf do cara aqui
+            ResponseDTO temp = new ResponseDTO(00,
+                    message.cpf(), // isso aqui vai estar como email do carinha
+                    null,
+                    0.0,
+                    message.ms(), null);
+            rabbitMQProducer.sendContaAuth(temp);
+        }
 
 
         // LÓGICA PARA EXCLUIR / ADICIONAR GERENTE NO MS-CONTA
