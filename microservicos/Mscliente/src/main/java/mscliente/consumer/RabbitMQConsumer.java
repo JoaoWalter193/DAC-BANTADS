@@ -29,8 +29,7 @@ public class RabbitMQConsumer {
     @RabbitListener(queues = {"MsCliente"})
     public void consume(AutocadastroDTO data) throws JsonProcessingException {
 
-        if (data.email().equals("Erro Conta")){
-
+        if (data.email().equals("Erro ms-conta -- criar client")){
             clienteService.deletarContaErro(data.cpf());
 
         } else {
@@ -40,8 +39,7 @@ public class RabbitMQConsumer {
             } else {
                 clienteService.adicionarCliente(data);
 
-                ResponseDTO responseTemp = new ResponseDTO(201, data.cpf(), data.nome(), data.salario(), "msCliente");
-                rabbitMQProducer.sendClienteSaga(responseTemp);
+
             }
         }
     }

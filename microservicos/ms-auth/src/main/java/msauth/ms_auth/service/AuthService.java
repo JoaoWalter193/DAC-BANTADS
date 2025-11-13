@@ -1,5 +1,6 @@
 package msauth.ms_auth.service;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +29,6 @@ public class AuthService {
             throw new IllegalArgumentException("Email já cadastrado");
         }
 
-        mailService.sendPasswordEmail(request.getEmail(),"Claudio",request.getSenha());
-
         String senhaHasheada = passwordEncoder.encode(request.getSenha());
 
         UsuarioEntity novoUsuario = new UsuarioEntity();
@@ -38,5 +37,12 @@ public class AuthService {
         novoUsuario.setRoles(Set.of(Role.CLIENTE));
         
         usuarioRepository.save(novoUsuario);
+    }
+
+    public void deletarAutenticacao(String email){
+        if (usuarioRepository.findByEmail(email).isPresent()){
+            UsuarioEntity userTemp = usuarioRepository.findByEmail(email).get();
+            usuarioRepository.delete(userTemp);
+        }
     }
 }

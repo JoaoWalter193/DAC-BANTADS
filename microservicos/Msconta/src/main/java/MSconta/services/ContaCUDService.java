@@ -37,29 +37,35 @@ public class ContaCUDService {
 
 
 
-    public ResponseEntity<String> adicionarConta (AdicionarContaDTO data){
-        //Lógica para achar o gerente que tem menos cliente e alocar esta conta a ele
-        GerenteDTO gerenteTemp = contaRRepository
-                .findGerentesOrdenadosPorQuantidadeDeContas(PageRequest.of(0, 1))
-                .stream()
-                .findFirst()
-                .orElse(null);
+    public ResponseEntity<String> adicionarConta (AdicionarContaDTO data) {
 
-        ContaCUD contaCUDTemp = new ContaCUD(gerarNumeroContaUnico(),data.cpfCliente(),data.nomeCliente(),data.salario(),gerenteTemp.cpfGerente(),gerenteTemp.nomeGerente());
-        contaCUDTemp.setAtiva(false);
+        try {
+            //Lógica para achar o gerente que tem menos cliente e alocar esta conta a ele
+            GerenteDTO gerenteTemp = contaRRepository
+                    .findGerentesOrdenadosPorQuantidadeDeContas(PageRequest.of(0, 1))
+                    .stream()
+                    .findFirst()
+                    .orElse(null);
 
-        Optional<ContaR> contaVerifica = contaRRepository.findByCpfCliente(data.cpfCliente());
-        if (contaVerifica.isEmpty()){
+            ContaCUD contaCUDTemp = new ContaCUD(gerarNumeroContaUnico(), data.cpfCliente(), data.nomeCliente(), data.salario(), gerenteTemp.cpfGerente(), gerenteTemp.nomeGerente());
+            contaCUDTemp.setAtiva(false);
+
+            Optional<ContaR> contaVerifica = contaRRepository.findByCpfCliente(data.cpfCliente());
+            if (contaVerifica.isEmpty()) {
                 contaCUDRepository.save(contaCUDTemp);
 
                 rabbitMQProducer.sendMessageCQRSAddUpdateConta(contaCUDTemp);
 
                 return ResponseEntity.ok("Conta criada com sucesso!");
 
+            }
+
+
+            return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).build();
+        } catch (Exception e){
+            rabbitMQProducer.sendMessageErroCliente(data.cpfCliente());
+            return ResponseEntity.internalServerError().build();
         }
-
-
-        return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).build();
     }
 
 

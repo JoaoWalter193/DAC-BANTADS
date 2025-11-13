@@ -1,3 +1,4 @@
+msauth/ms_auth/dto/ResponseDTO.class
 msauth/ms_auth/dto/LoginResponse.class
 msauth/ms_auth/repositories/UsuarioRepository.class
 msauth/ms_auth/config/RabbitMQConnectionTest.class
@@ -14,6 +15,7 @@ msauth/ms_auth/producer/AuthProducer.class
 msauth/ms_auth/config/RabbitMQConfig.class
 msauth/ms_auth/dto/UsuarioResponse.class
 msauth/ms_auth/dto/LoginRequest.class
+msauth/ms_auth/dto/AuthRequest.class
 msauth/ms_auth/service/MailService.class
 msauth/ms_auth/config/SecurityConfig.class
 msauth/ms_auth/controllers/TokenController.class

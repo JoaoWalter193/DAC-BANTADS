@@ -114,45 +114,56 @@ public class ClienteService {
     public ResponseEntity<ClienteDTO> adicionarCliente(AutocadastroDTO data){
         //implementar
         //gerar Senha aleatoria
-        Optional<Cliente> optCliente = clienteRepository.findByCpf(data.cpf());
+        try {
 
-        if (optCliente.isPresent()){
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            Optional<Cliente> optCliente = clienteRepository.findByCpf(data.cpf());
+
+            if (optCliente.isPresent()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }
+
+
+            String senhaAleatoria = RandomStringUtils.random(5, true, true);
+            // String senhaHasheada = passwordEncoder.encode(senhaAleatoria);
+
+            Cliente clienteTemp = new Cliente(
+                    data.cpf(),
+                    data.nome(),
+                    data.email(),
+                    "",
+                    // senhaHasheada, // classe que pega a senha, joga pra SHA256 + SALT e retorna o HASH
+                    data.salario(),
+                    data.endereco(),
+                    data.cep(),
+                    data.cidade(),
+                    data.estado(),
+                    "AGUARDANDO",
+                    ""
+            );
+            clienteRepository.save(clienteTemp);
+
+            cpfParaSenha.put(clienteTemp.getCpf(), senhaAleatoria);
+
+            //Fazer assim é saga coreografada
+//            AuthRequest authRequest = new AuthRequest(data.email(), senhaAleatoria);
+//            rabbitMQProducer.sendAuthSaga(authRequest);
+
+            ResponseDTO responseTemp = new ResponseDTO(201, data.cpf(), data.nome(), data.salario(), "msCliente",senhaAleatoria + "-" + data.email());
+            rabbitMQProducer.sendClienteSaga(responseTemp);
+
+
+            return ResponseEntity.ok(new ClienteDTO(clienteTemp.getCpf(),
+                    clienteTemp.getNome(),
+                    clienteTemp.getEmail(),
+                    clienteTemp.getSalario(),
+                    clienteTemp.getEndereco(),
+                    clienteTemp.getCep(),
+                    clienteTemp.getCidade(),
+                    clienteTemp.getEstado()));
+        } catch (Exception e){
+            rabbitMQProducer.sendErrorSaga(data.email());
+            return ResponseEntity.internalServerError().build();
         }
-
-
-        String senhaAleatoria = RandomStringUtils.random(5,true,true);
-        // String senhaHasheada = passwordEncoder.encode(senhaAleatoria);
-
-        Cliente clienteTemp = new Cliente(
-                data.cpf(),
-                data.nome(),
-                data.email(),
-                "",
-                // senhaHasheada, // classe que pega a senha, joga pra SHA256 + SALT e retorna o HASH
-                data.salario(),
-                data.endereco(),
-                data.cep(),
-                data.cidade(),
-                data.estado(),
-                "AGUARDANDO",
-                ""
-        );
-        clienteRepository.save(clienteTemp);
-
-        cpfParaSenha.put(clienteTemp.getCpf(),senhaAleatoria);
-
-        AuthRequest authRequest = new AuthRequest(data.email(), senhaAleatoria);
-        rabbitMQProducer.sendAuthSaga(authRequest);
-
-        return ResponseEntity.ok(new ClienteDTO(clienteTemp.getCpf(),
-                clienteTemp.getNome(),
-                clienteTemp.getEmail(),
-                clienteTemp.getSalario(),
-                clienteTemp.getEndereco(),
-                clienteTemp.getCep(),
-                clienteTemp.getCidade(),
-                clienteTemp.getEstado()));
     }
 
 
@@ -206,7 +217,8 @@ public class ClienteService {
                     clienteTemp.getCpf(),
                     clienteTemp.getNome(),
                     clienteTemp.getSalario(),
-                    "msCliente-aprovado");
+                    "msCliente-aprovado",
+                    null);
             rabbitMQProducer.sendClienteSaga(responseTemp);
 
 
@@ -295,7 +307,11 @@ public class ClienteService {
         if (optCliente.isPresent()){
             Cliente cliente = optCliente.get();
             emailService.sendEmailErro(cliente.getEmail(), cliente.getEmail());
+            rabbitMQProducer.sendErrorSaga(cliente.getEmail());
+
             clienteRepository.delete(cliente);
+
+
         }
     }
 

@@ -29,6 +29,9 @@ public class RabbitMQProducer {
     @Value("keyGerente")
     private String routingKeyGerente;
 
+    @Value("keyAuth")
+    private String routingKeyAuth;
+
 // teste pedro alteracaoperfil
     @Value("keyAtualizarCliente") 
     private String routingKeyAtualizarCliente;
@@ -59,6 +62,10 @@ public class RabbitMQProducer {
 
     public void sendGerenteExcluirAdd(ResponseDTO data){
         rabbitTemplate.convertAndSend(exchange, routingKeyConta, data);
+    }
+
+    public void sendContaAuth(ResponseDTO data){
+        rabbitTemplate.convertAndSend(exchange,routingKeyAuth, data);
     }
 
     public void sendGerenteMsGerente(GerenteMsDTO data){
