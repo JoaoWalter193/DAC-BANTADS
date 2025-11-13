@@ -16,6 +16,15 @@ function setupProxies(app) {
     changeOrigin: true,
     proxyTimeout: 30_000,
     timeout: 30_000,
+    onProxyReq(proxyReq, req, res) {
+      if (req.body) {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader("Content-Type", "application/json");
+        proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+        proxyReq.end();
+      }
+    },
   });
 
   app.get("/reboot", async (req, res) => {
