@@ -14,9 +14,9 @@ function setupProxies(app) {
   const proxyOptions = (target) => ({
     target,
     changeOrigin: true,
-    proxyTimeout: 30_000,
-    timeout: 30_000,
-    onProxyReq(proxyReq, req, res) {
+    proxyTimeout: 30000,
+    timeout: 30000,
+    onProxyReq(proxyReq, req) {
       if (proxyReq.method === "GET") {
         proxyReq.removeHeader("Content-Type");
         proxyReq.removeHeader("Content-Length");
@@ -32,7 +32,7 @@ function setupProxies(app) {
     },
   });
 
-  app.get("/reboot", async (req, res) => {
+  app.get("/reboot", (req, res) => {
     res.status(200).json({
       mensagem: "Banco de dados criado conforme especificação",
     });
@@ -40,20 +40,25 @@ function setupProxies(app) {
 
   app.post("/login", createProxyMiddleware(proxyOptions(AUTH)));
 
-  app.post(
-    "/logout",
-    //verifyJWT,
-    createProxyMiddleware(proxyOptions(AUTH))
-  );
+  app.post("/logout", verifyJWT, (req, res) => {
+    const user = req.user || {};
+
+    return res.status(200).json({
+      id: user.sub ?? null,
+      email: user.email ?? null,
+      role: user.role ?? null,
+      mensagem: "Logout efetuado com sucesso",
+    });
+  });
 
   app.put(
     "/clientes/:cpf",
-    //verifyJWT,
+    verifyJWT,
     createProxyMiddleware({
       target: CLIENTE,
       changeOrigin: true,
 
-      onProxyReq(proxyReq, req, res) {
+      onProxyReq(proxyReq, req) {
         if (req.method === "PUT" && req.body) {
           let newBody = { ...req.body };
 
@@ -72,19 +77,26 @@ function setupProxies(app) {
     })
   );
 
-  app.get("/clientes", require("./compositions/clienteComposition"));
+  app.get(
+    "/clientes",
+    verifyJWT,
+    requireRoles(["GERENTE", "ADMINISTRADOR"]),
+    require("./compositions/clienteComposition")
+  );
 
   app.post("/clientes", createProxyMiddleware(proxyOptions(SAGA)));
 
   app.post(
     "/clientes/:cpf/aprovar",
-    //verifyJWT,
+    verifyJWT,
+    requireRoles(["GERENTE", "ADMINISTRADOR"]),
     createProxyMiddleware(proxyOptions(SAGA))
   );
 
   app.post(
     "/clientes/:cpf/rejeitar",
-    //verifyJWT,
+    verifyJWT,
+    requireRoles(["GERENTE", "ADMINISTRADOR"]),
     createProxyMiddleware(proxyOptions(CLIENTE))
   );
 
@@ -93,11 +105,12 @@ function setupProxies(app) {
   contaActions.forEach((act) => {
     app.post(
       `/contas/:numero/${act}`,
+      verifyJWT,
       createProxyMiddleware({
         target: CONTA,
         changeOrigin: true,
 
-        pathRewrite: (path, req) => {
+        pathRewrite: (_, req) => {
           return `/contas/${req.params.numero}/${act}`;
         },
 
@@ -122,10 +135,6 @@ function setupProxies(app) {
             }
 
             if (act === "depositar" || act === "sacar") {
-              if (typeof newBody.valor !== "number") {
-                console.error("Valor inválido recebido:", newBody);
-              }
-
               const raw = String(newBody.valor);
               proxyReq.setHeader("Content-Type", "application/json");
               proxyReq.setHeader("Content-Length", Buffer.byteLength(raw));
@@ -145,31 +154,36 @@ function setupProxies(app) {
 
   app.get(
     "/gerentes",
-    //verifyJWT,
-    createProxyMiddleware(proxyOptions(GERENTE))
+    verifyJWT,
+    requireRoles(["GERENTE", "ADMINISTRADOR"]),
+    require("./compositions/gerenteComposition")
   );
 
   app.post(
     "/gerentes",
-    //verifyJWT,
+    verifyJWT,
+    requireRoles(["GERENTE", "ADMINISTRADOR"]),
     createProxyMiddleware(proxyOptions(GERENTE))
   );
 
   app.get(
     "/gerentes/:cpf",
-    //verifyJWT,
+    verifyJWT,
+    requireRoles(["GERENTE", "ADMINISTRADOR"]),
     createProxyMiddleware(proxyOptions(GERENTE))
   );
 
   app.delete(
     "/gerentes/:cpf",
-    //verifyJWT,
+    verifyJWT,
+    requireRoles(["GERENTE", "ADMINISTRADOR"]),
     createProxyMiddleware(proxyOptions(GERENTE))
   );
 
   app.put(
     "/gerentes/:cpf",
-    //verifyJWT,
+    verifyJWT,
+    requireRoles(["GERENTE", "ADMINISTRADOR"]),
     createProxyMiddleware(proxyOptions(GERENTE))
   );
 

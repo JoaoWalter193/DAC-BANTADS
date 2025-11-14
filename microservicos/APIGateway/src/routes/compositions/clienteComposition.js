@@ -1,7 +1,7 @@
 const express = require("express");
 const { axiosInstance, propagateRemoteError } = require("./shared");
 const { createProxyMiddleware } = require("http-proxy-middleware");
-// const { verifyJWT } = require('../../middlewares/verifyJWT'); // ready but disabled
+const { verifyJWT, requireRoles } = require("../../middlewares/verifyJWT");
 
 const router = express.Router();
 
@@ -29,94 +29,148 @@ async function fetchGerenteByCpf(cpf) {
   return resp.data;
 }
 
-router.get(
-  "/:cpf",
-  /* verifyJWT, */ async (req, res) => {
-    const { cpf } = req.params;
+router.get("/:cpf", verifyJWT, async (req, res) => {
+  const { cpf } = req.params;
 
+  try {
+    const clienteUrl = `${CLIENTE}/clientes/${encodeURIComponent(cpf)}`;
+    const clienteResp = await axiosInstance.get(clienteUrl);
+    if (clienteResp.status >= 400)
+      return propagateRemoteError(res, clienteResp);
+
+    const cliente = clienteResp.data;
+
+    let conta;
     try {
-      const clienteUrl = `${CLIENTE}/clientes/${encodeURIComponent(cpf)}`;
-      const clienteResp = await axiosInstance.get(clienteUrl);
-      if (clienteResp.status >= 400)
-        return propagateRemoteError(res, clienteResp);
-
-      const cliente = clienteResp.data;
-      let conta;
-      try {
-        conta = await fetchContaByCpf(cpf);
-      } catch (e) {
-        return propagateRemoteError(res, e.remote);
-      }
-
-      const cpfGerente = conta.cpfGerente || conta.cpfGerente;
-      if (!cpfGerente) {
-        return res.status(404).end();
-      }
-
-      let gerente;
-      try {
-        gerente = await fetchGerenteByCpf(cpfGerente);
-      } catch (e) {
-        return propagateRemoteError(res, e.remote);
-      }
-
-      const result = {
-        cpf: cliente.cpf,
-        nome: cliente.nome,
-        email: cliente.email,
-        endereco: cliente.endereco,
-        cidade: cliente.cidade,
-        estado: cliente.estado,
-        salario: cliente.salario,
-        conta: String(conta.numConta),
-        saldo: conta.saldo,
-        limite: conta.limite,
-        gerente: gerente.cpf,
-        gerente_nome: gerente.nome,
-        gerente_email: gerente.email,
-      };
-
-      return res.status(200).json(result);
-    } catch (err) {
-      console.error("Erro composition GET /clientes/:cpf", err);
-      if (err && err.remote) return propagateRemoteError(res, err.remote);
-      return res.status(500).json({ mensagem: "Erro interno no API Gateway" });
+      conta = await fetchContaByCpf(cpf);
+    } catch (e) {
+      return propagateRemoteError(res, e.remote);
     }
-  }
-);
 
-router.get("/", async (req, res, next) => {
-  const { filtro } = req.query;
+    const cpfGerente = conta.cpfGerente;
 
-  if (filtro === "adm_relatorio_clientes") {
+    if (!cpfGerente) {
+      return res.status(404).json({ mensagem: "Gerente não encontrado" });
+    }
+
+    let gerente;
     try {
-      const clientesUrl = `${CLIENTE}/clientes?filtro=adm_relatorio_clientes`;
-      const clientesResp = await axiosInstance.get(clientesUrl);
+      gerente = await fetchGerenteByCpf(cpfGerente);
+    } catch (e) {
+      return propagateRemoteError(res, e.remote);
+    }
 
-      if (clientesResp.status >= 400)
-        return propagateRemoteError(res, clientesResp);
+    const result = {
+      cpf: cliente.cpf,
+      nome: cliente.nome,
+      email: cliente.email,
+      endereco: cliente.endereco,
+      cidade: cliente.cidade,
+      estado: cliente.estado,
+      salario: cliente.salario,
+      conta: String(conta.numConta),
+      saldo: conta.saldo,
+      limite: conta.limite,
+      gerente: gerente.cpf,
+      gerente_nome: gerente.nome,
+      gerente_email: gerente.email,
+    };
 
-      const clientes = clientesResp.data || [];
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error("Erro composition GET /clientes/:cpf", err);
+    if (err && err.remote) return propagateRemoteError(res, err.remote);
+    return res.status(500).json({ mensagem: "Erro interno no API Gateway" });
+  }
+});
 
-      const contasPromises = clientes.map((c) =>
-        axiosInstance.get(`${CONTA}/contas/${c.cpf}`)
-      );
-      const contasResponses = await Promise.all(contasPromises);
+router.get(
+  "/",
+  verifyJWT,
+  requireRoles(["GERENTE", "ADMINISTRADOR"]),
+  async (req, res, next) => {
+    const { filtro } = req.query;
 
-      const contasData = contasResponses.map((r) => r.data);
+    if (filtro === "adm_relatorio_clientes") {
+      try {
+        const clientesUrl = `${CLIENTE}/clientes?filtro=adm_relatorio_clientes`;
+        const clientesResp = await axiosInstance.get(clientesUrl);
 
-      const gerentesPromises = contasData.map((conta) =>
-        axiosInstance.get(`${GERENTE}/gerentes/${conta.cpfGerente}`)
-      );
-      const gerentesResponses = await Promise.all(gerentesPromises);
+        if (clientesResp.status >= 400)
+          return propagateRemoteError(res, clientesResp);
 
-      const gerentesData = gerentesResponses.map((r) => r.data);
+        const clientes = clientesResp.data || [];
 
-      const final = clientes.map((cliente, i) => {
-        const conta = contasData[i];
-        const gerente = gerentesData[i];
+        const contasResponses = await Promise.all(
+          clientes.map((c) => axiosInstance.get(`${CONTA}/contas/${c.cpf}`))
+        );
+        const contasData = contasResponses.map((r) => r.data);
 
-        return {
+        const gerentesResponses = await Promise.all(
+          contasData.map((conta) =>
+            axiosInstance.get(`${GERENTE}/gerentes/${conta.cpfGerente}`)
+          )
+        );
+        const gerentesData = gerentesResponses.map((r) => r.data);
+
+        const final = clientes.map((cliente, i) => {
+          const conta = contasData[i];
+          const gerente = gerentesData[i];
+
+          return {
+            cpf: cliente.cpf,
+            nome: cliente.nome,
+            email: cliente.email,
+            endereco: cliente.endereco,
+            cidade: cliente.cidade,
+            estado: cliente.estado,
+            salario: cliente.salario ?? null,
+            conta: String(conta.numConta),
+            saldo: conta.saldo,
+            limite: conta.limite,
+            gerente: gerente.cpf,
+            gerente_nome: gerente.nome,
+            gerente_email: gerente.email,
+          };
+        });
+
+        return res.status(200).json(final);
+      } catch (err) {
+        console.error(
+          "Erro composition /clientes?filtro=adm_relatorio_clientes",
+          err
+        );
+        if (err && err.remote) return propagateRemoteError(res, err.remote);
+        return res
+          .status(500)
+          .json({ mensagem: "Erro interno no API Gateway" });
+      }
+    }
+
+    if (filtro === "melhores_clientes") {
+      try {
+        const contasResp = await axiosInstance.get(`${CONTA}/contas/melhoresClientes`);
+        if (contasResp.status >= 400)
+          return propagateRemoteError(res, contasResp);
+
+        const contas = contasResp.data || [];
+
+        const clientesResp = await Promise.all(
+          contas.map((c) =>
+            axiosInstance.get(`${CLIENTE}/clientes/${c.cpfCliente}`)
+          )
+        );
+
+        const clientes = clientesResp.map((r) => r.data);
+
+        const gerentesResp = await Promise.all(
+          contas.map((c) =>
+            axiosInstance.get(`${GERENTE}/gerentes/${c.cpfGerente}`)
+          )
+        );
+        const gerentes = gerentesResp.map((r) => r.data);
+
+        const final = clientes.map((cliente, i) => ({
           cpf: cliente.cpf,
           nome: cliente.nome,
           email: cliente.email,
@@ -124,30 +178,32 @@ router.get("/", async (req, res, next) => {
           cidade: cliente.cidade,
           estado: cliente.estado,
           salario: cliente.salario ?? null,
-          conta: String(conta.numConta),
-          saldo: conta.saldo,
-          limite: conta.limite,
-          gerente: gerente.cpf,
-          gerente_nome: gerente.nome,
-          gerente_email: gerente.email,
-        };
-      });
+          conta: String(contas[i].numConta),
+          saldo: contas[i].saldo,
+          limite: contas[i].limite,
+          gerente: gerentes[i].cpf,
+          gerente_nome: gerentes[i].nome,
+          gerente_email: gerentes[i].email,
+        }));
 
-      return res.status(200).json(final);
-    } catch (err) {
-      console.error(
-        "Erro composition /clientes?filtro=adm_relatorio_clientes",
-        err
-      );
-      if (err && err.remote) return propagateRemoteError(res, err.remote);
-      return res.status(500).json({ mensagem: "Erro interno no API Gateway" });
+        return res.status(200).json(final);
+      } catch (err) {
+        console.error(
+          "Erro composition /clientes?filtro=melhores_clientes",
+          err
+        );
+        if (err && err.remote) return propagateRemoteError(res, err.remote);
+        return res
+          .status(500)
+          .json({ mensagem: "Erro interno no API Gateway" });
+      }
     }
-  }
 
-  return createProxyMiddleware({
-    target: CLIENTE,
-    changeOrigin: true,
-  })(req, res, next);
-});
+    return createProxyMiddleware({
+      target: CLIENTE,
+      changeOrigin: true,
+    })(req, res, next);
+  }
+);
 
 module.exports = router;
