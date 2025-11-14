@@ -84,7 +84,25 @@ public class ClienteService {
 
             return ResponseEntity.ok(new ArrayList<>());
         } else {
-            return ResponseEntity.ok(new ArrayList<>());
+            List<Cliente> listaTemp = clienteRepository.findByStatus("APROVADO");
+            List<ClienteDTO> listaDTO = new ArrayList<>();
+
+            for (Cliente cliente : listaTemp) {
+                ClienteDTO temp = new ClienteDTO(
+                        cliente.getCpf(),
+                        cliente.getNome(),
+                        cliente.getEmail(),
+                        cliente.getSalario(),
+                        cliente.getEndereco(),
+                        cliente.getCep(),
+                        cliente.getCidade(),
+                        cliente.getEstado()
+                );
+                listaDTO.add(temp);
+            }
+            return ResponseEntity.ok(listaDTO);
+
+
         }
     }
 
@@ -168,7 +186,7 @@ public class ClienteService {
 
 
 
-    public ResponseEntity<ClienteDTO> atualizarCliente(AdicionarClienteDTO data, String cpf){
+    public ResponseEntity<ClienteDTO> atualizarCliente(AtualizarClienteDTO data, String cpf){
         Optional<Cliente> optCliente = clienteRepository.findByCpf(cpf);
 
         if (optCliente.isPresent()) {

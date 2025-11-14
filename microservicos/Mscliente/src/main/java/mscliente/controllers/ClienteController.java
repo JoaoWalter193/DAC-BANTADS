@@ -1,10 +1,7 @@
 package mscliente.controllers;
 
 import jakarta.validation.Valid;
-import mscliente.domain.AdicionarClienteDTO;
-import mscliente.domain.AutocadastroDTO;
-import mscliente.domain.ClienteDTO;
-import mscliente.domain.GeralDTO;
+import mscliente.domain.*;
 import mscliente.services.ClienteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +47,7 @@ public class ClienteController {
     }
 
     @PutMapping("/{cpf}")
-    public ResponseEntity<ClienteDTO> atualizarCliente(@RequestBody AdicionarClienteDTO data, @PathVariable String cpf){
+    public ResponseEntity<ClienteDTO> atualizarCliente(@RequestBody AtualizarClienteDTO data, @PathVariable String cpf){
         return clienteService.atualizarCliente(data,cpf);
     }
 
