@@ -1,5 +1,6 @@
 const express = require("express");
 const { axiosInstance, propagateRemoteError } = require("./shared");
+const { createProxyMiddleware } = require("http-proxy-middleware");
 // const { verifyJWT } = require('../../middlewares/verifyJWT'); // ready but disabled
 
 const router = express.Router();

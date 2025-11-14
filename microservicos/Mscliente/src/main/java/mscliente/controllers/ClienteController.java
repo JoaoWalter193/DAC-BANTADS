@@ -9,54 +9,50 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
 @RestController
-@RequestMapping ("/clientes")
+@RequestMapping("/clientes")
 public class ClienteController {
-
 
     @Autowired
     private ClienteService clienteService;
 
-
     @GetMapping
-    public ResponseEntity<List<ClienteDTO>> listarClientes(@RequestParam("filtro") String filtro ){
+    public ResponseEntity<List<ClienteDTO>> listarClientes(@RequestParam("filtro") String filtro) {
         return clienteService.buscarClientes(filtro);
     }
 
     @GetMapping("/{cpf}")
-    public ResponseEntity<ClienteDTO> buscarCliente(@PathVariable String cpf){
+    public ResponseEntity<ClienteDTO> buscarCliente(@PathVariable String cpf) {
         return clienteService.buscarCliente(cpf);
     }
 
-
     @PostMapping
-    public ResponseEntity<ClienteDTO> adicionarCliente(@RequestBody AutocadastroDTO data){
+    public ResponseEntity<ClienteDTO> adicionarCliente(@RequestBody AutocadastroDTO data) {
         return clienteService.adicionarCliente(data);
     }
 
     // ISSO AQUI TEM QUE VIRAR UMA SAGA
-//    @PostMapping("/{cpf}/aprovar")
-//    public ResponseEntity<ClienteDTO> aprovarCliente(@PathVariable String cpf){
-//        return clienteService.aprovarCliente(cpf);
-//    }
+    // @PostMapping("/{cpf}/aprovar")
+    // public ResponseEntity<ClienteDTO> aprovarCliente(@PathVariable String cpf){
+    // return clienteService.aprovarCliente(cpf);
+    // }
 
     @PostMapping("/{cpf}/rejeitar")
-    public ResponseEntity<GeralDTO> rejeitarCliente(@PathVariable String cpf,@RequestBody @Valid String motivoRejeite){
-        return clienteService.rejeitarCliente(cpf,motivoRejeite);
+    public ResponseEntity<GeralDTO> rejeitarCliente(@PathVariable String cpf,
+            @RequestBody @Valid String motivoRejeite) {
+        return clienteService.rejeitarCliente(cpf, motivoRejeite);
     }
 
     @PutMapping("/{cpf}")
-    public ResponseEntity<ClienteDTO> atualizarCliente(@RequestBody AtualizarClienteDTO data, @PathVariable String cpf){
-        return clienteService.atualizarCliente(data,cpf);
+    public ResponseEntity<ClienteDTO> atualizarCliente(@RequestBody AtualizarClienteDTO data,
+            @PathVariable String cpf) {
+        return clienteService.atualizarCliente(data, cpf);
     }
 
-    // básicos foram, agora tem que mexer na parada de APROVAR E REJEITAR porém isso vou fazer só
-    // depois que aprender os microservicos, no momento apenas fazendo as coisas que não necessitam de
+    // básicos foram, agora tem que mexer na parada de APROVAR E REJEITAR porém isso
+    // vou fazer só
+    // depois que aprender os microservicos, no momento apenas fazendo as coisas que
+    // não necessitam de
     // microserviços para não ficar maluco
-
-
-
-
 
 }

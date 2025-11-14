@@ -46,15 +46,35 @@ function setupProxies(app) {
     createProxyMiddleware(proxyOptions(AUTH))
   );
 
-  app.get("/clientes", require("./compositions/clienteComposition"));
-
-  app.post("/clientes", createProxyMiddleware(proxyOptions(SAGA)));
-
   app.put(
     "/clientes/:cpf",
     //verifyJWT,
-    createProxyMiddleware(proxyOptions(CLIENTE))
+    createProxyMiddleware({
+      target: CLIENTE,
+      changeOrigin: true,
+
+      onProxyReq(proxyReq, req, res) {
+        if (req.method === "PUT" && req.body) {
+          let newBody = { ...req.body };
+
+          if (newBody.CEP !== undefined) {
+            newBody.cep = newBody.CEP;
+            delete newBody.CEP;
+          }
+
+          const bodyData = JSON.stringify(newBody);
+
+          proxyReq.setHeader("Content-Type", "application/json");
+          proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
+          proxyReq.write(bodyData);
+        }
+      },
+    })
   );
+
+  app.get("/clientes", require("./compositions/clienteComposition"));
+
+  app.post("/clientes", createProxyMiddleware(proxyOptions(SAGA)));
 
   app.post(
     "/clientes/:cpf/aprovar",
@@ -76,16 +96,47 @@ function setupProxies(app) {
       createProxyMiddleware({
         target: CONTA,
         changeOrigin: true,
-        proxyTimeout: 30000,
-        timeout: 30000,
 
-        onProxyReq: (proxyReq, req, res) => {
+        pathRewrite: (path, req) => {
+          return `/contas/${req.params.numero}/${act}`;
+        },
+
+        onProxyReq(proxyReq, req) {
           if (act === "saldo" || act === "extrato") {
             proxyReq.method = "GET";
+            proxyReq.removeHeader("Content-Type");
+            proxyReq.removeHeader("Content-Length");
+            return;
           }
 
-          if (act === "depositar" || act === "sacar" || act === "transferir") {
-            proxyReq.method = "PUT";
+          proxyReq.method = "PUT";
+
+          if (req.body) {
+            let newBody = { ...req.body };
+
+            if (act === "transferir" && newBody.destino) {
+              newBody = {
+                valor: newBody.valor,
+                numeroConta: newBody.destino,
+              };
+            }
+
+            if (act === "depositar" || act === "sacar") {
+              if (typeof newBody.valor !== "number") {
+                console.error("Valor inválido recebido:", newBody);
+              }
+
+              const raw = String(newBody.valor);
+              proxyReq.setHeader("Content-Type", "application/json");
+              proxyReq.setHeader("Content-Length", Buffer.byteLength(raw));
+              proxyReq.write(raw);
+              return;
+            }
+
+            const bodyData = JSON.stringify(newBody);
+            proxyReq.setHeader("Content-Type", "application/json");
+            proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
+            proxyReq.write(bodyData);
           }
         },
       })
