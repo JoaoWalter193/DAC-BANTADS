@@ -1,4 +1,3 @@
-// clienteComposition.js
 const express = require("express");
 const { axiosInstance, propagateRemoteError } = require("./shared");
 // const { verifyJWT } = require('../../middlewares/verifyJWT'); // ready but disabled
