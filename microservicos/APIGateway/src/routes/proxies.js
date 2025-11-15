@@ -41,12 +41,12 @@ function setupProxies(app) {
   app.post("/login", createProxyMiddleware(proxyOptions(AUTH)));
 
   app.post("/logout", verifyJWT, (req, res) => {
-    const user = req.user || {};
+    const user = req.user;
 
     return res.status(200).json({
-      id: user.sub ?? null,
-      email: user.email ?? null,
-      role: user.role ?? null,
+      id: user.sub,
+      email: user.email,
+      role: user.role,
       mensagem: "Logout efetuado com sucesso",
     });
   });
@@ -80,7 +80,29 @@ function setupProxies(app) {
   app.get(
     "/clientes",
     verifyJWT,
-    requireRoles(["GERENTE", "ADMINISTRADOR"]),
+    (req, res, next) => {
+      const filtro = req.query.filtro;
+
+      if (!filtro) {
+        return requireRoles(["GERENTE"])(req, res, next);
+      }
+
+      if (filtro === "para_aprovar") {
+        return requireRoles(["GERENTE"])(req, res, next);
+      }
+
+      if (filtro === "adm_relatorio_clientes") {
+        return requireRoles(["ADMINISTRADOR"])(req, res, next);
+      }
+
+      if (filtro === "melhores_clientes") {
+        return requireRoles(["GERENTE"])(req, res, next);
+      }
+
+      return res.status(400).json({
+        mensagem: "Filtro inválido",
+      });
+    },
     require("./compositions/clienteComposition")
   );
 

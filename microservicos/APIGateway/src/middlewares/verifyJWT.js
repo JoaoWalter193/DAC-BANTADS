@@ -26,13 +26,12 @@ function verifyJWT(req, res, next) {
       issuer: "mybackend",
     });
 
-    // normaliza o papel
     const scope = decoded.scope || "";
     const role = scope.replace("ROLE_", "");
 
     req.user = {
       sub: decoded.sub || null,
-      email: decoded.usuario?.email || null,
+      email: decoded.email || null,
       role,
       raw: decoded,
     };
