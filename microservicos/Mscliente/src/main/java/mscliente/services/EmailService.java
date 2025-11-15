@@ -56,7 +56,7 @@ public class EmailService {
         String emailContent = String.format(
                 "Olá %s,\n\n" +
                 "A equipe do DinDin sente em informar que houve um erro no cadstro de sua conta, para mais informações, retorne este email\n\n" +
-                "Agradecimentos, DinDin");
+                "Agradecimentos, DinDin", nome);
 
         message.setText(emailContent);
 

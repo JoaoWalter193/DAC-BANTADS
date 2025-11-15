@@ -1,6 +1,7 @@
 package msauth.ms_auth.controllers;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
@@ -28,34 +29,45 @@ import msauth.ms_auth.repositories.UsuarioRepository;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
 @RestController
-//@Tag(name = "Login", description = "Endpoints para autenticação de usuários (cliente, gerente e admin)")
+// @Tag(name = "Login", description = "Endpoints para autenticação de usuários
+// (cliente, gerente e admin)")
 public class TokenController {
     private final JwtEncoder jwtEncoder;
     private final UsuarioRepository usuarioRepository;
     private PasswordEncoder passwordEncoder;
 
-    public TokenController(JwtEncoder jwtEncoder, UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+    public TokenController(JwtEncoder jwtEncoder, UsuarioRepository usuarioRepository,
+            PasswordEncoder passwordEncoder) {
         this.jwtEncoder = jwtEncoder;
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-//    @Operation(summary = "Efetua o login do usuário",
-//               description = "Autentica o usuário e retorna um token")
-//    @ApiResponses(value = {
-//        @ApiResponse(responseCode = "200", description = "Login efetuado com sucesso"),
-//        @ApiResponse(responseCode = "401", description = "Usuário e/ou senha inválidos", content = @Content)
-//    })
+    // @Operation(summary = "Efetua o login do usuário",
+    // description = "Autentica o usuário e retorna um token")
+    // @ApiResponses(value = {
+    // @ApiResponse(responseCode = "200", description = "Login efetuado com
+    // sucesso"),
+    // @ApiResponse(responseCode = "401", description = "Usuário e/ou senha
+    // inválidos", content = @Content)
+    // })
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
 
         UsuarioEntity user = usuarioRepository.findByEmail(loginRequest.email())
-                .orElseThrow(() -> new BadCredentialsException("Usuário ou senha inválidos."));
+                .orElse(null);
+
+        if (user == null) {
+            return ResponseEntity
+                    .status(401)
+                    .body(Map.of("mensagem", "Usuário ou senha inválidos."));
+        }
 
         if (!passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
-            throw new BadCredentialsException("Usuário ou senha inválidos.");
+            return ResponseEntity
+                    .status(401)
+                    .body(Map.of("mensagem", "Usuário ou senha inválidos."));
         }
 
         var now = Instant.now();
@@ -64,14 +76,16 @@ public class TokenController {
                 .collect(Collectors.joining(" "));
 
         var claims = JwtClaimsSet.builder()
-                        .issuer("mybackend")
-                        .subject(user.getId())
-                        .issuedAt(now)
-                        .expiresAt(now.plusSeconds(3600L))
-                        .claim("scope", scopes)
-                        .build();
+                .issuer("mybackend")
+                .subject(user.getId())
+                .issuedAt(now)
+                .expiresAt(now.plusSeconds(3600L))
+                .claim("scope", scopes)
+                .claim("email", user.getEmail())
+                .build();
 
         var jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+
         String roleUsuario = user.getRoles().stream()
                 .findFirst()
                 .map(Role::name)
@@ -79,7 +93,7 @@ public class TokenController {
 
         var usuarioResponse = new UsuarioResponse(user.getId(), user.getEmail());
 
-        return ResponseEntity.ok(new LoginResponse(jwtValue, "Bearer", roleUsuario, usuarioResponse));
+        return ResponseEntity.ok(
+                new LoginResponse(jwtValue, "Bearer", roleUsuario, usuarioResponse));
     }
-    
 }

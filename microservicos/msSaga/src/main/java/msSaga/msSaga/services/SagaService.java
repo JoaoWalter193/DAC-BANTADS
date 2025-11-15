@@ -59,7 +59,7 @@ public class SagaService {
                 null, null);
         rabbitMQProducer.sendContaCliente(data);
 
-        return ResponseEntity.ok("Saga enviada, API Gateway vai ter que juntar os dados para mostrar o que o prof pediu");
+        return ResponseEntity.ok("Cliente aprovado com sucesso");
     }
 
     // PEGAR OS DADOS AQUI É UMA BUCHA, DEPOIS O API GATEWAY FAZ A PESQUISA DOS DADOS COM O GET E FAZ O QUE FOR NECESSÁRIO PARA MONTAR A RESPOSTA

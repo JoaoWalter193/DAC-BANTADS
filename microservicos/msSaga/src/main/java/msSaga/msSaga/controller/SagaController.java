@@ -16,7 +16,7 @@ public class SagaController {
     @Autowired
     SagaService sagaService;
 
-    @PostMapping("/autocadastrar")
+    @PostMapping("/clientes")
     public ResponseEntity<RespostaPadraoDTO> sagaAutoCadastro (@RequestBody @Valid AutocadastroDTO data) {
         return sagaService.autoCadastro(data);
     }
