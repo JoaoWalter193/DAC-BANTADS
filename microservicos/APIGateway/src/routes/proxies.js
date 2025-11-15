@@ -110,16 +110,76 @@ function setupProxies(app) {
 
   app.post(
     "/clientes/:cpf/aprovar",
-    verifyJWT,
-    requireRoles(["GERENTE", "ADMINISTRADOR"]),
-    createProxyMiddleware(proxyOptions(SAGA))
+    createProxyMiddleware({
+      ...proxyOptions(SAGA),
+      selfHandleResponse: true,
+
+      onProxyRes: async (proxyRes, req, res) => {
+        const cpf = req.params.cpf;
+
+        let sagaResponse = "";
+        proxyRes.on("data", (chunk) => (sagaResponse += chunk.toString()));
+
+        proxyRes.on("end", async () => {
+          try {
+            const contaResponse = await fetch(
+              `${process.env.CONTA_SERVICE_URL}/contas/${cpf}`
+            );
+
+            if (!contaResponse.ok) {
+              return res.status(500).json({
+                erro: "Conta não encontrada após aprovação.",
+              });
+            }
+
+            const dadosConta = await contaResponse.json();
+
+            const respostaSwagger = {
+              cliente: cpf,
+              numero: dadosConta.numeroConta,
+              saldo: dadosConta.saldo,
+              limite: dadosConta.limite,
+              gerente: dadosConta.cpfGerente,
+              criacao: dadosConta.dataCriacao,
+            };
+
+            res.setHeader("Content-Type", "application/json");
+            return res.status(200).json(respostaSwagger);
+          } catch (err) {
+            console.error("Erro na composition:", err);
+            return res.status(500).json({ erro: "Erro interno na aprovação." });
+          }
+        });
+      },
+    })
   );
 
   app.post(
     "/clientes/:cpf/rejeitar",
     verifyJWT,
     requireRoles(["GERENTE", "ADMINISTRADOR"]),
-    createProxyMiddleware(proxyOptions(CLIENTE))
+    createProxyMiddleware({
+      ...proxyOptions(CLIENTE),
+      selfHandleResponse: true,
+
+      onProxyRes: async (proxyRes, req, res) => {
+        let body = "";
+
+        proxyRes.on("data", (chunk) => {
+          body += chunk.toString();
+        });
+
+        proxyRes.on("end", () => {
+          if (proxyRes.statusCode === 200) {
+            res.status(200).json({
+              mensagem: "Cliente rejeitado com sucesso",
+            });
+          } else {
+            res.status(proxyRes.statusCode).send(body);
+          }
+        });
+      },
+    })
   );
 
   const contaActions = ["saldo", "depositar", "sacar", "transferir", "extrato"];
@@ -131,10 +191,9 @@ function setupProxies(app) {
       createProxyMiddleware({
         target: CONTA,
         changeOrigin: true,
+        selfHandleResponse: true,
 
-        pathRewrite: (_, req) => {
-          return `/contas/${req.params.numero}/${act}`;
-        },
+        pathRewrite: (_, req) => `/contas/${req.params.numero}/${act}`,
 
         onProxyReq(proxyReq, req) {
           if (act === "saldo" || act === "extrato") {
@@ -169,6 +228,67 @@ function setupProxies(app) {
             proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
             proxyReq.write(bodyData);
           }
+        },
+
+        onProxyRes: async (proxyRes, req, res) => {
+          let body = "";
+          proxyRes.on("data", (chunk) => (body += chunk.toString()));
+          proxyRes.on("end", () => {
+            let data;
+            try {
+              data = body ? JSON.parse(body) : {};
+            } catch {
+              return res.status(proxyRes.statusCode).send(body);
+            }
+
+            const numeroConta = req.params.numero;
+
+            if (proxyRes.statusCode !== 200) {
+              return res.status(proxyRes.statusCode).json(data);
+            }
+
+            switch (act) {
+              case "saldo":
+                return res.status(200).json({
+                  cliente: data?.cpfCliente,
+                  conta: numeroConta,
+                  saldo: data?.saldo,
+                });
+
+              case "depositar":
+                return res.status(200).json({
+                  conta: numeroConta,
+                  data: data?.data,
+                  saldo: data?.saldo,
+                });
+
+              case "sacar":
+                return res.status(200).json({
+                  conta: numeroConta,
+                  data: data?.data,
+                  saldo: data?.saldo,
+                });
+
+              case "transferir":
+                return res.status(200).json({
+                  conta: numeroConta,
+                  data: data?.data,
+                  destino: data?.destino,
+                  saldo: data?.saldo,
+                  valor: data?.valor,
+                });
+
+              case "extrato":
+                return res.status(200).json({
+                  conta: numeroConta,
+                  saldo: data?.saldo,
+                  movimentacoes: data?.movimentacoes ?? [],
+                });
+
+              default:
+                return res.status(200).json(data);
+            }
+          });
         },
       })
     );

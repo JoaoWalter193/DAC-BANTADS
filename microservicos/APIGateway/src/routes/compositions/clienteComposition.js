@@ -111,7 +111,7 @@ router.get("/", verifyJWT, async (req, res, next) => {
       const contas = contasResp.data || [];
 
       const clientesResp = await Promise.all(
-        contas.map((c) => fetchCliente(c.cpf))
+        contas.map((c) => fetchCliente(c.cpfCliente))
       );
 
       const final = clientesResp.map((cliente) => ({

@@ -17,7 +17,7 @@ public class ClienteController {
     private ClienteService clienteService;
 
     @GetMapping
-    public ResponseEntity<List<ClienteDTO>> listarClientes(@RequestParam("filtro") String filtro) {
+    public ResponseEntity<List<ClienteDTO>> listarClientes(@RequestParam(value = "filtro", required = false) String filtro) {
         return clienteService.buscarClientes(filtro);
     }
 
