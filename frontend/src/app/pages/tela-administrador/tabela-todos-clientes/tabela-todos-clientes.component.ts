@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MockService } from '../../../services/mock.service';
 import { RefreshService } from '../../../services/refresh.service';
 import { Cliente } from '../../../models/cliente/cliente.interface';
 import { Gerente } from '../../../models/gerente/gerente.interface';
 import { Conta } from '../../../models/conta/conta.interface';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
+import { ClienteService } from '../../../services/cliente.service';
+import { GerenteService } from '../../../services/gerente.service';
 
 interface ClienteView {
   nome: string;
@@ -30,19 +31,15 @@ export class TabelaTodosClientesComponent {
   clientes: ClienteView[] = [];
 
   constructor(
-    private mockService: MockService,
-    private refreshService: RefreshService
+    private clienteService: ClienteService,
+    private gerenteService: GerenteService,
   ) {
     this.carregarClientes();
-
-    this.refreshService.refresh$.subscribe(() => {
-      this.carregarClientes();
-    });
   }
 
   carregarClientes() {
-    const clientes: Cliente[] = this.mockService.getClientes();
-    const gerentes: Gerente[] = this.mockService.getGerentes();
+    const clientes: Cliente[] = this.clienteService.listarClientes();
+    const gerentes: Gerente[] = this.gerenteService.getGerentes();
     const contas: Conta[] = JSON.parse(
       localStorage.getItem('contaCliente') || '[]'
     );

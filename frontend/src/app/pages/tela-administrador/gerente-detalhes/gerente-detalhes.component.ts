@@ -4,10 +4,9 @@ import { Router, RouterLink } from '@angular/router';
 import { NavbarComponent } from '../../../components/navbar/navbar.component';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import { FooterComponent } from '../../../components/footer/footer.component';
-import { MockService } from '../../../services/mock.service';
-import { RefreshService } from '../../../services/refresh.service';
 import { Gerente } from '../../../models/gerente/gerente.interface';
 import { Conta } from '../../../models/conta/conta.interface';
+import { GerenteService } from '../../../services/gerente.service';
 
 @Component({
   selector: 'app-gerente-detalhes',
@@ -26,9 +25,8 @@ export class GerenteDetalhesComponent implements OnInit {
   public gerentes: Gerente[] = [];
 
   constructor(
-    private mockService: MockService,
+    private gerenteService: GerenteService,
     private router: Router,
-    private refreshService: RefreshService
   ) {}
 
   ngOnInit(): void {
@@ -36,7 +34,7 @@ export class GerenteDetalhesComponent implements OnInit {
   }
 
   carregarGerentes() {
-    const todosGerentes = this.mockService.getGerentes();
+    const todosGerentes = this.gerenteService.getGerentes();
     this.gerentes = todosGerentes.sort((a, b) => a.nome.localeCompare(b.nome));
   }
 
@@ -44,7 +42,7 @@ export class GerenteDetalhesComponent implements OnInit {
     const contas: Conta[] = JSON.parse(
       localStorage.getItem('contaCliente') || '[]'
     );
-    const gerentes = this.mockService.getGerentes();
+    const gerentes = this.gerenteService.getGerentes();
 
     if (gerentes.length <= 1) {
       alert('Não é possível remover o último gerente do banco.');
@@ -84,7 +82,6 @@ export class GerenteDetalhesComponent implements OnInit {
     );
 
     this.carregarGerentes();
-    this.refreshService.triggerRefresh();
   }
 
   editarGerente(cpf: string) {

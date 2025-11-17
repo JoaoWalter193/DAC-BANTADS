@@ -3,7 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Gerente } from '../../models/gerente/gerente.interface';
-import { MockService } from '../../services/mock.service';
+import { GerenteService } from '../../services/gerente.service';
+import { AtualizarGerenteDTO } from '../../models/gerente/dto/gerente-atualizar.dto';
 
 @Component({
   selector: 'app-editar-gerente',
@@ -17,10 +18,9 @@ export class EditarGerente implements OnInit {
     cpf: '',
     nome: '',
     email: '',
+    tipo: 'GERENTE',
     senha: '',
-    role: 'GERENTE',
-    clientes: [],
-  };
+  } 
 
   mensagem: string = '';
   tipoMensagem: 'sucesso' | 'erro' | '' = '';
@@ -30,13 +30,13 @@ export class EditarGerente implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private mockService: MockService
+    private gerenteService: GerenteService
   ) {}
 
   ngOnInit(): void {
     const cpfParam = this.route.snapshot.paramMap.get('cpf');
     if (cpfParam) {
-      const gerentes = this.mockService.getGerentes();
+      const gerentes = this.gerenteService.getGerentes();
       const gerenteEncontrado = gerentes.find((g) => g.cpf === cpfParam);
       if (gerenteEncontrado) {
         this.gerente = { ...gerenteEncontrado };
@@ -87,38 +87,14 @@ export class EditarGerente implements OnInit {
       cpfNumerico.length === 11 &&
       this.gerente.nome.trim() !== '' &&
       this.validarEmail(this.gerente.email) &&
-      this.gerente.senha.trim() !== ''
+      this.gerente.senha?.trim() !== ''
     );
   }
 
   CPFJaCadastrado(cpf: string): boolean {
-    return this.mockService
+    return this.gerenteService
       .getGerentes()
       .some((g) => g.cpf === cpf && g.cpf !== this.cpfOriginal);
-  }
-
-  atualizarGerente(gerenteAtualizado: Gerente): void {
-    const gerentes = this.mockService.getGerentes();
-    const index = gerentes.findIndex((g) => g.cpf === this.cpfOriginal);
-
-    if (index !== -1) {
-      const gerenteAnterior = gerentes[index];
-      gerentes[index] = gerenteAtualizado;
-      this.cpfOriginal = gerenteAtualizado.cpf;
-
-      const contas: Conta[] = JSON.parse(
-        localStorage.getItem('contaCliente') || '[]'
-      );
-
-      contas.forEach((conta) => {
-        if (conta.nomeGerente === gerenteAnterior.nome) {
-          conta.nomeGerente = gerenteAtualizado.nome;
-        }
-      });
-
-      localStorage.setItem('contaCliente', JSON.stringify(contas));
-      localStorage.setItem('gerentes_bantads', JSON.stringify(gerentes));
-    }
   }
 
   onSubmit() {
@@ -139,16 +115,13 @@ export class EditarGerente implements OnInit {
     this.carregando = true;
 
     setTimeout(() => {
-      const gerenteAtualizado: Gerente = {
-        cpf: cpfNumerico,
+      const gerenteAtualizado: AtualizarGerenteDTO = {
         nome: this.gerente.nome,
         email: this.gerente.email,
         senha: this.gerente.senha,
-        role: 'GERENTE',
-        clientes: this.gerente.clientes || [],
       };
 
-      this.atualizarGerente(gerenteAtualizado);
+      this.gerenteService.atualizarGerente(this.gerente.cpf, gerenteAtualizado);
       this.carregando = false;
       this.mostrarMensagem('Gerente atualizado com sucesso!', 'sucesso');
       this.router.navigate(['/tela-administrador/gerentes']);
