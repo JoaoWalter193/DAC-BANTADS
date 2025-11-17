@@ -8,6 +8,7 @@ import { environment } from '../environments/environment';
 import { CriarGerenteDTO } from '../models/gerente/dto/gerente-criar.dto';
 import { AtualizarGerenteDTO } from '../models/gerente/dto/gerente-atualizar.dto';
 
+
 @Injectable({
   providedIn: 'root',
 })
@@ -23,6 +24,11 @@ export class GerenteService {
     });
   }
 
+
+
+
+
+  
   getGerenteByCpf(cpf: string) {
     return this.http.get<Gerente>(`${this.baseUrl}/${cpf}`);
   }

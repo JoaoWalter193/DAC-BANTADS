@@ -3,6 +3,19 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, of, tap, catchError } from 'rxjs';
 import { environment } from '../environments/environment';
+// Service
+// de
+// Conta
+// tem
+// que
+// implementar
+// conexão
+// com
+// o
+// API
+// Gateway
+// é isso ai
+
 
 @Injectable({
   providedIn: 'root',
