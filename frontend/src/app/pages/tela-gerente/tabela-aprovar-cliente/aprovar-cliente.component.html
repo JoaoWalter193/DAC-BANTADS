@@ -39,11 +39,3 @@
     </div>
   </div>
 </div>
-
-<div *ngIf="emailStatus" class="email-status" [ngClass]="{
-       'enviando': emailStatus === 'enviando',
-       'sucesso': emailStatus === 'sucesso',
-       'erro': emailStatus === 'erro'
-     }">
-  {{ emailMessage }}
-</div>

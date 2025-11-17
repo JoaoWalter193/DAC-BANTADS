@@ -15,6 +15,8 @@ import { NgxMaskDirective } from 'ngx-mask';
 import { ClienteService } from '../../services/cliente.service';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { Cliente } from '../../models/cliente/cliente.interface';
+import { ClienteAutocadastroDTO } from '../../models/cliente/dto/cliente-autocadastro.dto';
+import { ClienteAtualizarDTO } from '../../models/cliente/dto/cliente-atualizar.dto';
 
 @Component({
   selector: 'app-perfil-cliente',
@@ -34,7 +36,7 @@ import { Cliente } from '../../models/cliente/cliente.interface';
 })
 export class PerfilClienteComponent implements OnInit {
   profileForm: FormGroup;
-  private cliente: Cliente | null = null;
+  private cliente: ClienteAtualizarDTO | null = null;
   public status: string = '';
 
   constructor(
@@ -64,7 +66,6 @@ export class PerfilClienteComponent implements OnInit {
     const currentUser = this.clienteService.getClienteLogado();
 
     if (currentUser) {
-      // preenche o formulário
       this.profileForm.patchValue(currentUser);
     }
   }
@@ -76,7 +77,7 @@ export class PerfilClienteComponent implements OnInit {
     }
 
     const dadosForm = this.profileForm.getRawValue();
-    const clienteAtualizado: Cliente = {
+    const clienteAtualizado: ClienteAutocadastroDTO = {
       ...this.cliente,
       ...dadosForm,
       endereco: {
@@ -86,7 +87,7 @@ export class PerfilClienteComponent implements OnInit {
     };
 
     console.log('Dados a serem salvos: ', clienteAtualizado);
-    const clienteNovo = this.clienteService.updateCliente(clienteAtualizado);
+    const clienteNovo = this.clienteService.atualizarCliente(clienteAtualizado.cpf, clienteAtualizado);
 
     if (clienteNovo) {
       this.cliente = clienteNovo;

@@ -18,10 +18,7 @@ export class ClientesComponent {
   filtro: string = '';
 
   constructor(private clientesService: ClienteService) {
-    this.clientesService.clientes$.subscribe((lista) => {
-      this.clientes = lista;
-    });
-    this.clientesService.carregarClientes();
+    this.clientesService.listarClientes();
   }
 
   get clientesFiltrados(): ClienteDashboardDTO[] {

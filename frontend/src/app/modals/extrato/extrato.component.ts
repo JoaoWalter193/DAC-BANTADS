@@ -27,10 +27,10 @@ export class ExtratoComponent {
   }
 
   saida(transacao: Transacao): boolean {
-    if (transacao.tipo === TipoTransacao.SAQUE) return true;
+    if (transacao.tipo === 'SAQUE') return true;
     if (
-      transacao.tipo === TipoTransacao.TRANSFERENCIA &&
-      transacao.clienteOrigem === this.nomeClienteLogado
+      transacao.tipo === 'TRANSFERENCIA' &&
+      transacao.origem === this.nomeClienteLogado
     )
       return true;
     return false;
