@@ -5,15 +5,7 @@ import { RouterLink } from '@angular/router';
 import { Cliente } from '../../../models/cliente/cliente.interface';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import { ClienteService } from '../../../services/cliente.service';
-import { MockService } from '../../../services/mock.service';
-
-interface ClienteDashboardDTO extends Cliente {
-  conta: string;
-  saldo: number;
-  limite: number;
-  cpfGerente?: string;
-  nomeGerente?: string;
-}
+import { ClienteDashboardDTO } from '../../../models/cliente/dto/cliente-dashboard.dto';
 
 @Component({
   selector: 'app-consultar-cliente',
@@ -27,30 +19,13 @@ export class ConsultarClienteComponent {
   erro: string = '';
   sugestoes: Cliente[] = [];
 
-  constructor(
-    private clienteService: ClienteService,
-    private mockService: MockService
-  ) {}
+  constructor(private clienteService: ClienteService) {}
 
   consultarCliente() {
     this.erro = '';
     this.clienteEncontrado = null;
 
-    const cliente = this.mockService.findClienteCpf(this.cpf);
-    const conta = this.mockService.findContaCpf(this.cpf);
-
-    if (cliente && conta) {
-      this.clienteEncontrado = {
-        ...cliente,
-        conta: conta.numeroConta,
-        saldo: conta.saldo,
-        limite: conta.limite,
-        nomeGerente: conta.nomeGerente,
-      };
-      this.sugestoes = []; // limpa sugestões
-    } else {
-      this.erro = 'Cliente não encontrado.';
-    }
+    const cliente = this.clienteService.consultarCliente(this.cpf);
   }
 
   buscarSugestoes() {
@@ -59,7 +34,7 @@ export class ConsultarClienteComponent {
     this.erro = '';
 
     if (this.cpf.length >= 1) {
-      const todosClientes = this.mockService.getClientes();
+      const todosClientes = this.clienteService.listarClientes();
       this.sugestoes = todosClientes.filter((c) => c.cpf.startsWith(this.cpf));
     }
   }

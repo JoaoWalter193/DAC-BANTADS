@@ -3,10 +3,8 @@ import { Component } from '@angular/core';
 import localePt from '@angular/common/locales/pt';
 import localePtExtra from '@angular/common/locales/extra/pt';
 import { FormsModule } from '@angular/forms';
-import emailjs, { EmailJSResponseStatus } from '@emailjs/browser';
 import { Cliente } from '../../../models/cliente/cliente.interface';
 import { ClienteService } from '../../../services/cliente.service';
-import { MockService } from '../../../services/mock.service';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 
 registerLocaleData(localePt, 'pt-BR', localePtExtra);
@@ -22,35 +20,14 @@ export class AprovarClienteComponent {
   clientes: Cliente[] = [];
   limite: number = 0;
 
-  emailStatus: 'enviando' | 'sucesso' | 'erro' | null = null;
-  emailMessage: string = '';
-
-  constructor(
-    private clientesService: ClienteService,
-    private mockService: MockService
-  ) {}
+  constructor(private clientesService: ClienteService) {}
 
   ngOnInit() {
     this.clientes = this.getContasPendentes();
   }
 
   getContasPendentes(): Cliente[] {
-    const currentUserJSON = localStorage.getItem('currentUser');
-
-    if (!currentUserJSON) {
-      this.clientes = [];
-      return [];
-    }
-
-    const gerente = JSON.parse(currentUserJSON).user;
-    if (!gerente || !gerente.clientes) {
-      this.clientes = [];
-      return [];
-    }
-
-    this.clientes = (gerente.clientes || []).filter(
-      (cliente: { status: string }) => cliente.status === 'pendente'
-    );
+    this.clientesService.listarClientes();
     return this.clientes;
   }
 
@@ -63,53 +40,9 @@ export class AprovarClienteComponent {
   }
 
   aprovar(cpf: string) {
-    const conta = Math.floor(1000 + Math.random() * 9000).toString();
-    const senha = Math.random().toString(36).slice(-8);
-
-    const cliente = this.clientes.find(
-      (c) => (c.cpf || '').replace(/\D/g, '') === cpf.replace(/\D/g, '')
-    );
-    if (!cliente) return;
-
-    // atualiza status e dados da aprovação
-    cliente.senha = senha;
-    cliente.status = 'aprovado';
-    cliente.conta = conta; // <-- ADICIONAR no cliente
-    cliente.senha = senha;
-    const limite = this.calcularLimite(cliente.salario);
-    cliente.dataDecisao = new Date().toISOString();
-
-    // atualiza cliente no mock
-    this.clientesService.updateCliente(cliente);
-
-    // cria conta no LS via MockService
-    this.mockService.criarContaParaCliente(cliente, conta, limite, senha);
-
-    // envia email
-    const textMessage = `
-      Olá ${cliente.nome},
-
-      Sua conta foi aprovada com sucesso!
-
-      Número da conta: ${conta}
-      Senha: ${senha}
-      Limite disponível: R$ ${limite}
-      Data da aprovação: ${new Date(cliente.dataDecisao).toLocaleString()}
-
-      Atenciosamente,
-      Equipe DinDin Bank
-      `;
-
-    this.enviarEmail({
-      to_email: cliente.email,
-      email: cliente.email,
-      title: 'Conta aprovada',
-      name: cliente.nome,
-      time: new Date(cliente.dataDecisao).toLocaleString(),
-      text_message: textMessage,
+    this.clientesService.aprovarCliente(cpf).subscribe(() => {
+      this.getContasPendentes();
     });
-
-    this.refreshClientes();
   }
 
   clienteRejeicao: Cliente | null = null;
@@ -125,68 +58,8 @@ export class AprovarClienteComponent {
   }
 
   confirmarRejeicao() {
-    if (!this.clienteRejeicao) return;
-
-    this.clienteRejeicao.status = 'rejeitado';
-    this.clienteRejeicao.motivoRejeicao = this.motivoRejeicao;
-    this.clienteRejeicao.dataDecisao = new Date().toISOString();
-
-    this.clientesService.updateCliente(this.clienteRejeicao);
-
-    this.enviarEmail({
-      to_email: this.clienteRejeicao.email,
-      email: this.clienteRejeicao.email,
-      title: 'Conta rejeitada',
-      name: this.clienteRejeicao.nome,
-      time: new Date(this.clienteRejeicao.dataDecisao).toLocaleString('pt-BR'),
-      text_message: `
-        Olá ${this.clienteRejeicao.nome},
-
-        Infelizmente sua solicitação foi rejeitada.
-        Motivo: ${this.motivoRejeicao}
-        Data da decisão: ${new Date(
-          this.clienteRejeicao.dataDecisao
-        ).toLocaleString('pt-BR')}
-        Atenciosamente,
-        Equipe DinDin Bank
-      `,
-    });
-
-    this.cancelarRejeicao();
-
-    this.refreshClientes();
-  }
-
-  enviarEmail(params: {
-    to_email: string;
-    email: string;
-    title: string;
-    name: string;
-    time: string;
-    text_message: string;
-  }) {
-    this.emailStatus = 'enviando';
-    this.emailMessage = 'Enviando email...';
-
-    emailjs
-      .send('service_m8z1aqf', 'template_9915iqh', params, 'r4cznUW5Ez1keDEVA')
-      .then((response: EmailJSResponseStatus) => {
-        console.log(
-          'E-mail enviado com sucesso!',
-          response.status,
-          response.text
-        );
-        this.emailStatus = 'sucesso';
-        this.emailMessage = 'Email enviado com sucesso!';
-      })
-      .catch((err: unknown) => {
-        console.error('Erro ao enviar e-mail:', err);
-        this.emailStatus = 'erro';
-        this.emailMessage = 'Falha ao enviar email.';
-      });
-  }
-
-  refreshClientes() {
-    this.clientes = this.getContasPendentes();
+    if (this.clienteRejeicao) {
+      this.clientesService.rejeitarCliente(this.clienteRejeicao.cpf, { motivo: this.motivoRejeicao });
+    }
   }
 }

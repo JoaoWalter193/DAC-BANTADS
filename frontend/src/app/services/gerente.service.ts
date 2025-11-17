@@ -1,13 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { of } from 'rxjs';
 import { Gerente } from '../models/gerente/gerente.interface';
-import { MockService } from './mock.service';
 import { GerenteDashboardDTO } from '../models/gerente/dto/gerente-dashboard.dto';
 import { environment } from '../environments/environment';
 import { CriarGerenteDTO } from '../models/gerente/dto/gerente-criar.dto';
 import { AtualizarGerenteDTO } from '../models/gerente/dto/gerente-atualizar.dto';
-
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +12,7 @@ import { AtualizarGerenteDTO } from '../models/gerente/dto/gerente-atualizar.dto
 export class GerenteService {
   private readonly baseUrl = `${environment.apiUrl}/gerentes`;
 
-  constructor(private http: HttpClient, private mock: MockService) {}
+  constructor(private http: HttpClient) {}
 
   getGerentes(numero?: 'dashboard') {
     const params = numero ? { numero } : undefined;
@@ -24,11 +21,6 @@ export class GerenteService {
     });
   }
 
-
-
-
-
-  
   getGerenteByCpf(cpf: string) {
     return this.http.get<Gerente>(`${this.baseUrl}/${cpf}`);
   }
