@@ -54,7 +54,6 @@ export class LoginComponent {
           return;
         }
 
-        // redirecionamento por role
         switch (resp.role) {
           case 'CLIENTE':
             this.router.navigate(['/cliente/dashboard']);
