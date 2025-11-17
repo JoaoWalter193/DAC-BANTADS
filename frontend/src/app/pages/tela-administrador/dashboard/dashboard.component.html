@@ -1,81 +1,62 @@
 <div class="dashboard-container">
-  <h1>Dashboard do Administrador</h1>
-  <p>Visão geral do sistema BANTADS.</p>
+  <h1>Dashboard de Gerentes (Administrador)</h1>
 
-  <div class="cards-resumo">
-    <div class="card">
-      <h4>Total de Gerentes</h4>
-      <p>{{ gerentesData.length }}</p>
+  <div class="chart-grid">
+    <div class="chart-container">
+      <h3>Clientes por Gerente</h3>
+      <ngx-charts-bar-vertical
+        [view]="view"
+        [scheme]="colorScheme"
+        [results]="chartDataClientes"
+        [gradient]="gradient"
+        [xAxis]="showXAxis"
+        [yAxis]="showYAxis"
+        [legend]="showLegend"
+        [showXAxisLabel]="showXAxisLabel"
+        [showYAxisLabel]="showYAxisLabel"
+        [xAxisLabel]="xAxisLabelClientes"
+        [yAxisLabel]="yAxisLabelClientes"
+        [yAxisTickFormatting]="formatInteger"
+      >
+      </ngx-charts-bar-vertical>
     </div>
-    <div class="card">
-      <h4>Total de Clientes</h4>
-      <p>{{ totalClientes }}</p>
-    </div>
-    <div class="card saldo-positivo">
-      <h4>Saldo Positivo Total</h4>
-      <p>{{ totalSaldoPositivo | currency : "BRL" }}</p>
-    </div>
-    <div class="card saldo-negativo">
-      <h4>Saldo Negativo Total</h4>
-      <p>{{ totalSaldoNegativo | currency : "BRL" }}</p>
-    </div>
-  </div>
 
-  <div class="tabela-container">
-    <h3>Resumo por Gerente</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Gerente</th>
-          <th>CPF</th>
-          <th>Qtd. Clientes</th>
-          <th>Saldo Positivo</th>
-          <th>Saldo Negativo</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let item of gerentesData">
-          <td>{{ item.gerente.nome }}</td>
-          <td>{{ item.gerente.cpf | formatarCpf }}</td>
-          <td>{{ item.clientes.length }}</td>
-          <td class="saldo-positivo">
-            {{ item.saldo_positivo | currency : "BRL" }}
-          </td>
-          <td class="saldo-negativo">
-            {{ item.saldo_negativo | currency : "BRL" }}
-          </td>
-        </tr>
-        <tr *ngIf="gerentesData.length === 0">
-          <td colspan="5">Nenhum gerente encontrado.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+    <div class="chart-container">
+      <h3>Saldo Positivo por Gerente</h3>
+      <ngx-charts-bar-vertical
+        [view]="view"
+        [scheme]="colorScheme"
+        [results]="chartDataSaldoPositivo"
+        [gradient]="gradient"
+        [xAxis]="showXAxis"
+        [yAxis]="showYAxis"
+        [legend]="showLegend"
+        [showXAxisLabel]="showXAxisLabel"
+        [showYAxisLabel]="showYAxisLabel"
+        [xAxisLabel]="xAxisLabelSaldos"
+        [yAxisLabel]="yAxisLabelSaldos"
+        [yAxisTickFormatting]="formatCurrency"
+      >
+      </ngx-charts-bar-vertical>
+    </div>
 
-  <div class="tabela-container">
-    <h3>Relatório de Todos os Clientes</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>CPF</th>
-          <th>Email</th>
-          <th>Endereço</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let cliente of clientesData">
-          <td>{{ cliente.nome }}</td>
-          <td>{{ cliente.cpf | formatarCpf }}</td>
-          <td>{{ cliente.email }}</td>
-          <td>
-            {{ cliente.endereco }}, {{ cliente.cidade }} - {{ cliente.estado }}
-          </td>
-        </tr>
-        <tr *ngIf="clientesData.length === 0">
-          <td colspan="4">Nenhum cliente encontrado.</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="chart-container">
+      <h3>Saldo Negativo por Gerente</h3>
+      <ngx-charts-bar-vertical
+        [view]="view"
+        [scheme]="colorScheme"
+        [results]="chartDataSaldoNegativo"
+        [gradient]="gradient"
+        [xAxis]="showXAxis"
+        [yAxis]="showYAxis"
+        [legend]="showLegend"
+        [showXAxisLabel]="showXAxisLabel"
+        [showYAxisLabel]="showYAxisLabel"
+        [xAxisLabel]="xAxisLabelSaldos"
+        [yAxisLabel]="yAxisLabelSaldos"
+        [yAxisTickFormatting]="formatCurrency"
+      >
+      </ngx-charts-bar-vertical>
+    </div>
   </div>
 </div>
