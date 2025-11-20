@@ -1,10 +1,62 @@
 <div class="dashboard-container">
-  <h1>Dashboard do Gerente</h1>
-  <p>Bem-vindo ao painel de controle do gerente!</p>
-</div>
+  <h1>Dashboard de Gerentes (Administrador)</h1>
 
-<div>
-  <!-- Conteúdo do dashboard do gerente -->
-  <!-- Aqui deverá haver:
-      Dashboard Padrão, sem filtros, todos os gerentes, todos os clientes -->
+  <div class="chart-grid">
+    <div class="chart-container">
+      <h3>Clientes por Gerente</h3>
+      <ngx-charts-bar-vertical
+        [view]="view"
+        [scheme]="colorScheme"
+        [results]="chartDataClientes"
+        [gradient]="gradient"
+        [xAxis]="showXAxis"
+        [yAxis]="showYAxis"
+        [legend]="showLegend"
+        [showXAxisLabel]="showXAxisLabel"
+        [showYAxisLabel]="showYAxisLabel"
+        [xAxisLabel]="xAxisLabelClientes"
+        [yAxisLabel]="yAxisLabelClientes"
+        [yAxisTickFormatting]="formatInteger"
+      >
+      </ngx-charts-bar-vertical>
+    </div>
+
+    <div class="chart-container">
+      <h3>Saldo Positivo por Gerente</h3>
+      <ngx-charts-bar-vertical
+        [view]="view"
+        [scheme]="colorScheme"
+        [results]="chartDataSaldoPositivo"
+        [gradient]="gradient"
+        [xAxis]="showXAxis"
+        [yAxis]="showYAxis"
+        [legend]="showLegend"
+        [showXAxisLabel]="showXAxisLabel"
+        [showYAxisLabel]="showYAxisLabel"
+        [xAxisLabel]="xAxisLabelSaldos"
+        [yAxisLabel]="yAxisLabelSaldos"
+        [yAxisTickFormatting]="formatCurrency"
+      >
+      </ngx-charts-bar-vertical>
+    </div>
+
+    <div class="chart-container">
+      <h3>Saldo Negativo por Gerente</h3>
+      <ngx-charts-bar-vertical
+        [view]="view"
+        [scheme]="colorScheme"
+        [results]="chartDataSaldoNegativo"
+        [gradient]="gradient"
+        [xAxis]="showXAxis"
+        [yAxis]="showYAxis"
+        [legend]="showLegend"
+        [showXAxisLabel]="showXAxisLabel"
+        [showYAxisLabel]="showYAxisLabel"
+        [xAxisLabel]="xAxisLabelSaldos"
+        [yAxisLabel]="yAxisLabelSaldos"
+        [yAxisTickFormatting]="formatCurrency"
+      >
+      </ngx-charts-bar-vertical>
+    </div>
+  </div>
 </div>
