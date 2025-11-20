@@ -16,7 +16,7 @@ export class GerenteService {
 
   getGerentes(numero?: 'dashboard') {
     const params = numero ? { numero } : undefined;
-    return this.http.get<Gerente[] | GerenteDashboardDTO[]>(this.baseUrl, {
+    return this.http.get<GerenteDashboardDTO[]>(this.baseUrl, {
       params,
     });
   }

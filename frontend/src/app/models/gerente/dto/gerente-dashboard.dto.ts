@@ -4,6 +4,7 @@ export interface GerenteDashboardDTO {
     nome: string;
     email: string;
     tipo: string;
+    senha?: string;
   };
   clientes: {
     cliente: string;

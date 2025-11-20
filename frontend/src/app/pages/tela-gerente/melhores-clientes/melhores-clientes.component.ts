@@ -2,18 +2,9 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Cliente } from '../../../models/cliente/cliente.interface';
-import { Conta } from '../../../models/conta/conta.interface';
-import { Gerente } from '../../../models/gerente/gerente.interface';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
-
-interface ClienteDashboardDTO extends Cliente {
-  conta: string;
-  saldo: number;
-  limite: number;
-  cpfGerente: string;
-  nomeGerente: string;
-}
+import { ClienteService } from '../../../services/cliente.service';
+import { ClienteDetalhesDTO } from '../../../models/cliente/dto/cliente-detalhes.dto';
 
 @Component({
   selector: 'app-melhores-clientes',
@@ -22,37 +13,18 @@ interface ClienteDashboardDTO extends Cliente {
   styleUrl: './melhores-clientes.component.css',
 })
 export class MelhoresClientesComponent {
-  clientes: ClienteDashboardDTO[] = [];
+  clientes: ClienteDetalhesDTO[] = [];
   filtro: string = '';
 
-  constructor() {
+  constructor(private clienteService: ClienteService) {
     this.carregarClientes();
   }
 
   carregarClientes() {
-    const currentUserJSON = localStorage.getItem('currentUser');
-    const contasJSON = localStorage.getItem('contaCliente');
-
-    if (!currentUserJSON || !contasJSON) {
-      this.clientes = [];
-      return;
-    }
-
-    const gerente: Gerente = JSON.parse(currentUserJSON).user;
-    const contas: Conta[] = JSON.parse(contasJSON);
-
-    this.clientes = (gerente.clientes || [])
-      .filter((cliente: { status: string }) => cliente.status === 'aprovado')
-      .map((cliente) => {
-        const conta = contas.find((c) => c.cliente.cpf === cliente.cpf);
-
-        return {
-          ...cliente,
-          conta: conta ? conta.numeroConta : '',
-          saldo: conta ? conta.saldo : 0,
-        } as ClienteDashboardDTO;
-      })
-      .sort((a, b) => b.saldo - a.saldo)
-      .slice(0, 3);
+    this.clienteService
+      .listarClientes('melhores_clientes')
+      .subscribe((data) => {
+        this.clientes = data;
+      });
   }
 }

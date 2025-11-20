@@ -15,6 +15,8 @@ import { ContaService } from '../../services/conta.service';
 import { ExtratoComponent } from '../../modals/extrato/extrato.component';
 import { Conta } from '../../models/conta/conta.interface';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
+import { ClienteService } from '../../services/cliente.service';
+import { ClienteDetalhesDTO } from '../../models/cliente/dto/cliente-detalhes.dto';
 
 @Component({
   selector: 'app-home-cliente',
@@ -31,19 +33,20 @@ import { NavbarComponent } from '../../components/navbar/navbar.component';
   styleUrl: './home-cliente.css',
 })
 export class HomeCliente implements OnInit {
-  conta: Conta | null = null;
+  cliente!: ClienteDetalhesDTO;
   operacaoAtiva: 'saque' | 'deposito' | 'transferencia' | 'extrato' | '' = '';
   valorSaque: number | null = null;
   valorDeposito: number | null = null;
   valorTransferencia: number | null = null;
   contaDestino: string | null = null;
   formExtrato: FormGroup;
-
+  cpf: string = '12345678900'; // Ver a lógica pra poder passar CPF para essa tela - Lucas
   mensagem: string | null = null;
   tipoMensagem: 'sucesso' | 'erro' | null = null;
 
   constructor(
     private contaService: ContaService,
+    private clienteService: ClienteService,
     private formBuilder: FormBuilder,
     private dialog: MatDialog
   ) {
@@ -54,7 +57,9 @@ export class HomeCliente implements OnInit {
   }
 
   ngOnInit(): void {
-    this.conta = this.contaService.obterSaldo(this.conta?.numeroConta || '');
+    this.clienteService.consultarCliente(this.cpf).subscribe((data) => {
+      this.cliente = data;
+    });
   }
 
   expandirOperacao(
@@ -75,7 +80,7 @@ export class HomeCliente implements OnInit {
     }
 
     try {
-      this.contaService.sacar(this.conta?.numeroConta || '', this.valorSaque);
+      this.contaService.sacar(this.cliente.conta || '', this.valorSaque);
       this.valorSaque = null;
     } catch (error: any) {
       this.mostrarMensagem(error.message, 'erro');
@@ -89,10 +94,7 @@ export class HomeCliente implements OnInit {
     }
 
     try {
-      this.contaService.depositar(
-        this.conta?.numeroConta || '',
-        this.valorDeposito
-      );
+      this.contaService.depositar(this.cliente.conta || '', this.valorDeposito);
       this.valorDeposito = null;
     } catch (error: any) {
       this.mostrarMensagem(error.message, 'erro');
@@ -110,7 +112,7 @@ export class HomeCliente implements OnInit {
 
     try {
       this.contaService.transferir(
-        this.conta?.numeroConta || '',
+        this.cliente.conta || '',
         this.contaDestino,
         this.valorTransferencia
       );
@@ -122,7 +124,7 @@ export class HomeCliente implements OnInit {
   }
 
   gerarExtrato(): void {
-    this.contaService.obterExtrato(this.conta?.numeroConta || '');
+    this.contaService.obterExtrato(this.cliente.conta || '');
   }
 
   private mostrarMensagem(texto: string, tipo: 'sucesso' | 'erro') {

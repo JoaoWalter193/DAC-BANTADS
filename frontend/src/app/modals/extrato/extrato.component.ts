@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { ContaExtrato } from '../../models/conta/conta-extrato.interface';
 import { Transacao } from '../../models/conta/transacao.interface';
+import { adaptarExtratoApi } from '../../adapter/extrato.adapter';
 
 @Component({
   selector: 'app-extrato',
@@ -18,21 +19,23 @@ export class ExtratoComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA)
     data: {
-      extrato: ContaExtrato;
+      extrato: any;
       nomeCliente: string;
     }
   ) {
-    this.extrato = data.extrato;
+    this.extrato = adaptarExtratoApi(data.extrato);
     this.nomeClienteLogado = data.nomeCliente;
   }
 
   saida(transacao: Transacao): boolean {
-    if (transacao.tipo === 'SAQUE') return true;
+    if (transacao.tipo.toUpperCase() === 'SAQUE') return true;
+
     if (
-      transacao.tipo === 'TRANSFERENCIA' &&
+      transacao.tipo.toUpperCase() === 'TRANSFERENCIA' &&
       transacao.origem === this.nomeClienteLogado
     )
       return true;
+
     return false;
   }
 }

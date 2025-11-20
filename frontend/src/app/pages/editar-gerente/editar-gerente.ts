@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Gerente } from '../../models/gerente/gerente.interface';
 import { GerenteService } from '../../services/gerente.service';
 import { AtualizarGerenteDTO } from '../../models/gerente/dto/gerente-atualizar.dto';
+import { Gerente } from '../../models/gerente/gerente.interface';
 
 @Component({
   selector: 'app-editar-gerente',
@@ -14,35 +14,20 @@ import { AtualizarGerenteDTO } from '../../models/gerente/dto/gerente-atualizar.
   imports: [FormsModule, CommonModule],
 })
 export class EditarGerente implements OnInit {
-  gerente: Gerente = {
-    cpf: '',
-    nome: '',
-    email: '',
-    tipo: 'GERENTE',
-    senha: '',
-  } 
+  gerente!: Gerente;
+  cpf: string = '';
 
   mensagem: string = '';
   tipoMensagem: 'sucesso' | 'erro' | '' = '';
   carregando: boolean = false;
   private cpfOriginal: string = '';
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private gerenteService: GerenteService
-  ) {}
+  constructor(private router: Router, private gerenteService: GerenteService) {}
 
   ngOnInit(): void {
-    const cpfParam = this.route.snapshot.paramMap.get('cpf');
-    if (cpfParam) {
-      const gerentes = this.gerenteService.getGerentes();
-      const gerenteEncontrado = gerentes.find((g) => g.cpf === cpfParam);
-      if (gerenteEncontrado) {
-        this.gerente = { ...gerenteEncontrado };
-        this.cpfOriginal = gerenteEncontrado.cpf;
-      }
-    }
+    this.gerenteService.getGerenteByCpf(this.cpf).subscribe((data) => {
+      this.gerente = data;
+    });
   }
 
   formatarCPF(event: any) {
@@ -91,24 +76,12 @@ export class EditarGerente implements OnInit {
     );
   }
 
-  CPFJaCadastrado(cpf: string): boolean {
-    return this.gerenteService
-      .getGerentes()
-      .some((g) => g.cpf === cpf && g.cpf !== this.cpfOriginal);
-  }
-
   onSubmit() {
     if (!this.validarFormulario()) {
       this.mostrarMensagem(
         'Por favor, preencha todos os campos obrigatórios.',
         'erro'
       );
-      return;
-    }
-
-    const cpfNumerico = this.gerente.cpf.replace(/\D/g, '');
-    if (cpfNumerico !== this.cpfOriginal && this.CPFJaCadastrado(cpfNumerico)) {
-      this.mostrarMensagem('CPF já cadastrado por outro gerente.', 'erro');
       return;
     }
 

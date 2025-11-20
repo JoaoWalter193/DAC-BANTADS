@@ -1,14 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Gerente } from '../../../models/gerente/gerente.interface';
-import { Conta } from '../../../models/conta/conta.interface';
 import { GerenteService } from '../../../services/gerente.service';
-
-interface GerenteView extends Gerente {
-  qtdClientes: number;
-  saldoPositivo: number;
-  saldoNegativo: number;
-}
+import { GerenteDashboardDTO } from '../../../models/gerente/dto/gerente-dashboard.dto';
 
 @Component({
   selector: 'app-gerentes',
@@ -18,37 +11,23 @@ interface GerenteView extends Gerente {
   imports: [CommonModule],
 })
 export class GerentesComponent {
-  gerentes: GerenteView[] = [];
+  gerentes: GerenteDashboardDTO[] = [];
+  qtdClientes: number = 0;
 
   constructor(private gerenteService: GerenteService) {
     this.carregarGerentes();
   }
 
   carregarGerentes() {
-    const gerentes = this.gerenteService.getGerentes();
-    const contas: Conta[] = JSON.parse(
-      localStorage.getItem('contaCliente') || '[]'
-    );
+    this.gerenteService.getGerentes().subscribe((data) => {
+      this.gerentes = data as GerenteDashboardDTO[];
 
-    this.gerentes = gerentes.map((g) => {
-      const contasGerente = contas.filter((c) => c.nomeGerente === g.nome);
-      const saldoPositivo = contasGerente
-        .map((c) => c.saldo)
-        .filter((s) => s >= 0)
-        .reduce((acc, val) => acc + val, 0);
-      const saldoNegativo = contasGerente
-        .map((c) => c.saldo)
-        .filter((s) => s < 0)
-        .reduce((acc, val) => acc + val, 0);
+      this.qtdClientes = this.gerentes.reduce(
+        (sum, g) => sum + (g.clientes ? g.clientes.length : 0),
+        0
+      );
 
-      return {
-        ...g,
-        qtdClientes: contasGerente.length,
-        saldoPositivo,
-        saldoNegativo,
-      };
+      this.gerentes.sort((a, b) => b.saldo_positivo - a.saldo_positivo);
     });
-
-    this.gerentes.sort((a, b) => b.saldoPositivo - a.saldoPositivo);
   }
 }

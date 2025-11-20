@@ -1,6 +1,6 @@
 <app-navbar></app-navbar>
 
-<section class="tela-conta" *ngIf="conta">
+<section class="tela-conta">
   <!-- Informações da Conta -->
   <div class="card card-info">
     <h2>Informações</h2>
@@ -9,8 +9,8 @@
       <span>Saldo disponível</span>
       <div class="info-saldo">
         <mat-icon fontIcon="wallet" aria-hidden="false" aria-label="Ícone de 'wallet'"></mat-icon>
-        <span [ngClass]="{ 'saldo-negativo': conta.saldo < 0 }">
-          {{ conta.saldo | currency:"BRL":"symbol":"1.2-2" }}
+        <span [ngClass]="{ 'saldo-negativo': cliente.saldo < 0 }">
+          {{ cliente.saldo | currency:"BRL":"symbol":"1.2-2" }}
         </span>
       </div>
     </div>

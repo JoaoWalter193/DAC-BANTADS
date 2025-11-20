@@ -6,6 +6,7 @@ import { Cliente } from '../../../models/cliente/cliente.interface';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import { ClienteService } from '../../../services/cliente.service';
 import { ClienteDashboardDTO } from '../../../models/cliente/dto/cliente-dashboard.dto';
+import { ClienteDetalhesDTO } from '../../../models/cliente/dto/cliente-detalhes.dto';
 
 @Component({
   selector: 'app-consultar-cliente',
@@ -15,7 +16,7 @@ import { ClienteDashboardDTO } from '../../../models/cliente/dto/cliente-dashboa
 })
 export class ConsultarClienteComponent {
   cpf: string = '';
-  clienteEncontrado: ClienteDashboardDTO | null = null;
+  clienteEncontrado: ClienteDetalhesDTO | null = null;
   erro: string = '';
   sugestoes: Cliente[] = [];
 
@@ -34,8 +35,11 @@ export class ConsultarClienteComponent {
     this.erro = '';
 
     if (this.cpf.length >= 1) {
-      const todosClientes = this.clienteService.listarClientes();
-      this.sugestoes = todosClientes.filter((c) => c.cpf.startsWith(this.cpf));
+      this.clienteService.listarClientes().subscribe((todosClientes) => {
+        this.sugestoes = todosClientes.filter((c: { cpf: string; }) => {
+          c.cpf.startsWith(this.cpf)
+        })
+      });
     }
   }
 

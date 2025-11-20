@@ -29,13 +29,19 @@ export class ClienteService {
     return this.http.put(`${this.api}/clientes/${cpf}`, dto);
   }
 
-  listarClientes(filtro?: string): Observable<ClienteListaDTO[]> {
+  listarClientes(
+    filtro: 'adm_relatorio_clientes'
+  ): Observable<ClienteDetalhesDTO[]>;
+
+  listarClientes(filtro: 'melhores_clientes'): Observable<ClienteDetalhesDTO[]>;
+
+  listarClientes(filtro?: string): Observable<ClienteListaDTO[]>;
+
+  listarClientes(filtro?: string): Observable<any> {
     if (filtro) {
-      return this.http.get<ClienteListaDTO[]>(
-        `${this.api}/clientes?filtro=${filtro}`
-      );
+      return this.http.get<any>(`${this.api}/clientes?filtro=${filtro}`);
     }
-    return this.http.get<ClienteListaDTO[]>(`${this.api}/clientes`);
+    return this.http.get<any>(`${this.api}/clientes`);
   }
 
   aprovarCliente(cpf: string): Observable<ClienteAprovarDTO> {

@@ -9,7 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ClienteService } from '../../services/cliente.service';
-import { ClienteAutocadastroDto } from '../../models/cliente/dto/cliente-autocadastro.dto';
+import { ClienteAutocadastroDTO } from '../../models/cliente/dto/cliente-autocadastro.dto';
 
 @Component({
   selector: 'app-tela-autocadastro',
@@ -37,6 +37,16 @@ export class TelaAutocadastroComponent implements AfterViewInit {
     });
   }
 
+  formatarNumero(event: any) {}
+
+  formatarCEP(event: any) {}
+
+  formatarSalario(event: any) {}
+
+  formatarCPF(event: any) {}
+
+  formatarTelefone(event: any) {}
+
   ngAfterViewInit() {}
 
   async onSubmit() {
@@ -52,7 +62,7 @@ export class TelaAutocadastroComponent implements AfterViewInit {
 
     const form = this.cadastroForm.value;
 
-    const dto: ClienteAutocadastroDto = {
+    const dto: ClienteAutocadastroDTO = {
       cpf: form.cpf,
       nome: form.nome,
       email: form.email,

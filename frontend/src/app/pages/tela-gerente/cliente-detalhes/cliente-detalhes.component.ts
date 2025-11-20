@@ -22,8 +22,16 @@ export class ClienteDetalhesComponent implements OnInit {
 
   ngOnInit(): void {
     const cpf = this.route.snapshot.paramMap.get('cpf');
-
-    const cliente = this.clienteService.consultarCliente(cpf);
+    if (cpf) {
+      this.clienteService.consultarCliente(cpf).subscribe({
+        next: (data) => {
+          this.cliente = data;
+        },
+        error: (err) => {
+          console.error('Erro ao carregar detalhes do cliente:', err);
+        },
+      });
+    }
   }
 
   isSaldoNegativo(): boolean {

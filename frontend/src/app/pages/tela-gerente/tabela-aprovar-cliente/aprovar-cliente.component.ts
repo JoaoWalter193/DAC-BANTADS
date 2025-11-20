@@ -3,9 +3,10 @@ import { Component } from '@angular/core';
 import localePt from '@angular/common/locales/pt';
 import localePtExtra from '@angular/common/locales/extra/pt';
 import { FormsModule } from '@angular/forms';
-import { Cliente } from '../../../models/cliente/cliente.interface';
 import { ClienteService } from '../../../services/cliente.service';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
+import { ClienteAprovarDTO } from '../../../models/cliente/dto/cliente-aprovar.dto';
+import { ClienteListaDTO } from '../../../models/cliente/dto/cliente-lista.dto';
 
 registerLocaleData(localePt, 'pt-BR', localePtExtra);
 
@@ -17,18 +18,19 @@ registerLocaleData(localePt, 'pt-BR', localePtExtra);
   providers: [{ provide: 'LOCALE_ID', useValue: 'pt-BR' }],
 })
 export class AprovarClienteComponent {
-  clientes: Cliente[] = [];
+  clientes: ClienteListaDTO[] = [];
   limite: number = 0;
 
   constructor(private clientesService: ClienteService) {}
 
   ngOnInit() {
-    this.clientes = this.getContasPendentes();
+    this.getContasPendentes();
   }
 
-  getContasPendentes(): Cliente[] {
-    this.clientesService.listarClientes();
-    return this.clientes;
+  getContasPendentes() {
+    this.clientesService.listarClientes('para_aprovar').subscribe((data) => {
+      this.clientes = data;
+    });
   }
 
   calcularLimite(salario: number): number {
@@ -45,10 +47,10 @@ export class AprovarClienteComponent {
     });
   }
 
-  clienteRejeicao: Cliente | null = null;
+  clienteRejeicao: ClienteAprovarDTO | null = null;
   motivoRejeicao: string = '';
 
-  abrirRejeicao(cliente: Cliente) {
+  abrirRejeicao(cliente: ClienteAprovarDTO) {
     this.clienteRejeicao = cliente;
   }
 
@@ -59,7 +61,9 @@ export class AprovarClienteComponent {
 
   confirmarRejeicao() {
     if (this.clienteRejeicao) {
-      this.clientesService.rejeitarCliente(this.clienteRejeicao.cpf, { motivo: this.motivoRejeicao });
+      this.clientesService.rejeitarCliente(this.clienteRejeicao.cpf, {
+        motivo: this.motivoRejeicao,
+      });
     }
   }
 }
