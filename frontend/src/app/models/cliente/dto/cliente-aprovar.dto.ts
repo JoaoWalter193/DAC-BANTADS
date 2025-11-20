@@ -1,8 +1,9 @@
 export interface ClienteAprovarDTO {
-  cliente: string;
-  numero: string;
-  saldo: number;
-  limite: number;
-  gerente: string;
-  criacao: string;
+  cpf: string;
+  nome: string;
+  email: string;
+  salario: number;
+  endereco: string;
+  cidade: string;
+  estado: string;
 }

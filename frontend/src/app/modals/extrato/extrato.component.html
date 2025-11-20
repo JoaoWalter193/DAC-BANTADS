@@ -1,5 +1,6 @@
 <h1 mat-dialog-title>Extrato do Período</h1>
-<h2 class="subtitulo">{{ extrato.periodo.inicio | date:'dd/MM/yyyy' }} a {{ extrato.periodo.fim | date:'dd/MM/yyyy' }}</h2>
+<h2 class="subtitulo">{{ extrato.periodo.inicio | date:'dd/MM/yyyy' }} a {{ extrato.periodo.fim | date:'dd/MM/yyyy' }}
+</h2>
 
 <div mat-dialog-content class="conteudo-dialogo">
   <div class="saldo-inicial">
@@ -8,7 +9,7 @@
   </div>
 
   <!-- for dia -->
-  <div *ngFor="let dia of extrato.dias" class="container-dia">
+  <div *ngFor="let dia of extrato.movimentacoes" class="container-dia">
     <div class="cabecalho-dia">
       <h3>{{ dia.data | date:'dd/MM/yyyy' }}</h3>
       <div class="saldo-consolidado">
@@ -32,12 +33,13 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let transacao of dia.transacoes" [ngClass]="{ 'saida': saida(transacao), 'entrada': !saida(transacao) }">
+          <tr *ngFor="let transacao of dia.transacoes"
+            [ngClass]="{ 'saida': saida(transacao), 'entrada': !saida(transacao) }">
             <td>{{ transacao.data | date:'HH:mm' }}</td>
             <td>{{ transacao.tipo }}</td>
             <td>
               <span *ngIf="transacao.tipo === 'Transferencia'">
-                {{ saida(transacao) ? 'Para: ' + transacao.clienteDestino : 'De: ' + transacao.clienteOrigem }}
+                {{ saida(transacao) ? 'Para: ' + transacao.destino : 'De: ' + transacao.origem }}
               </span>
             </td>
             <td>

@@ -7,6 +7,7 @@ import { FooterComponent } from '../../../components/footer/footer.component';
 import { Gerente } from '../../../models/gerente/gerente.interface';
 import { Conta } from '../../../models/conta/conta.interface';
 import { GerenteService } from '../../../services/gerente.service';
+import { GerenteDashboardDTO } from '../../../models/gerente/dto/gerente-dashboard.dto';
 
 @Component({
   selector: 'app-gerente-detalhes',
@@ -22,65 +23,37 @@ import { GerenteService } from '../../../services/gerente.service';
   styleUrls: ['./gerente-detalhes.component.css'],
 })
 export class GerenteDetalhesComponent implements OnInit {
-  public gerentes: Gerente[] = [];
+  public gerentes: GerenteDashboardDTO[] = [];
 
-  constructor(
-    private gerenteService: GerenteService,
-    private router: Router,
-  ) {}
+  constructor(private gerenteService: GerenteService, private router: Router) {}
 
   ngOnInit(): void {
     this.carregarGerentes();
   }
 
   carregarGerentes() {
-    const todosGerentes = this.gerenteService.getGerentes();
-    this.gerentes = todosGerentes.sort((a, b) => a.nome.localeCompare(b.nome));
+    this.gerenteService.getGerentes().subscribe((data) => {
+      this.gerentes = data;
+    });
+    this.gerentes.sort((a, b) => a.gerente.nome.localeCompare(b.gerente.nome));
   }
 
-  excluirGerente(gerente: Gerente) {
-    const contas: Conta[] = JSON.parse(
-      localStorage.getItem('contaCliente') || '[]'
-    );
-    const gerentes = this.gerenteService.getGerentes();
-
-    if (gerentes.length <= 1) {
+  excluirGerente(gerente: GerenteDashboardDTO) {
+    if (this.gerentes.length <= 1) {
       alert('Não é possível remover o último gerente do banco.');
       return;
     }
 
-    const contasDoGerente = contas.filter(
-      (c) => c.nomeGerente === gerente.nome
-    );
-
-    const outrosGerentes = gerentes.filter((g) => g.cpf !== gerente.cpf);
-    const gerenteDestino = outrosGerentes.reduce((prev, curr) =>
-      (prev.clientes?.length ?? 0) <= (curr.clientes?.length ?? 0) ? prev : curr
-    );
-
     const confirmacao = confirm(
-      `Tem certeza que deseja excluir o gerente ${gerente.nome}?\n\n` +
-        `Ele possui ${contasDoGerente.length} clientes.\n` +
-        `Esses clientes serão transferidos para o gerente ${gerenteDestino.nome}.`
+      `Tem certeza que deseja excluir o gerente ${gerente.gerente.nome}?\n\n` +
+        `Ele possui ${gerente.clientes?.length} clientes.\n`
     );
 
     if (!confirmacao) return;
 
-    const contasAtualizadas = contas.map((c) =>
-      c.nomeGerente === gerente.nome
-        ? { ...c, nomeGerente: gerenteDestino.nome }
-        : c
-    );
+    this.gerenteService.removerGerente(gerente.gerente.cpf);
 
-    localStorage.setItem('contaCliente', JSON.stringify(contasAtualizadas));
-
-    const index = gerentes.findIndex((g) => g.cpf === gerente.cpf);
-    if (index !== -1) gerentes.splice(index, 1);
-
-    alert(
-      `Gerente ${gerente.nome} foi removido. Contas transferidas para ${gerenteDestino.nome}.`
-    );
-
+    alert(`Gerente ${gerente.gerente.nome} foi removido.`);
     this.carregarGerentes();
   }
 

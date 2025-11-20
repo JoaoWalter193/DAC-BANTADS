@@ -4,7 +4,7 @@ import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import { FormsModule } from '@angular/forms';
 import { ClienteService } from '../../../services/cliente.service';
 import { RouterModule } from '@angular/router';
-import { ClienteDashboardDTO } from '../../../models/cliente/dto/cliente-dashboard.dto';
+import { ClienteDetalhesDTO } from '../../../models/cliente/dto/cliente-detalhes.dto';
 
 @Component({
   selector: 'app-clientes',
@@ -14,17 +14,14 @@ import { ClienteDashboardDTO } from '../../../models/cliente/dto/cliente-dashboa
   imports: [CommonModule, RouterModule, FormatarCpfPipe, FormsModule],
 })
 export class ClientesComponent {
-  clientes: ClienteDashboardDTO[] = [];
+  clientes: ClienteDetalhesDTO[] = [];
   filtro: string = '';
 
   constructor(private clientesService: ClienteService) {
-    this.clientesService.clientes$.subscribe((lista) => {
-      this.clientes = lista;
-    });
-    this.clientesService.carregarClientes();
+    this.clientesService.listarClientes();
   }
 
-  get clientesFiltrados(): ClienteDashboardDTO[] {
+  get clientesFiltrados(): ClienteDetalhesDTO[] {
     const termo = this.filtro.toLowerCase();
     return this.clientes.filter(
       (cliente) =>

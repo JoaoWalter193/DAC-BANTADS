@@ -3,42 +3,63 @@ import { Component, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ContaService } from '../../services/conta.service';
 import { ExtratoComponent } from '../../modals/extrato/extrato.component';
 import { Conta } from '../../models/conta/conta.interface';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
+import { ClienteService } from '../../services/cliente.service';
+import { ClienteDetalhesDTO } from '../../models/cliente/dto/cliente-detalhes.dto';
 
 @Component({
   selector: 'app-home-cliente',
-  imports: [MatIconModule, MatTableModule, CommonModule, RouterLink, NavbarComponent, FormsModule, ReactiveFormsModule],
+  imports: [
+    MatIconModule,
+    MatTableModule,
+    CommonModule,
+    RouterLink,
+    NavbarComponent,
+    FormsModule,
+    ReactiveFormsModule,
+  ],
   templateUrl: './home-cliente.html',
   styleUrl: './home-cliente.css',
 })
 export class HomeCliente implements OnInit {
-  conta: Conta | null = null;
+  cliente!: ClienteDetalhesDTO;
   operacaoAtiva: 'saque' | 'deposito' | 'transferencia' | 'extrato' | '' = '';
   valorSaque: number | null = null;
   valorDeposito: number | null = null;
   valorTransferencia: number | null = null;
   contaDestino: string | null = null;
   formExtrato: FormGroup;
-
+  cpf: string = '12345678900'; // Ver a lógica pra poder passar CPF para essa tela - Lucas
   mensagem: string | null = null;
   tipoMensagem: 'sucesso' | 'erro' | null = null;
 
-  constructor(private contaService: ContaService,
-              private formBuilder: FormBuilder,
-              private dialog: MatDialog) {
-      this.formExtrato = this.formBuilder.group({
+  constructor(
+    private contaService: ContaService,
+    private clienteService: ClienteService,
+    private formBuilder: FormBuilder,
+    private dialog: MatDialog
+  ) {
+    this.formExtrato = this.formBuilder.group({
       dataInicio: [null, Validators.required],
-      dataFim: [null, Validators.required]
+      dataFim: [null, Validators.required],
     });
-              }
+  }
 
   ngOnInit(): void {
-    this.conta = this.contaService.obterSaldo();
+    this.clienteService.consultarCliente(this.cpf).subscribe((data) => {
+      this.cliente = data;
+    });
   }
 
   expandirOperacao(
@@ -59,11 +80,8 @@ export class HomeCliente implements OnInit {
     }
 
     try {
-      const contaAtualizada = this.contaService.sacar(this.valorSaque);
-      this.conta = contaAtualizada;
+      this.contaService.sacar(this.cliente.conta || '', this.valorSaque);
       this.valorSaque = null;
-
-      this.mostrarMensagem('Saque realizado com sucesso!', 'sucesso');
     } catch (error: any) {
       this.mostrarMensagem(error.message, 'erro');
     }
@@ -76,11 +94,8 @@ export class HomeCliente implements OnInit {
     }
 
     try {
-      this.contaService.depositar(this.valorDeposito);
-      this.conta = this.contaService.getConta();
+      this.contaService.depositar(this.cliente.conta || '', this.valorDeposito);
       this.valorDeposito = null;
-
-      this.mostrarMensagem('Depósito realizado com sucesso!', 'sucesso');
     } catch (error: any) {
       this.mostrarMensagem(error.message, 'erro');
     }
@@ -88,14 +103,19 @@ export class HomeCliente implements OnInit {
 
   realizarTransferencia(): void {
     if (!this.valorTransferencia || !this.contaDestino) {
-      this.mostrarMensagem('Por favor, insira o valor e o numero da conta destino.', 'erro');
+      this.mostrarMensagem(
+        'Por favor, insira o valor e o numero da conta destino.',
+        'erro'
+      );
       return;
     }
 
     try {
-      const contaAtualizada = this.contaService.transferir(this.valorTransferencia, this.contaDestino);
-      this.conta = contaAtualizada;
-      this.mostrarMensagem('Transferência realizada com sucesso!', 'sucesso');
+      this.contaService.transferir(
+        this.cliente.conta || '',
+        this.contaDestino,
+        this.valorTransferencia
+      );
       this.valorTransferencia = null;
       this.contaDestino = null;
     } catch (error: any) {
@@ -104,34 +124,7 @@ export class HomeCliente implements OnInit {
   }
 
   gerarExtrato(): void {
-    this.limparMensagem();
-    if (this.formExtrato.invalid) {
-      this.mostrarMensagem('Selecione as datas para consulta.', 'erro');
-      return;
-    }
-    const { dataInicio, dataFim } = this.formExtrato.value;
-
-    const dataInicioReal = new Date(dataInicio.replace(/-/g, '/'));
-    const dataFimReal = new Date(dataFim.replace(/-/g, '/'));
-
-    if (new Date(dataInicioReal) > new Date(dataFimReal)) {
-      this.mostrarMensagem('A data de início maior que a data final.', 'erro');
-      return;
-    }
-    try {
-      const extratoData = this.contaService.obterExtrato(new Date(dataInicioReal), new Date(dataFimReal));
-
-      this.dialog.open(ExtratoComponent, {
-        width: '800px',
-        maxHeight: '70vh',
-        data: {
-          extrato: extratoData,
-          nomeCliente: this.conta?.cliente.nome
-        }
-      });
-    } catch (error: any) {
-      this.mostrarMensagem(error.message, 'erro');
-    }
+    this.contaService.obterExtrato(this.cliente.conta || '');
   }
 
   private mostrarMensagem(texto: string, tipo: 'sucesso' | 'erro') {
@@ -143,5 +136,4 @@ export class HomeCliente implements OnInit {
     this.mensagem = null;
     this.tipoMensagem = null;
   }
-
 }

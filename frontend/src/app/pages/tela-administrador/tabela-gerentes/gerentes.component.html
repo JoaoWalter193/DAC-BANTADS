@@ -10,10 +10,10 @@
     </thead>
     <tbody>
       <tr *ngFor="let gerente of gerentes">
-        <td>{{ gerente.nome }}</td>
-        <td>{{ gerente.qtdClientes }}</td>
-        <td>{{ gerente.saldoPositivo | currency : "BRL" }}</td>
-        <td>{{ gerente.saldoNegativo | currency : "BRL" }}</td>
+        <td>{{ gerente.gerente.nome }}</td>
+        <td>{{ qtdClientes }}</td>
+        <td>{{ gerente.saldo_positivo | currency : "BRL" }}</td>
+        <td>{{ gerente.saldo_negativo | currency : "BRL" }}</td>
       </tr>
       <tr *ngIf="gerentes.length === 0">
         <td colspan="5">Nenhum gerente cadastrado.</td>

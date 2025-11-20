@@ -5,18 +5,6 @@ import { ContaSaldo } from '../models/conta/conta-saldo.interface';
 import { ContaOperacaoResponse } from '../models/conta/conta-operacao-response.interface';
 import { ContaTransferenciaResponse } from '../models/conta/conta-transferencia-response.interface';
 import { ContaExtrato } from '../models/conta/conta-extrato.interface';
-// Service
-// de
-// Conta
-// tem
-// que
-// implementar
-// conexão
-// com
-// o
-// API
-// Gateway
-// é isso ai
 
 @Injectable({
   providedIn: 'root',
@@ -30,10 +18,6 @@ export class ContaService {
     return this.http.post<ContaSaldo>(`${this.api}/${numero}/saldo`, {});
   }
 
-
-
-
-  
   depositar(numero: string, valor: number) {
     return this.http.post<ContaOperacaoResponse>(
       `${this.api}/${numero}/depositar`,
@@ -41,10 +25,6 @@ export class ContaService {
     );
   }
 
-
-
-
-  
   sacar(numero: string, valor: number) {
     return this.http.post<ContaOperacaoResponse>(
       `${this.api}/${numero}/sacar`,
@@ -52,10 +32,6 @@ export class ContaService {
     );
   }
 
-
-
-
-  
   transferir(numeroOrigem: string, destino: string, valor: number) {
     return this.http.post<ContaTransferenciaResponse>(
       `${this.api}/${numeroOrigem}/transferir`,
@@ -66,9 +42,6 @@ export class ContaService {
     );
   }
 
-
-
-  
   obterExtrato(numero: string) {
     return this.http.post<ContaExtrato>(`${this.api}/${numero}/extrato`, {});
   }

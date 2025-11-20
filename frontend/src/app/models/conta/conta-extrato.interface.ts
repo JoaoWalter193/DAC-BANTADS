@@ -1,7 +1,16 @@
 import { Transacao } from './transacao.interface';
 
 export interface ContaExtrato {
-  conta: string;
-  saldo: number;
-  movimentacoes: Transacao[];
+  periodo: {
+    inicio: Date;
+    fim: Date;
+  };
+  saldoInicial: number;
+  movimentacoes: MovimentacaoPorDia[];
+}
+
+export interface MovimentacaoPorDia {
+  data: Date;
+  saldoConsolidado: number;
+  transacoes: Transacao[];
 }

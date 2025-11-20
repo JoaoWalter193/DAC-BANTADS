@@ -15,6 +15,9 @@ import { NgxMaskDirective } from 'ngx-mask';
 import { ClienteService } from '../../services/cliente.service';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { Cliente } from '../../models/cliente/cliente.interface';
+import { ClienteAutocadastroDTO } from '../../models/cliente/dto/cliente-autocadastro.dto';
+import { ClienteAtualizarDTO } from '../../models/cliente/dto/cliente-atualizar.dto';
+import { ClienteDetalhesDTO } from '../../models/cliente/dto/cliente-detalhes.dto';
 
 @Component({
   selector: 'app-perfil-cliente',
@@ -34,7 +37,7 @@ import { Cliente } from '../../models/cliente/cliente.interface';
 })
 export class PerfilClienteComponent implements OnInit {
   profileForm: FormGroup;
-  private cliente: Cliente | null = null;
+  private cliente!: ClienteDetalhesDTO;
   public status: string = '';
 
   constructor(
@@ -42,29 +45,29 @@ export class PerfilClienteComponent implements OnInit {
     private clienteService: ClienteService,
     private location: Location
   ) {
-    // incia a estrutura do formulário com dados vazios
     this.profileForm = this.fb.group({
-      nome: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]],
       cpf: [{ value: '', disabled: true }],
+      nome: ['', [Validators.required]],
+      endereco: ['', [Validators.required]],
+      cidade: ['', [Validators.required]],
+      estado: ['', [Validators.required]],
+      salario: ['', [Validators.required, Validators.min(0)]],
+      email: ['', [Validators.required, Validators.email]],
       telefone: ['', [Validators.required]],
-      salario: ['', [Validators.required]],
-      endereco: this.fb.group({
-        tipo: ['', [Validators.required]],
-        logradouro: ['', [Validators.required]],
-        numero: ['', [Validators.required]],
-        complemento: [''],
-        CEP: ['', [Validators.required]],
-        cidade: ['', [Validators.required]],
-        estado: ['', [Validators.required]],
-      }),
+      conta: [{ value: '', disabled: true }],
+      saldo: [{ value: '', disabled: true }],
+      limite: [{ value: '', disabled: true }],
+      gerente: [{ value: '', disabled: true }],
+      gerente_nome: [{ value: '', disabled: true }],
+      gerente_email: [{ value: '', disabled: true }],
     });
   }
   ngOnInit(): void {
-    const currentUser = this.clienteService.getClienteLogado();
+    const currentUser = this.clienteService.consultarCliente(
+      this.cliente?.cpf || ''
+    );
 
     if (currentUser) {
-      // preenche o formulário
       this.profileForm.patchValue(currentUser);
     }
   }
@@ -76,22 +79,12 @@ export class PerfilClienteComponent implements OnInit {
     }
 
     const dadosForm = this.profileForm.getRawValue();
-    const clienteAtualizado: Cliente = {
+    const clienteAtualizado: ClienteAutocadastroDTO = {
       ...this.cliente,
       ...dadosForm,
-      endereco: {
-        ...this.cliente?.endereco,
-        ...dadosForm.endereco,
-      },
     };
 
-    console.log('Dados a serem salvos: ', clienteAtualizado);
-    const clienteNovo = this.clienteService.updateCliente(clienteAtualizado);
-
-    if (clienteNovo) {
-      this.cliente = clienteNovo;
-      this.status = 'Cliente atualizado';
-    }
+    this.clienteService.atualizarCliente(this.cliente.cpf, clienteAtualizado);
   }
 
   voltar(): void {

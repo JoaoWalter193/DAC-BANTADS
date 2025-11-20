@@ -23,14 +23,14 @@
         </thead>
         <tbody>
           <tr *ngFor="let gerente of gerentes">
-            <td>{{ gerente.nome }}</td>
-            <td>{{ gerente.cpf | formatarCpf }}</td>
-            <td>{{ gerente.email }}</td>
+            <td>{{ gerente.gerente.nome }}</td>
+            <td>{{ gerente.gerente.cpf | formatarCpf }}</td>
+            <td>{{ gerente.gerente.email }}</td>
             <td class="btns">
               <button
                 class="botaoEditar"
                 type="button"
-                (click)="editarGerente(gerente.cpf)"
+                (click)="editarGerente(gerente.gerente.cpf)"
               >
                 Editar
               </button>

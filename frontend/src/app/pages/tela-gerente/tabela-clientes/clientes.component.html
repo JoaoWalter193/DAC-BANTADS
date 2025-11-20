@@ -24,8 +24,8 @@
       <tr *ngFor="let cliente of clientesFiltrados">
         <td>{{ cliente.nome }}</td>
         <td>{{ cliente.cpf | formatarCpf }}</td>
-        <td>{{ cliente.endereco.cidade }}</td>
-        <td>{{ cliente.endereco.estado }}</td>
+        <td>{{ cliente.cidade }}</td>
+        <td>{{ cliente.estado }}</td>
         <td [ngClass]="{ 'saldo-negativo': cliente.saldo < 0 }">
           {{ cliente.saldo | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR" }}
         </td>

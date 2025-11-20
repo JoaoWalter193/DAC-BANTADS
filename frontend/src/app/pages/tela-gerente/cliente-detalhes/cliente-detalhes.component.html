@@ -1,29 +1,26 @@
-<div class="cliente-detalhes-container" *ngIf="cliente && conta">
+<div class="cliente-detalhes-container" *ngIf="cliente">
   <h2>Detalhes do Cliente</h2>
 
   <div class="info">
     <p><strong>Nome:</strong> {{ cliente.nome }}</p>
     <p><strong>CPF:</strong> {{ cliente.cpf }}</p>
     <p><strong>E-mail:</strong> {{ cliente.email }}</p>
-    <p><strong>Telefone:</strong> {{ cliente.telefone || "Não informado" }}</p>
     <p><strong>Salário:</strong> {{ cliente.salario | currency : "BRL" }}</p>
-    <p><strong>Status:</strong> {{ cliente.status }}</p>
   </div>
 
   <h3>Informações da Conta</h3>
   <div class="info">
-    <p><strong>Número da Conta:</strong> {{ conta.numeroConta }}</p>
+    <p><strong>Número da Conta:</strong> {{ cliente.conta }}</p>
     <p [ngClass]="{ 'saldo-negativo': isSaldoNegativo() }">
-      <strong>Saldo:</strong> {{ conta.saldo | currency : "BRL" }}
+      <strong>Saldo:</strong> {{ cliente.saldo | currency : "BRL" }}
     </p>
-    <p><strong>Limite:</strong> {{ conta.limite | currency : "BRL" }}</p>
-    <p><strong>Data de Criação:</strong> {{ conta.dataCriacao }}</p>
+    <p><strong>Limite:</strong> {{ cliente.limite | currency : "BRL" }}</p>
   </div>
 
   <h3>Gerente Responsável</h3>
-  <div class="info" *ngIf="gerente">
-    <p><strong>Nome:</strong> {{ gerente.nome }}</p>
-    <p><strong>CPF:</strong> {{ gerente.cpf }}</p>
+  <div class="info">
+    <p><strong>Nome:</strong> {{ cliente.gerente_nome }}</p>
+    <p><strong>CPF:</strong> {{ cliente.gerente }}</p>
   </div>
 
   <button (click)="voltar()">Voltar</button>
