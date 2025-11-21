@@ -31,7 +31,7 @@ function setupProxies(app) {
       }
     },
     onProxyRes(proxyRes, req, res) {
-      res.header("Access-Control-Allow-Origin", "http://localhost:4200");
+      res.header("Access-Control-Allow-Origin", "http://localhost");
       res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
       res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
       res.header("Access-Control-Allow-Credentials", "true");
@@ -39,7 +39,7 @@ function setupProxies(app) {
     onError(err, req, res) {
       console.error("Proxy error:", err && err.message ? err.message : err);
       try {
-        res.header("Access-Control-Allow-Origin", "http://localhost:4200");
+        res.header("Access-Control-Allow-Origin", "http://localhost");
         res.header(
           "Access-Control-Allow-Methods",
           "GET,POST,PUT,DELETE,OPTIONS"
@@ -66,7 +66,7 @@ function setupProxies(app) {
   app.post(
     "/login",
     (req, res, next) => {
-      res.header("Access-Control-Allow-Origin", "http://localhost:4200");
+      res.header("Access-Control-Allow-Origin", "http://localhost");
       res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
       res.header("Access-Control-Allow-Methods", "POST,OPTIONS");
       next();
