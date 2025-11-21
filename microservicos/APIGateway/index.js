@@ -12,16 +12,29 @@ const config = require("./src/config/service");
 
 const app = express();
 
-app.use(helmet());
-app.use(cors());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginEmbedderPolicy: false,
+  })
+);
+app.use(
+  cors({
+    origin: "http://localhost",
+    methods: "GET,POST,PUT,DELETE,OPTIONS",
+    allowedHeaders: "Content-Type, Authorization",
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(requestLogger);
 
-app.use('/', compositionRouter);
-
 setupProxies(app);
+
+app.use("/", compositionRouter);
 
 app.use(errorHandler);
 
