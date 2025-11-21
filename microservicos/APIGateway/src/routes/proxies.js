@@ -30,6 +30,31 @@ function setupProxies(app) {
         proxyReq.write(bodyData);
       }
     },
+    onProxyRes(proxyRes, req, res) {
+      res.header("Access-Control-Allow-Origin", "http://localhost:4200");
+      res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+      res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+      res.header("Access-Control-Allow-Credentials", "true");
+    },
+    onError(err, req, res) {
+      console.error("Proxy error:", err && err.message ? err.message : err);
+      try {
+        res.header("Access-Control-Allow-Origin", "http://localhost:4200");
+        res.header(
+          "Access-Control-Allow-Methods",
+          "GET,POST,PUT,DELETE,OPTIONS"
+        );
+        res.header(
+          "Access-Control-Allow-Headers",
+          "Content-Type, Authorization"
+        );
+        res.header("Access-Control-Allow-Credentials", "true");
+        res.status(502).json({ error: "Bad Gateway", details: err.message });
+      } catch (e) {
+        res.writeHead(502, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Bad Gateway" }));
+      }
+    },
   });
 
   app.get("/reboot", (req, res) => {
@@ -38,7 +63,16 @@ function setupProxies(app) {
     });
   });
 
-  app.post("/login", createProxyMiddleware(proxyOptions(AUTH)));
+  app.post(
+    "/login",
+    (req, res, next) => {
+      res.header("Access-Control-Allow-Origin", "http://localhost:4200");
+      res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+      res.header("Access-Control-Allow-Methods", "POST,OPTIONS");
+      next();
+    },
+    createProxyMiddleware(proxyOptions(AUTH))
+  );
 
   app.post("/logout", verifyJWT, (req, res) => {
     const user = req.user;
