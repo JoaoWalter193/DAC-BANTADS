@@ -19,6 +19,7 @@ app.use(
     crossOriginEmbedderPolicy: false,
   })
 );
+
 app.use(
   cors({
     origin: "http://localhost",
@@ -27,7 +28,12 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
+
+app.use((req, res, next) => {
+  if (req.path === "/login") return next();
+  express.json()(req, res, next);
+});
+
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(requestLogger);
