@@ -10,4 +10,5 @@ import msauth.ms_auth.entities.UsuarioEntity;
 @Repository
 public interface UsuarioRepository extends MongoRepository<UsuarioEntity, String> {
     Optional<UsuarioEntity> findByEmail(String email);
+    Optional<UsuarioEntity> findByCpf(String cpf);
 }

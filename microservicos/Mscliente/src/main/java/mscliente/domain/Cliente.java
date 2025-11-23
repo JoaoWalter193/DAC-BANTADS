@@ -25,8 +25,6 @@ public class Cliente {
 
     private String email;
 
-    private String senha;
-
     private double salario;
 
     private String endereco;
@@ -37,10 +35,10 @@ public class Cliente {
 
     private String estado;
 
+    @Column(length = 30) 
     private String status;
 
     @Column(name = "motivorejeite")
     private String motivoRejeite;
-
 
 }

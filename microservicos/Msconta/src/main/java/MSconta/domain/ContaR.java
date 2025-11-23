@@ -1,6 +1,5 @@
 package MSconta.domain;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,15 +16,15 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class ContaR {
 
-
-    public ContaR(int numConta,
-                    String cpfCliente,
-                    String nomeCliente,
-                    double saldo,
-                    double limite,
-                    String cpfGerente,
-                    String nomeGerente,
-                    LocalDate dataCriacao){
+    public ContaR(
+            int numConta,
+            String cpfCliente,
+            String nomeCliente,
+            double saldo,
+            double limite,
+            String cpfGerente,
+            String nomeGerente,
+            LocalDate dataCriacao) {
 
         this.numConta = numConta;
         this.cpfCliente = cpfCliente;
@@ -36,11 +35,9 @@ public class ContaR {
         this.nomeGerente = nomeGerente;
         this.dataCriacao = dataCriacao;
 
-
-
     }
 
-    public ContaR(ContaR contaTemp){
+    public ContaR(ContaR contaTemp) {
         this.numConta = contaTemp.numConta;
         this.cpfCliente = contaTemp.getCpfCliente();
         this.nomeCliente = contaTemp.getNomeCliente();
@@ -50,7 +47,6 @@ public class ContaR {
         this.nomeGerente = contaTemp.getNomeGerente();
         this.dataCriacao = contaTemp.getDataCriacao();
     }
-
 
     @Id
     @Column(name = "numconta")
@@ -78,14 +74,10 @@ public class ContaR {
     @Column(name = "ativa")
     private boolean ativa;
 
-    public ContaCUD virarContaCUD(){
-        return new ContaCUD(this.getNumConta(),this.getCpfCliente(),
+    public ContaCUD virarContaCUD() {
+        return new ContaCUD(this.getNumConta(), this.getCpfCliente(),
                 this.getNomeCliente(), this.getSaldo(), this.getLimite(),
                 this.getCpfGerente(), this.getNomeGerente(), this.getDataCriacao(), this.ativa);
     }
-
-
-
-
 
 }

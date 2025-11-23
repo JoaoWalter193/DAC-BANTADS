@@ -7,9 +7,9 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.crypto.password.StandardPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -17,18 +17,63 @@ import java.util.*;
 @Service
 public class ClienteService {
 
-    @Autowired
-    ClienteRepository clienteRepository;
+    private ClienteRepository clienteRepository;
+
+    public ClienteService(ClienteRepository clienteRepository) {
+        this.clienteRepository = clienteRepository;
+    }
 
     @Autowired
     RabbitMQProducer rabbitMQProducer;
 
-    @Autowired
-    EmailService emailService;
-
     private Map<String, String> cpfParaSenha = new HashMap<>();
 
-    // PasswordEncoder passwordEncoder = new StandardPasswordEncoder("razer");
+    @Transactional
+    public AutocadastroDTO sagaAutocadastrar(AutocadastroDTO saga) {
+        try {
+            if (clienteRepository.existsById(saga.cpf())) {
+                return saga.comErro("Cliente já cadastrado com este CPF.");
+            }
+
+            Cliente novoCliente = new Cliente();
+            novoCliente.setCpf(saga.cpf());
+            novoCliente.setNome(saga.nome());
+            novoCliente.setEmail(saga.email());
+            novoCliente.setSalario(saga.salario());
+            novoCliente.setEndereco(saga.endereco());
+            novoCliente.setCep(saga.cep());
+            novoCliente.setCidade(saga.cidade());
+            novoCliente.setEstado(saga.estado());
+
+            novoCliente.setStatus("AGUARDANDO_APROVACAO");
+            novoCliente.setMotivoRejeite(null);
+
+            clienteRepository.save(novoCliente);
+            return saga.comClienteCriado(novoCliente.getCpf());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return saga.comErro("Erro cadastrar cliente: " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    public void sagaAutocadastrarRollback(AutocadastroDTO saga) {
+        try {
+            if (saga.idClienteCriado() != null) {
+                clienteRepository.deleteById(saga.idClienteCriado());
+                System.out.println("SAGA ROLLBACK: Cliente removido pelo ID confirmado: " + saga.idClienteCriado());
+            } else if (saga.cpf() != null) {
+                clienteRepository.findById(saga.cpf()).ifPresent(cliente -> {
+                    clienteRepository.delete(cliente);
+                    System.out.println("SAGA ROLLBACK: Cliente removido pelo CPF original: " + saga.cpf());
+                });
+            }
+
+        } catch (Exception e) {
+            System.err.println("FALHA CRÍTICA NO ROLLBACK DO CLIENTE: " + e.getMessage());
+        }
+    }
 
     public ResponseEntity<List<ClienteDTO>> buscarClientes(String filtro) {
 
@@ -156,9 +201,8 @@ public class ClienteService {
                     data.cpf(),
                     data.nome(),
                     data.email(),
-                    "",
-                    // senhaHasheada, // classe que pega a senha, joga pra SHA256 + SALT e retorna o
-                    // HASH
+
+
                     data.salario(),
                     data.endereco(),
                     data.cep(),
@@ -169,10 +213,6 @@ public class ClienteService {
             clienteRepository.save(clienteTemp);
 
             cpfParaSenha.put(clienteTemp.getCpf(), senhaAleatoria);
-
-            // Fazer assim é saga coreografada
-            // AuthRequest authRequest = new AuthRequest(data.email(), senhaAleatoria);
-            // rabbitMQProducer.sendAuthSaga(authRequest);
 
             ResponseDTO responseTemp = new ResponseDTO(201, data.cpf(), data.nome(), data.salario(), "msCliente",
                     senhaAleatoria + "-" + data.email());
@@ -219,7 +259,8 @@ public class ClienteService {
                         data.estado()));
 
             } catch (Exception e) {
-                emailService.sendEmailErro(optCliente.get().getEmail(), optCliente.get().getNome());
+                rabbitMQProducer.sendErrorSaga(data.email());
+                return ResponseEntity.internalServerError().build();
             }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -242,11 +283,6 @@ public class ClienteService {
                     null);
             rabbitMQProducer.sendClienteSaga(responseTemp);
 
-            // falta enviar o e-mail para o mano com a senha da conta confirmando que
-            // recebeu
-            String senhaDeshasheada = cpfParaSenha.remove(clienteTemp.getCpf());
-            emailService.sendPasswordEmail(clienteTemp.getEmail(), clienteTemp.getNome(), senhaDeshasheada);
-
             return ResponseEntity.ok(new ClienteDTO(clienteTemp.getCpf(),
                     clienteTemp.getNome(),
                     clienteTemp.getEmail(),
@@ -257,7 +293,6 @@ public class ClienteService {
                     clienteTemp.getEstado()));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-
         }
 
     }
@@ -270,8 +305,6 @@ public class ClienteService {
             clienteTemp.setStatus("REJEITADO");
             clienteTemp.setMotivoRejeite(motivoRejeite + " -- Hora do rejeite: " + LocalDateTime.now());
             clienteRepository.save(clienteTemp);
-
-            emailService.sendRejeicao(clienteTemp.getEmail(), clienteTemp.getNome(), motivoRejeite);
 
             return ResponseEntity.ok(new GeralDTO("200", "Cliente Rejeitado com o motivo de:" + motivoRejeite));
 
@@ -323,14 +356,11 @@ public class ClienteService {
 
     public void deletarContaErro(String cpf) {
         Optional<Cliente> optCliente = clienteRepository.findByCpf(cpf);
+
         if (optCliente.isPresent()) {
             Cliente cliente = optCliente.get();
-            emailService.sendEmailErro(cliente.getEmail(), cliente.getEmail());
             rabbitMQProducer.sendErrorSaga(cliente.getEmail());
-
             clienteRepository.delete(cliente);
-
         }
     }
-
 }

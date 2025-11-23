@@ -1,49 +1,39 @@
 package msauth.ms_auth.producer;
-import msauth.ms_auth.dto.ResponseDTO;
-import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.core.TopicExchange;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import msauth.ms_auth.dto.SagaEvent;
+import msauth.ms_auth.dto.AprovacaoDTO;
+import msauth.ms_auth.dto.AutocadastroDTO;
 
 @Service
 public class AuthProducer {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthProducer.class);
+    private final RabbitTemplate rabbitTemplate;
 
     @Value("${rabbitmq.exchange.saga}")
-    private String sagaExchange;
+    private String exchange;
 
-    @Value("${rabbitmq.key.saga-create-success}")
-    private String sagaAuthSuccessKey;
+    @Value("${rabbitmq.key.saga-orchestrator}")
+    private String routingKeyOrquestrador;
 
-    @Value("${rabbitmq.key.saga-create-fail}")
-    private String sagaAuthFailKey;
+    @Value("${rabbitmq.key.saga-response}")
+    private String routingKeySagaResposta;
 
-    @Value("routingKeySaga")
-    public String routingKeySaga;
-
-    private final AmqpTemplate rabbitTemplate;
-
-    public AuthProducer(AmqpTemplate rabbitTemplate) {
+    public AuthProducer(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public void sendSuccessEvent(String sagaId, String payload) {
-        SagaEvent message = new SagaEvent(sagaId, "AUTH_SUCCESS", payload);
-        rabbitTemplate.convertAndSend(sagaExchange, sagaAuthSuccessKey, message);
+    public void enviarRespostaSaga(AutocadastroDTO saga) {
+        LOGGER.info("MS-AUTH: Enviando resposta (Autocadastro) para Orchestrator -> Status: {}", saga.status());
+        rabbitTemplate.convertAndSend(exchange, routingKeyOrquestrador, saga);
     }
 
-    public void sendFailEvent(String sagaId, String errorMessage) {
-        SagaEvent message = new SagaEvent(sagaExchange, "AUTH_FAIL", errorMessage);
-        rabbitTemplate.convertAndSend(sagaExchange, sagaAuthFailKey, message);
+    public void enviarRespostaSaga(AprovacaoDTO saga) {
+        LOGGER.info("MS-AUTH: Enviando resposta (Aprovação) para rota: {}", routingKeySagaResposta);
+        rabbitTemplate.convertAndSend(exchange, routingKeySagaResposta, saga);
     }
-
-   // apenas para enviar para a Saga
-    public void sendSagaConta(ResponseDTO data){
-        rabbitTemplate.convertAndSend(sagaExchange, routingKeySaga,data);
-    }
-
 }

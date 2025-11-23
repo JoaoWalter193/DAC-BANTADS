@@ -1,6 +1,5 @@
 package MSconta.domain;
 
-
 import MSconta.repositories.r.ContaRRepository;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -21,21 +20,20 @@ import java.util.Random;
 @AllArgsConstructor
 public class ContaCUD {
 
-    public ContaCUD(int numConta,
+    public ContaCUD(
+            int numConta,
             String cpfCliente,
-                    String nomeCliente,
-                    double salario,
-                    String cpfGerente,
-                    String nomeGerente){
-
+            String nomeCliente,
+            double salario,
+            String cpfGerente,
+            String nomeGerente) {
 
         this.numConta = numConta;
         this.cpfCliente = cpfCliente;
         this.nomeCliente = nomeCliente;
 
-
-        if (salario >= 2000){
-            this.limite = salario/2;
+        if (salario >= 2000) {
+            this.limite = salario / 2;
         } else {
             throw new RuntimeException();
         }
@@ -46,7 +44,6 @@ public class ContaCUD {
         this.saldo = 0.0;
         this.ativa = false;
     }
-
 
     @Id
     @Column(name = "numconta")
@@ -74,14 +71,10 @@ public class ContaCUD {
     @Column(name = "ativa")
     private boolean ativa;
 
-
-
-
-    public ContaR virarContaR(){
-        return new ContaR(this.getNumConta(),this.getCpfCliente(),
+    public ContaR virarContaR() {
+        return new ContaR(this.getNumConta(), this.getCpfCliente(),
                 this.getNomeCliente(), this.getSaldo(), this.getLimite(),
                 this.getCpfGerente(), this.getNomeGerente(), this.getDataCriacao(), this.ativa);
     }
-
 
 }

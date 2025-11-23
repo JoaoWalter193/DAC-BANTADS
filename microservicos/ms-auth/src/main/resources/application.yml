@@ -36,10 +36,9 @@ spring:
                     writetimeout: 5000
 
 
-
 jwt:
-    private-key: file:private-key.pem
-    public-key: file:public-key.pem
+  public-key: file:/app/public-key.pem
+  private-key: file:/app/private-key.pem
 
 
 #
@@ -59,8 +58,13 @@ rabbitmq:
     exchange:
         saga: exchangePrincipal
     queue:
-        auth-create: saga.auth.create.queue
+        auth-create: queue-auth-criar
+        auth-rollback: queue-auth-rollback
+        auth-approve: queue-auth-aprovar
     key:
-        saga-create-auth: saga.auth.created
-        saga-create-success: saga.auth.success
-        saga-create-fail: saga.auth.fail
+        auth-create: keyAuth-criar
+        auth-rollback: keyAuth-rollback
+        auth-approve: keyAuth-aprovar
+
+        saga-create-success: MsSaga
+        saga-create-fail: MsSaga

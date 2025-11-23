@@ -1,81 +1,58 @@
 package msauth.ms_auth.consumer;
 
-
-import msauth.ms_auth.dto.AuthRequest;
-import msauth.ms_auth.dto.ResponseDTO;
-import msauth.ms_auth.dto.SagaEvent;
+import msauth.ms_auth.dto.AprovacaoDTO;
+import msauth.ms_auth.dto.AutocadastroDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import msauth.ms_auth.producer.AuthProducer;
+import org.springframework.stereotype.Component;
 import msauth.ms_auth.service.AuthService;
-import msauth.ms_auth.dto.SagaRequest;
+import msauth.ms_auth.producer.AuthProducer;
 
-@Service
+@Component
 public class RabbitMQConsumer {
-
-    @Autowired
-    private AuthService authService;
-
-    @Autowired
-    private AuthProducer authProducer;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQConsumer.class);
 
-   @RabbitListener(queues = {"${rabbitmq.queue.auth-create}"})
-    public void consume(SagaRequest request) {
-        String sagaId = request.getSagaId();
-        LOGGER.info("Recebido evento de criação de auth para Saga ID: {}", sagaId);
+    private final AuthService authService;
+    private final AuthProducer authProducer;
+
+    public RabbitMQConsumer(AuthService authService, AuthProducer authProducer) {
+        this.authService = authService;
+        this.authProducer = authProducer;
+    }
+
+    @RabbitListener(queues = "${rabbitmq.queue.auth-approve}")
+    public void processarCriacaoAuth(AprovacaoDTO saga) {
+        System.out.println("MS-AUTH: Recebido comando de criação de usuário para: " + saga.email());
 
         try {
-            authService.criarAutenticacao(request);
+            authService.criarUsuarioAprovado(saga);
 
-            LOGGER.info("Autenticação criada com sucesso para Saga ID: {}", sagaId);
-            authProducer.sendSuccessEvent(sagaId, "Autenticação criada com sucesso.");
+            AprovacaoDTO resposta = new AprovacaoDTO(
+                    saga.sagaId(),
+                    saga.cpf(),
+                    saga.nome(),
+                    "AUTH_CRIADO",
+                    "SUCESSO",
+                    null,
+                    saga.salario(),
+                    saga.email());
+
+            authProducer.enviarRespostaSaga(resposta);
 
         } catch (Exception e) {
-            LOGGER.error("Falha ao criar autenticação para Saga ID: {}. Erro: {}", sagaId, e.getMessage());
-            authProducer.sendFailEvent(sagaId, "Falha no ms-auth: " + e.getMessage());
+            e.printStackTrace();
+            AprovacaoDTO erro = new AprovacaoDTO(
+                    saga.sagaId(), saga.cpf(), saga.nome(),
+                    "AUTH_ERRO", "FALHA", e.getMessage(), saga.salario(), saga.email());
+            authProducer.enviarRespostaSaga(erro);
         }
     }
 
-
-    // AQUI ELE ESTÁ OUVINDO NA FILA MSAUTH PARA RECEBER A RESPOSTA PADRÃO QUE EU ESTOU USANDO PARA TUDO :D
-    @RabbitListener(queues = {"MsAuth"})
-       public void receber(ResponseDTO data){
-
-       if (data.ms().equals("Erro ms-conta -- criar cliente -- ms-cliente")){
-           authService.deletarAutenticacao(data.cpf());
-       } else {
-
-           LOGGER.info("Recebido na queue MsAuth " + data.senha());
-
-           String[] parts = data.senha().split("-");
-
-
-           SagaRequest request = new SagaRequest("idFalso",
-                   parts[1],
-                   parts[0]);
-
-           try {
-               authService.criarAutenticacao(request);
-               LOGGER.info("Autenticação criada com sucesso para Saga ID: {}", parts[1] + " -- " + parts[0]);
-
-               ResponseDTO temp = new ResponseDTO(201, data.cpf(),
-                       data.nome(), data.salario(),
-                       "ms-auth", null);
-               authProducer.sendSagaConta(temp);
-
-
-           } catch (Exception e) {
-               LOGGER.info("ERRO: " + e);
-           }
-       }
-   }
-
-
-
+    @RabbitListener(queues = "${rabbitmq.queue.auth-rollback}")
+    public void processarRollbackAuth(AutocadastroDTO saga) {
+        LOGGER.info("MS-AUTH: Recebido comando de ROLLBACK para Saga ID: {}", saga.sagaId());
+        authService.executarSagaRollback(saga);
+    }
 }

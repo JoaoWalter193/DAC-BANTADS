@@ -10,7 +10,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import lombok.Data;
@@ -21,12 +20,18 @@ import msauth.ms_auth.dto.LoginRequest;
 // implementar UserDetails é uma boa-prática
 public class UsuarioEntity implements UserDetails {
 
+    public enum StatusUsuario {
+        PENDENTE, ATIVO, REJEITADO
+    }
+
     @Id
     private String id;
     @Indexed(unique = true)
     private String email;
     private String password;
+    private String cpf;
     private Set<Role> roles;
+    private StatusUsuario status;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
