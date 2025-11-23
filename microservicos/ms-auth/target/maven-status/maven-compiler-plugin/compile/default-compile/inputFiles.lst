@@ -6,9 +6,12 @@
 /app/src/main/java/msauth/ms_auth/config/SecurityConfig.java
 /app/src/main/java/msauth/ms_auth/consumer/RabbitMQConsumer.java
 /app/src/main/java/msauth/ms_auth/controllers/TokenController.java
+/app/src/main/java/msauth/ms_auth/dto/AprovarSagaRequest.java
 /app/src/main/java/msauth/ms_auth/dto/AuthRequest.java
+/app/src/main/java/msauth/ms_auth/dto/AutocadastroSagaRequest.java
 /app/src/main/java/msauth/ms_auth/dto/LoginRequest.java
 /app/src/main/java/msauth/ms_auth/dto/LoginResponse.java
+/app/src/main/java/msauth/ms_auth/dto/RejeitarSagaRequest.java
 /app/src/main/java/msauth/ms_auth/dto/ResponseDTO.java
 /app/src/main/java/msauth/ms_auth/dto/SagaEvent.java
 /app/src/main/java/msauth/ms_auth/dto/SagaRequest.java
