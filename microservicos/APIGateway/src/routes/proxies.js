@@ -140,11 +140,13 @@ function setupProxies(app) {
   );
 
   app.post("/clientes", async (req, res, next) => {
-    console.log("🔍 Iniciando autocadastro com verificação de email");
+    console.log("🔍 === INICIANDO AUTOCADASTRO ===");
+    console.log("🔍 Body recebido:", JSON.stringify(req.body, null, 2));
 
     const { email, cpf, nome, salario, endereco, cep, cidade, estado } =
       req.body;
 
+    // Validação dos campos obrigatórios
     if (
       !email ||
       !cpf ||
@@ -154,6 +156,7 @@ function setupProxies(app) {
       !cidade ||
       !estado
     ) {
+      console.log("❌ Campos obrigatórios faltando");
       return res.status(400).json({
         erro: "Campos obrigatórios faltando",
         campos_obrigatorios: [
@@ -168,35 +171,137 @@ function setupProxies(app) {
       });
     }
 
-    try {
-      console.log("🔍 Verificando se email já existe:", email);
+    console.log("🔍 Verificando se email já existe:", email);
 
+    try {
       const emailCheckUrl = `${CLIENTE}/clientes/email/${encodeURIComponent(
         email
       )}`;
-      console.log("🔍 URL de verificação:", emailCheckUrl);
+      console.log("🔍 Fazendo request para:", emailCheckUrl);
+      console.log("🔍 CLIENTE SERVICE URL:", CLIENTE);
 
-      const emailResponse = await axiosInstance.get(emailCheckUrl);
+      // ✅ Configure timeout explícito e mais logs
+      const startTime = Date.now();
 
+      const emailResponse = await axiosInstance.get(emailCheckUrl, {
+        timeout: 5000, // 5 segundos timeout
+        validateStatus: (status) => {
+          console.log(`🔍 Status recebido na validação: ${status}`);
+          return true; // Aceita TODOS os status para podermos tratar manualmente
+        },
+      });
+
+      const endTime = Date.now();
+      console.log(`🔍 Resposta recebida em ${endTime - startTime}ms`);
+      console.log("🔍 Status da resposta:", emailResponse.status);
+      console.log("🔍 Data da resposta:", emailResponse.data);
+
+      // Se o email EXISTE (status 200), retorna erro
       if (emailResponse.status === 200) {
-        console.log("❌ Email já cadastrado:", email);
+        console.log("❌ Email já cadastrado no sistema");
         return res.status(409).json({
           erro: "Email já cadastrado",
           mensagem: "Já existe um cliente cadastrado com este email",
         });
       }
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        console.log("✅ Email disponível, prosseguindo com cadastro");
 
+      // Se retornou 404 (email não existe), continua
+      if (emailResponse.status === 404) {
+        console.log("✅ Email disponível! Prosseguindo com cadastro...");
+
+        // Encaminha para o SAGA
         return createProxyMiddleware({
           ...proxyOptions(SAGA),
           selfHandleResponse: false,
+          onProxyReq(proxyReq, req) {
+            console.log("🔍 Encaminhando dados para SAGA...");
+            if (req.body) {
+              const bodyData = JSON.stringify(req.body);
+              proxyReq.setHeader("Content-Type", "application/json");
+              proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
+              proxyReq.write(bodyData);
+            }
+          },
+          onProxyRes(proxyRes, req, res) {
+            console.log("🔍 Resposta do SAGA recebida:", proxyRes.statusCode);
+          },
+          onError(err, req, res) {
+            console.error("❌ Erro no proxy SAGA:", err.message);
+            res.status(502).json({
+              erro: "Erro no serviço de cadastro",
+              detalhes: err.message,
+            });
+          },
         })(req, res, next);
+      }
+
+      // Status inesperado
+      console.log("⚠️ Status inesperado do MS-Cliente:", emailResponse.status);
+      return res.status(500).json({
+        erro: "Erro inesperado na verificação de email",
+        status: emailResponse.status,
+        data: emailResponse.data,
+      });
+    } catch (error) {
+      console.error("❌ ERRO CAPTURADO:", error.message);
+      console.error("❌ Código do erro:", error.code);
+      console.error("❌ Stack trace:", error.stack);
+
+      if (error.response) {
+        // O servidor respondeu com um status de erro
+        console.log("🔍 Response error - Status:", error.response.status);
+        console.log("🔍 Response error - Data:", error.response.data);
+
+        if (error.response.status === 404) {
+          console.log(
+            "✅ Email disponível (via catch)! Prosseguindo com cadastro..."
+          );
+
+          return createProxyMiddleware({
+            ...proxyOptions(SAGA),
+            selfHandleResponse: false,
+            onProxyReq(proxyReq, req) {
+              console.log("🔍 Encaminhando para SAGA após 404...");
+              if (req.body) {
+                const bodyData = JSON.stringify(req.body);
+                proxyReq.setHeader("Content-Type", "application/json");
+                proxyReq.setHeader(
+                  "Content-Length",
+                  Buffer.byteLength(bodyData)
+                );
+                proxyReq.write(bodyData);
+              }
+            },
+          })(req, res, next);
+        }
+
+        return res.status(error.response.status).json({
+          erro: "Erro na verificação de email",
+          status: error.response.status,
+          detalhes: error.response.data,
+        });
+      } else if (error.request) {
+        // A requisição foi feita mas não houve resposta
+        console.error("❌ Sem resposta do MS-Cliente");
+        return res.status(503).json({
+          erro: "Serviço de verificação indisponível",
+          mensagem:
+            "Não foi possível conectar ao serviço de verificação de email",
+          detalhes: error.message,
+        });
+      } else if (error.code === "ECONNABORTED") {
+        // Timeout
+        console.error("❌ Timeout na verificação de email");
+        return res.status(504).json({
+          erro: "Timeout na verificação de email",
+          mensagem: "A verificação demorou muito tempo",
+          detalhes: error.message,
+        });
       } else {
-        console.error("❌ Erro ao verificar email:", error.message);
+        // Outros erros
+        console.error("❌ Erro inesperado:", error.message);
         return res.status(500).json({
-          erro: "Erro interno ao verificar email",
+          erro: "Erro interno do servidor",
           detalhes: error.message,
         });
       }
