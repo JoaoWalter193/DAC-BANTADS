@@ -164,7 +164,7 @@ export class HomeCliente implements OnInit {
       next: (res) => {
         this.mostrarMensagem('Saque realizado com sucesso!', 'sucesso');
         this.valorSaque = null;
-        this.carregarDadosCliente(this.cliente.cpf);
+        this.atualizarSaldo();
       },
       error: (err) => {
         this.mostrarMensagem(
