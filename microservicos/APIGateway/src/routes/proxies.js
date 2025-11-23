@@ -1,6 +1,10 @@
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const { verifyJWT, requireRoles } = require("../middlewares/verifyJWT");
-const { getClienteByCpf, getClientes } = require("./compositions/clienteComposition");
+const {
+  getClienteByCpf,
+  getClientes,
+} = require("./compositions/clienteComposition");
+const getGerentes = require("./compositions/gerenteComposition");
 
 function setupProxies(app) {
   const SAGA = process.env.SAGA_SERVICE_URL;
@@ -157,23 +161,38 @@ function setupProxies(app) {
 
       onProxyRes: async (proxyRes, req, res) => {
         const cpf = req.params.cpf;
+        console.log("🔍 Iniciando aprovação para CPF:", cpf);
 
         let sagaResponse = "";
         proxyRes.on("data", (chunk) => (sagaResponse += chunk.toString()));
 
         proxyRes.on("end", async () => {
+          console.log("🔍 Resposta do SAGA:", sagaResponse);
+          console.log("🔍 Status do SAGA:", proxyRes.statusCode);
+
           try {
-            const contaResponse = await fetch(
-              `${process.env.CONTA_SERVICE_URL}/contas/${cpf}`
-            );
+            // Aguarde um pouco para o processamento assíncrono
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+            const contaUrl = `${process.env.CONTA_SERVICE_URL}/contas/${cpf}`;
+            console.log("🔍 Buscando conta em:", contaUrl);
+
+            const contaResponse = await fetch(contaUrl);
+            console.log("🔍 Status da busca da conta:", contaResponse.status);
 
             if (!contaResponse.ok) {
+              console.log(
+                "❌ Conta não encontrada. Status:",
+                contaResponse.status
+              );
               return res.status(500).json({
                 erro: "Conta não encontrada após aprovação.",
+                detalhes: `Status: ${contaResponse.status}`,
               });
             }
 
             const dadosConta = await contaResponse.json();
+            console.log("🔍 Dados da conta encontrada:", dadosConta);
 
             const respostaSwagger = {
               cliente: cpf,
@@ -184,11 +203,13 @@ function setupProxies(app) {
               criacao: dadosConta.dataCriacao,
             };
 
-            res.setHeader("Content-Type", "application/json");
             return res.status(200).json(respostaSwagger);
           } catch (err) {
-            console.error("Erro na composition:", err);
-            return res.status(500).json({ erro: "Erro interno na aprovação." });
+            console.error("❌ Erro na composition:", err);
+            return res.status(500).json({
+              erro: "Erro interno na aprovação.",
+              detalhes: err.message,
+            });
           }
         });
       },
@@ -339,7 +360,7 @@ function setupProxies(app) {
     "/gerentes",
     verifyJWT,
     requireRoles(["GERENTE", "ADMINISTRADOR"]),
-    require("./compositions/gerenteComposition")
+    getGerentes
   );
 
   app.post(
