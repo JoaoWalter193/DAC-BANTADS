@@ -228,6 +228,7 @@ const getGerentes = async (req, res, next) => {
   }
 };
 
+// O restante do código (getClientesDoGerente) permanece igual...
 const getClientesDoGerente = async (req, res, next) => {
   // ... (função inalterada) ...
   const { cpfGerente } = req.params;

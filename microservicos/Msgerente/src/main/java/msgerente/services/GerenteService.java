@@ -72,18 +72,7 @@ public class GerenteService {
     }
 
     public ResponseEntity<List<Gerente>> listarGerentes() {
-        // Assume que listarGerentes retorna todos os gerentes, independente do tipo.
-        // Se a intenção é listar apenas tipo "GERENTE", mantenha findByTipo("GERENTE").
-        // Vou manter findByTipo("GERENTE") conforme o original, mas é crucial garantir
-        // que
-        // a lista de gerentes para o dashboard inclua todos os tipos se o requisito R15
-        // exigir.
         List<Gerente> listaTemp = gerenteRepository.findByTipo("GERENTE");
-
-        // FIX: Mesmo que a lista esteja vazia, retornar OK com lista vazia é mais comum
-        // para listagens
-        // e o código do API Gateway espera uma lista vazia ou nula (gerentesResp.data
-        // || []).
         return ResponseEntity.ok(listaTemp);
     }
 
