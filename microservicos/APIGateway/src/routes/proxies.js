@@ -346,7 +346,7 @@ function setupProxies(app) {
     "/gerentes",
     verifyJWT,
     requireRoles(["GERENTE", "ADMINISTRADOR"]),
-    createProxyMiddleware(proxyOptions(GERENTE))
+    createProxyMiddleware(proxyOptions(SAGA))
   );
 
   app.get(
