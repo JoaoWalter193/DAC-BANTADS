@@ -24,7 +24,7 @@ public class AuthService {
     @Autowired
     private MailService mailService;
 
-    public void criarAutenticacao(SagaRequest request) {
+   public void criarAutenticacao(SagaRequest request) {
         if (usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email já cadastrado");
         }
@@ -32,7 +32,10 @@ public class AuthService {
         String senhaHasheada = passwordEncoder.encode(request.getSenha());
 
         UsuarioEntity novoUsuario = new UsuarioEntity();
-        novoUsuario.setEmail(request.getEmail());
+        
+        novoUsuario.setCpf(request.getCpf()); 
+        novoUsuario.setEmail(request.getEmail()); 
+        
         novoUsuario.setPassword(senhaHasheada);
         novoUsuario.setRoles(Set.of(Role.CLIENTE));
         

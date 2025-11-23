@@ -11,4 +11,5 @@ public class SagaRequest {
     private String sagaId;
     private String email;
     private String senha;
+    private String cpf;
 }

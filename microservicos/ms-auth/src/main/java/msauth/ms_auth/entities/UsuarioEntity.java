@@ -26,6 +26,7 @@ public class UsuarioEntity implements UserDetails {
     @Indexed(unique = true)
     private String email;
     private String password;
+    private String cpf;
     private Set<Role> roles;
 
     @Override
