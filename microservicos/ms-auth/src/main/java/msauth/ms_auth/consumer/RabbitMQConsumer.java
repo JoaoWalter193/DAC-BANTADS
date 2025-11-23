@@ -1,6 +1,5 @@
 package msauth.ms_auth.consumer;
 
-
 import msauth.ms_auth.dto.AuthRequest;
 import msauth.ms_auth.dto.ResponseDTO;
 import msauth.ms_auth.dto.SagaEvent;
@@ -25,7 +24,7 @@ public class RabbitMQConsumer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQConsumer.class);
 
-   @RabbitListener(queues = {"${rabbitmq.queue.auth-create}"})
+    @RabbitListener(queues = { "${rabbitmq.queue.auth-create}" })
     public void consume(SagaRequest request) {
         String sagaId = request.getSagaId();
         LOGGER.info("Recebido evento de criação de auth para Saga ID: {}", sagaId);
@@ -42,40 +41,57 @@ public class RabbitMQConsumer {
         }
     }
 
+    // AQUI ELE ESTÁ OUVINDO NA FILA MSAUTH PARA RECEBER A RESPOSTA PADRÃO QUE EU
+    // ESTOU USANDO PARA TUDO :D
+    @RabbitListener(queues = { "MsAuth" })
+    public void receber(ResponseDTO data) {
 
-    // AQUI ELE ESTÁ OUVINDO NA FILA MSAUTH PARA RECEBER A RESPOSTA PADRÃO QUE EU ESTOU USANDO PARA TUDO :D
-    @RabbitListener(queues = {"MsAuth"})
-       public void receber(ResponseDTO data){
+        if (data.ms().equals("Erro ms-conta -- criar cliente -- ms-cliente")) {
+            authService.deletarAutenticacao(data.cpf());
+        } else {
 
-       if (data.ms().equals("Erro ms-conta -- criar cliente -- ms-cliente")){
-           authService.deletarAutenticacao(data.cpf());
-       } else {
+            String senhaCompleta = data.senha();
 
-           LOGGER.info("Recebido na queue MsAuth " + data.senha());
+            if (senhaCompleta == null || senhaCompleta.isEmpty() || !senhaCompleta.contains("-")) {
+                LOGGER.error("Mensagem recebida com formato de senha inválido ou nulo: {}", senhaCompleta);
+                return;
+            }
 
-           String[] parts = data.senha().split("-");
+            String[] parts = senhaCompleta.split("-");
 
+            if (parts.length < 2) {
+                LOGGER.error("Mensagem recebida sem email no campo senha: {}", senhaCompleta);
+                return;
+            }
 
-           SagaRequest request = new SagaRequest("idFalso",
-                   parts[1],
-                   parts[0]);
+            String emailDoCliente = parts[1];
 
-           try {
-               authService.criarAutenticacao(request);
-               LOGGER.info("Autenticação criada com sucesso para Saga ID: {}", parts[1] + " -- " + parts[0]);
+            SagaRequest request = new SagaRequest(
+                    "idFalso",
+                    emailDoCliente,
+                    parts[0], // senha
+                    data.cpf());
 
-               ResponseDTO temp = new ResponseDTO(201, data.cpf(),
-                       data.nome(), data.salario(),
-                       "ms-auth", null);
-               authProducer.sendSagaConta(temp);
+            try {
+                authService.criarAutenticacao(request);
 
+                LOGGER.info("Autenticação criada com sucesso para CPF: {} e Email: {}", data.cpf(), emailDoCliente);
 
-           } catch (Exception e) {
-               LOGGER.info("ERRO: " + e);
-           }
-       }
-   }
+                ResponseDTO temp = new ResponseDTO(
+                        201,
+                        data.cpf(),
+                        data.nome(),
+                        data.salario(),
+                        "ms-auth",
+                        null,
+                        emailDoCliente
+                );
 
+                authProducer.sendSagaConta(temp);
 
-
+            } catch (Exception e) {
+                LOGGER.info("ERRO: " + e.getMessage());
+            }
+        }
+    }
 }

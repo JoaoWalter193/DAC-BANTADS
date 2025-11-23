@@ -38,8 +38,8 @@ spring:
 
 
 jwt:
-    private-key: file:private-key.pem
-    public-key: file:public-key.pem
+    private-key: file:private-key.pem/private-key.pem
+    public-key: file:public-key.pem/public-key.pem
 
 
 #

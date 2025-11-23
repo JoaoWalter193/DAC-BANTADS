@@ -172,7 +172,7 @@ INSERT INTO dbContaR.movimentacao (dataHora, tipo, clienteOrigemNome, clienteOri
 ('2025-07-01 00:00:00', 'depósito', 'Coândrya', '76179646090', NULL, NULL, 1500.00);
 
 INSERT INTO dbGerente.gerente_adm (cpf, nome, email, senha, tipo) VALUES
-('98574307084', 'Geniéve', 'ger1@bantads.com.br', 'tads', 'gerente'),
-('64065268052', 'Godophredo', 'ger2@bantads.com.br', 'tads', 'gerente'),
-('23862179060', 'Gyândula', 'ger3@bantads.com.br', 'tads', 'gerente'),
+('98574307084', 'Geniéve', 'ger1@bantads.com.br', 'tads', 'GERENTE'),
+('64065268052', 'Godophredo', 'ger2@bantads.com.br', 'tads', 'GERENTE'),
+('23862179060', 'Gyândula', 'ger3@bantads.com.br', 'tads', 'GERENTE'),
 ('40501740066', 'Adamântio', 'adm1@bantads.com.br', 'tads', 'administrador');
