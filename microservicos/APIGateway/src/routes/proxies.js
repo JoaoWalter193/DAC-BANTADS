@@ -8,6 +8,7 @@ const {
   getGerentes,
   getClientesDoGerente,
 } = require("./compositions/gerenteComposition");
+const { axiosInstance } = require("./compositions/shared");
 
 function setupProxies(app) {
   const SAGA = process.env.SAGA_SERVICE_URL;
@@ -70,8 +71,8 @@ function setupProxies(app) {
       mensagem: "Banco de dados criado conforme especificação",
     });
   });
-  
-	app.post(
+
+  app.post(
     "/login",
     createProxyMiddleware({
       target: process.env.AUTH_SERVICE_URL,
@@ -138,7 +139,69 @@ function setupProxies(app) {
     getClientes
   );
 
-  app.post("/clientes", createProxyMiddleware(proxyOptions(SAGA)));
+  app.post("/clientes", async (req, res, next) => {
+    console.log("🔍 Iniciando autocadastro com verificação de email");
+
+    const { email, cpf, nome, salario, endereco, cep, cidade, estado } =
+      req.body;
+
+    if (
+      !email ||
+      !cpf ||
+      !nome ||
+      !salario ||
+      !endereco ||
+      !cidade ||
+      !estado
+    ) {
+      return res.status(400).json({
+        erro: "Campos obrigatórios faltando",
+        campos_obrigatorios: [
+          "email",
+          "cpf",
+          "nome",
+          "salario",
+          "endereco",
+          "cidade",
+          "estado",
+        ],
+      });
+    }
+
+    try {
+      console.log("🔍 Verificando se email já existe:", email);
+
+      const emailCheckUrl = `${CLIENTE}/clientes/email/${encodeURIComponent(
+        email
+      )}`;
+      console.log("🔍 URL de verificação:", emailCheckUrl);
+
+      const emailResponse = await axiosInstance.get(emailCheckUrl);
+
+      if (emailResponse.status === 200) {
+        console.log("❌ Email já cadastrado:", email);
+        return res.status(409).json({
+          erro: "Email já cadastrado",
+          mensagem: "Já existe um cliente cadastrado com este email",
+        });
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        console.log("✅ Email disponível, prosseguindo com cadastro");
+
+        return createProxyMiddleware({
+          ...proxyOptions(SAGA),
+          selfHandleResponse: false,
+        })(req, res, next);
+      } else {
+        console.error("❌ Erro ao verificar email:", error.message);
+        return res.status(500).json({
+          erro: "Erro interno ao verificar email",
+          detalhes: error.message,
+        });
+      }
+    }
+  });
 
   app.post(
     "/clientes/:cpf/aprovar",
