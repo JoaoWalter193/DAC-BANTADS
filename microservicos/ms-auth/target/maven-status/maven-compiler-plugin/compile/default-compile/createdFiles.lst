@@ -5,6 +5,7 @@ msauth/ms_auth/consumer/RabbitMQConsumer.class
 msauth/ms_auth/dto/UsuarioCriadoDTO.class
 msauth/ms_auth/entities/Role.class
 msauth/ms_auth/producer/AuthProducer.class
+msauth/ms_auth/config/AdminUserConfig$UserSeedData.class
 msauth/ms_auth/dto/LoginRequest.class
 msauth/ms_auth/service/MailService.class
 msauth/ms_auth/config/SecurityConfig.class
@@ -18,5 +19,6 @@ msauth/ms_auth/dto/SagaEvent.class
 msauth/ms_auth/config/RabbitMQConfig.class
 msauth/ms_auth/dto/UsuarioResponse.class
 msauth/ms_auth/dto/AuthRequest.class
+msauth/ms_auth/config/SecurityConfig$Sha256PasswordEncoder.class
 msauth/ms_auth/controllers/TokenController.class
 msauth/ms_auth/service/AuthService.class

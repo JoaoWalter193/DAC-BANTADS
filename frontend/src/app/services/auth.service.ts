@@ -12,14 +12,13 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  login(email: string, senha: string): Observable<any | null> {
+  login(email: string, password: string): Observable<any | null> {
     const url = `${environment.apiUrl}/login`;
 
-    return this.http.post<any>(url, { email, senha }).pipe(
+    return this.http.post<any>(url, { email, password }).pipe(
       tap((resp) => {
-        if (resp?.token) {
+        if (resp?.access_token) {
           this.salvarSessao(resp);
-          this.redirecionarPorRole(resp.role);
         }
       }),
       catchError((err) => {
@@ -31,31 +30,12 @@ export class AuthService {
 
   private salvarSessao(resp: any) {
     const sessao = {
-      token: resp.token,
-      role: resp.role,
+      token: resp.access_token,
+      role: resp.tipo,
       usuario: resp.usuario,
     };
 
     localStorage.setItem(this.storageKey, JSON.stringify(sessao));
-  }
-
-  private redirecionarPorRole(role: string) {
-    switch (role) {
-      case 'CLIENTE':
-        this.router.navigate(['/home-cliente']);
-        break;
-
-      case 'GERENTE':
-        this.router.navigate(['/tela-gerente']);
-        break;
-
-      case 'ADMIN':
-        this.router.navigate(['/tela-administrador']);
-        break;
-
-      default:
-        this.router.navigate(['/']);
-    }
   }
 
   getUserSession() {
@@ -85,7 +65,7 @@ export class AuthService {
   }
 
   isAdmin(): boolean {
-    return this.getUserSession()?.role === 'ADMIN';
+    return this.getUserSession()?.role === 'ADMINISTRADOR';
   }
 
   estaAutenticado(): boolean {

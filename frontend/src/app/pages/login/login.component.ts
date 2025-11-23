@@ -24,7 +24,7 @@ import { AuthService } from '../../services/auth.service';
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    HttpClientModule
+    HttpClientModule,
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
@@ -51,22 +51,22 @@ export class LoginComponent {
 
     this.authService.login(account, password).subscribe({
       next: (resp) => {
-        if (!resp || !resp.token) {
+        if (!resp || !resp.access_token) {
           alert('Credenciais inválidas.');
           return;
         }
 
-        switch (resp.role) {
+        switch (resp.tipo) {
           case 'CLIENTE':
-            this.router.navigate(['/cliente/dashboard']);
+            this.router.navigate(['/home-cliente']);
             break;
 
           case 'GERENTE':
-            this.router.navigate(['/gerente/pendentes']);
+            this.router.navigate(['/tela-gerente']);
             break;
 
-          case 'ADMIN':
-            this.router.navigate(['/admin/painel']);
+          case 'ADMINISTRADOR':
+            this.router.navigate(['/tela-administrador']);
             break;
 
           default:

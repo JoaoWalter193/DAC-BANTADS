@@ -38,17 +38,28 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers(HttpMethod.POST, "/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/clientes").permitAll()
-                .anyRequest().authenticated())
-            .csrf(csrf -> csrf.disable())
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+                .anyRequest().authenticated()
+            )
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(Customizer.withDefaults())
+                .authenticationEntryPoint((req, res, ex) -> {
+                    if (req.getRequestURI().equals("/login")) {
+                        res.setStatus(200);
+                    } else {
+                        res.setStatus(401);
+                    }
+                })
+            )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }
+
 
     @Bean
     public JwtDecoder jwtDecoder() {

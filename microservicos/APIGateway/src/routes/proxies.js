@@ -84,12 +84,28 @@ function setupProxies(app) {
     createProxyMiddleware({
       target: process.env.AUTH_SERVICE_URL,
       changeOrigin: true,
-      selfHandleResponse: false,
-      preserveHeaderKeyCase: true,
       proxyTimeout: 30000,
       timeout: 30000,
 
-      onProxyReq: (proxyReq, req) => {
+      onProxyReq(proxyReq, req) {
+        if (req.body && Object.keys(req.body).length > 0) {
+          const bodyData = JSON.stringify(req.body);
+
+          proxyReq.setHeader("Content-Type", "application/json");
+          proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
+
+          proxyReq.write(bodyData);
+        }
+      },
+
+      onProxyRes(proxyRes, req, res) {
+        res.header("Access-Control-Allow-Origin", "http://localhost");
+        res.header("Access-Control-Allow-Methods", "POST,OPTIONS");
+        res.header(
+          "Access-Control-Allow-Headers",
+          "Content-Type, Authorization"
+        );
+        res.header("Access-Control-Allow-Credentials", "true");
       },
     })
   );
