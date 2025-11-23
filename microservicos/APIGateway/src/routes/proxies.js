@@ -79,7 +79,7 @@ function setupProxies(app) {
       changeOrigin: true,
       proxyTimeout: 30000,
       timeout: 30000,
-      selfHandleResponse: true, // Importante para controlar a resposta
+      selfHandleResponse: true,
 
       onProxyReq(proxyReq, req) {
         if (req.body && Object.keys(req.body).length > 0) {
@@ -110,18 +110,51 @@ function setupProxies(app) {
 
           // Se o auth service retornar 401, mantemos 401
           if (proxyRes.statusCode === 401) {
-            console.log("❌ Login falhou - credenciais inválidas");
+            console.log("❌ Login falhou - credenciais inválidas (status 401)");
             return res.status(401).json({
               mensagem: "Credenciais inválidas",
             });
           }
 
-          // Para outros status, repassamos a resposta original
+          // Se a resposta estiver vazia ou não for JSON válido
+          if (!responseBody || responseBody.trim() === "") {
+            console.log(
+              "❌ Login falhou - resposta vazia do serviço de autenticação"
+            );
+            return res.status(401).json({
+              mensagem: "Credenciais inválidas",
+            });
+          }
+
           try {
             const data = JSON.parse(responseBody);
+
+            // Verificar se a resposta contém os dados esperados para login válido
+            const isValidLoginResponse =
+              data &&
+              (data.token ||
+                data.access_token ||
+                (data.id && data.email) ||
+                data.mensagem === "Login realizado com sucesso");
+
+            if (!isValidLoginResponse) {
+              console.log("❌ Login falhou - resposta inválida:", data);
+              return res.status(401).json({
+                mensagem: "Credenciais inválidas",
+              });
+            }
+
+            // Se chegou aqui, o login é válido
+            console.log("✅ Login realizado com sucesso");
             res.status(proxyRes.statusCode).json(data);
           } catch (e) {
-            res.status(proxyRes.statusCode).send(responseBody);
+            console.log(
+              "❌ Login falhou - resposta não é JSON válido:",
+              responseBody
+            );
+            return res.status(401).json({
+              mensagem: "Credenciais inválidas",
+            });
           }
         });
       },
