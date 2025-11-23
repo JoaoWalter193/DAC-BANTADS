@@ -3,12 +3,9 @@ const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const { rateLimit } = require("express-rate-limit");
-const compositionRouter = require("./src/routes/compositions");
 const setupProxies = require("./src/routes/proxies");
 const errorHandler = require("./src/middlewares/errorHandler");
 const requestLogger = require("./src/middlewares/requestLogger");
-const config = require("./src/config/service");
 
 const app = express();
 
@@ -29,18 +26,13 @@ app.use(
   })
 );
 
-app.use((req, res, next) => {
-  if (req.path === "/login") return next();
-  express.json()(req, res, next);
-});
-
+app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
 app.use(requestLogger);
 
 setupProxies(app);
-
-app.use("/", compositionRouter);
 
 app.use(errorHandler);
 

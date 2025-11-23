@@ -22,7 +22,7 @@ public class AuthProducer {
     @Value("${rabbitmq.key.saga-create-fail}")
     private String sagaAuthFailKey;
 
-    @Value("routingKeySaga")
+    @Value("KeySaga")
     public String routingKeySaga;
 
     private final AmqpTemplate rabbitTemplate;

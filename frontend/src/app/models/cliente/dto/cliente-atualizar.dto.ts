@@ -3,7 +3,7 @@ export interface ClienteAtualizarDTO {
   email: string;
   salario: number;
   endereco: string;
-  CEP: string;
+  cep: string;
   cidade: string;
   estado: string;
 }

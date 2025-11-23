@@ -1,10 +1,10 @@
-export interface ClienteAutocadastroDTO {
+export interface MelhorClienteDTO {
   cpf: string;
-  email: string;
   nome: string;
+  email: string;
   salario: number;
   endereco: string;
-  cep: string;
   cidade: string;
   estado: string;
+  saldo: number;
 }

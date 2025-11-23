@@ -54,6 +54,7 @@ public class RabbitMQConsumer {
     @RabbitListener(queues = {"MsConta"})
     public void consume(ResponseDTO message) {
         if (message.ms().equals("Criar conta")) {
+            System.out.println("CHEGOU ATÉ AQUI PARA CRIAR A CONTA DO CARA");
             AdicionarContaDTO contaTemp = new AdicionarContaDTO(message.cpf(),
                     message.nome(),
                     message.salario());

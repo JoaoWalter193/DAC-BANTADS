@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import { FormsModule } from '@angular/forms';
-import { ClienteService } from '../../../services/cliente.service';
+import { GerenteService } from '../../../services/gerente.service';
 import { RouterModule } from '@angular/router';
-import { ClienteDetalhesDTO } from '../../../models/cliente/dto/cliente-detalhes.dto';
+import { ClienteListaGerenteDTO } from '../../../models/cliente/dto/cliente-lista-gerente.dto';
 
 @Component({
   selector: 'app-clientes',
@@ -13,15 +13,46 @@ import { ClienteDetalhesDTO } from '../../../models/cliente/dto/cliente-detalhes
   styleUrl: './clientes.component.css',
   imports: [CommonModule, RouterModule, FormatarCpfPipe, FormsModule],
 })
-export class ClientesComponent {
-  clientes: ClienteDetalhesDTO[] = [];
+export class ClientesComponent implements OnInit {
+  clientes: ClienteListaGerenteDTO[] = [];
   filtro: string = '';
 
-  constructor(private clientesService: ClienteService) {
-    this.clientesService.listarClientes();
+  constructor(private gerenteService: GerenteService) {}
+
+  ngOnInit(): void {
+    this.carregarClientesDoGerente();
   }
 
-  get clientesFiltrados(): ClienteDetalhesDTO[] {
+  carregarClientesDoGerente(): void {
+    const cpfGerenteLogado = this.obterCpfGerenteLogado();
+
+    this.gerenteService.getClientesDoGerente(cpfGerenteLogado).subscribe({
+      next: (clientes) => {
+        this.clientes = clientes;
+        console.log('Clientes carregados:', this.clientes);
+      },
+      error: (err) => {
+        console.error('Erro ao carregar clientes:', err);
+      },
+    });
+  }
+
+  onFiltroChange(): void {
+    const cpfGerenteLogado = this.obterCpfGerenteLogado();
+
+    this.gerenteService
+      .getClientesDoGerente(cpfGerenteLogado, this.filtro)
+      .subscribe({
+        next: (clientes) => {
+          this.clientes = clientes;
+        },
+        error: (err) => {
+          console.error('Erro ao filtrar clientes:', err);
+        },
+      });
+  }
+
+  get clientesFiltrados(): ClienteListaGerenteDTO[] {
     const termo = this.filtro.toLowerCase();
     return this.clientes.filter(
       (cliente) =>
@@ -30,11 +61,7 @@ export class ClientesComponent {
     );
   }
 
-  calcularLimite(salario: number): number {
-    if (salario < 2000) {
-      return 0;
-    } else {
-      return salario / 2;
-    }
+  private obterCpfGerenteLogado(): string {
+    return '98574307084';
   }
 }
