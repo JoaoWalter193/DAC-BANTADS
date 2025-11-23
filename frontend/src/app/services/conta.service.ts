@@ -70,10 +70,12 @@ export class ContaService {
   }
 
   // @GetMapping("/{numConta}/extrato")
-  obterExtrato(numero: string): Observable<ContaExtrato> {
-    return this.http.get<ContaExtrato>(`${this.api}/${numero}/extrato`, {
-      headers: this.getHeaders()
-    });
+  obterExtrato(numero: string, inicio?: string, fim?: string): Observable<any> {
+    let url = `${this.api}/${numero}/extrato`;
+    if (inicio && fim) {
+        url += `?inicio=${inicio}&fim=${fim}`;
+    }
+    return this.http.get<any>(url, { headers: this.getHeaders() });
   }
 
   // @GetMapping("/{cpf}")
