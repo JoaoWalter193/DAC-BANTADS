@@ -1,6 +1,5 @@
 package mscliente.config;
 
-
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -19,24 +18,43 @@ public class RabbitMQConfig {
     private String exchange;
 
     @Bean
-    public TopicExchange exchange(){
+    public TopicExchange exchange() {
         return new TopicExchange(exchange);
     }
 
-// teste pedro alteracaoperfil
-// fila pra atualizar o ms-cliente
+    @Bean
+    public Queue queueClienteCriar() {
+        return new Queue("queue-cliente-criar");
+    }
+
+    @Bean
+    public Binding bindingClienteCriar() {
+        return BindingBuilder.bind(queueClienteCriar()).to(exchange()).with("keyCliente-criar");
+    }
+
+
+    @Bean
+    public Queue queueClienteRollback() {
+        return new Queue("queue-cliente-rollback");
+    }
+
+    @Bean
+    public Binding bindingClienteRollback() {
+        return BindingBuilder.bind(queueClienteRollback()).to(exchange()).with("keyCliente-rollback");
+    }
+
     @Value("AtualizarCliente")
     private String filaAtualizarCliente;
+
     @Bean
     public Queue filaAtualizarCliente() {
         return new Queue(filaAtualizarCliente);
     }
 
-// key
+
     @Value("keyAtualizarCliente")
     private String routingKeyAtualizarCliente;
 
-// binding
     @Bean
     public Binding bindingAtualizarCliente() {
         return BindingBuilder
@@ -45,19 +63,20 @@ public class RabbitMQConfig {
                 .with(routingKeyAtualizarCliente);
     }
 
-// falha, reverter
+
     @Value("AtualizarClienteFalha")
     private String filaAtualizarClienteFalha;
+
     @Bean
     public Queue filaAtualizarClienteFalha() {
         return new Queue(filaAtualizarClienteFalha);
     }
 
-    // Key
+
     @Value("keyAtualizarClienteFalha")
     private String routingKeyAtualizarClienteFalha;
 
-    // Binding
+
     @Bean
     public Binding bindingAtualizarClienteFalha() {
         return BindingBuilder
@@ -66,7 +85,19 @@ public class RabbitMQConfig {
                 .with(routingKeyAtualizarClienteFalha);
     }
 
+    public static final String QUEUE_CLIENTE_APROVAR = "queue-cliente-aprovar";
 
+    @Bean
+    public Queue queueClienteAprovar() {
+        return new Queue(QUEUE_CLIENTE_APROVAR);
+    }
+
+    @Bean
+    public Binding bindingClienteAprovar(Queue queueClienteAprovar, TopicExchange exchangePrincipal) {
+        return BindingBuilder.bind(queueClienteAprovar)
+                .to(exchangePrincipal)
+                .with("cliente-aprovar");
+    }
 
     @Bean
     public MessageConverter converter() {

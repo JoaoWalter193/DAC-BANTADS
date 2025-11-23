@@ -1,106 +1,146 @@
 package msSaga.msSaga.services;
 
-
-import jakarta.validation.Valid;
 import msSaga.msSaga.DTO.*;
-import msSaga.msSaga.consumer.RabbitMQConsumer;
+import msSaga.msSaga.domain.SagaStatus;
+import msSaga.msSaga.domain.SagaStep;
 import msSaga.msSaga.producer.RabbitMQProducer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 public class SagaService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SagaService.class);
+    private final RabbitMQProducer rabbitMQProducer;
 
-    @Autowired
-    RabbitMQProducer rabbitMQProducer;
-
-    @Autowired
-    RabbitMQConsumer rabbitMQConsumer;
-
-    public ResponseEntity<RespostaPadraoDTO> autoCadastro (AutocadastroDTO data){
-        /*
-
-        1 PASSO - Criar cadastro do cliente em Ms-cliente --> Está enviando, agora preciso ver como faço para a lógica ficar aqui e passar para o prox passo
-        2 PASSO - Criar cadastro do cliente em Ms-auth
-        3 PASSO - Criar a conta do cliente em Ms-conta
-        4 PASSO - Alocar conta do cliente para um gerente
-        -- em teoria acaba aqui esta saga, pois a partir disso fica a questão de quando o gerente irá aprovar o cliente
-
-        5 PASSO - Gerente aprovou = Enviar senha aleatoria para o cliente por email
-                  Gerente negou = Colcoar motivo e data e hora e enviar por email para o cliente e armazenar
-
-
-        OBS: Se ocorrer alguma fala deve ser enviado para o cliente indiando que a solicitação não foi efetuada
-         */
-
-        //Enviar os dados necesśarios para criar o cliente
-        rabbitMQProducer.sendContaCliente(data);
-        // a partir disso ele vai receber a mensagem no Consumer e a lógica vai rodar de lá
-        // --> Tenho que perguntar para o professor e pessoas, como fizeram para a lógica continuar aqui
-
-
-        //Agora tem de enviar os dados para o ms-auth
-
-        //Depois do ms-auth tem que enviar para o ms-conta
-
-        return ResponseEntity.ok(new RespostaPadraoDTO("Processo de autocadastro iniciado, mais informações serão enviadas via e-mail", HttpStatus.CREATED.value()));
-
+    public SagaService(RabbitMQProducer rabbitMQProducer) {
+        this.rabbitMQProducer = rabbitMQProducer;
     }
 
-    public ResponseEntity<String> sagaAprovarCliente(String cpf){
+    // --- SAGA 1: AUTOCADASTRO ---
+    public void iniciarAutocadastro(AutocadastroDTO data) {
+        AutocadastroDTO saga = new AutocadastroDTO(
+                UUID.randomUUID(),
+                SagaStep.INICIO,
+                SagaStatus.SUCESSO,
+                null,
+                data.cpf(),
+                data.email(),
+                data.nome(),
+                data.salario(),
+                data.endereco(),
+                data.cep(),
+                data.cidade(),
+                data.estado(),
+                null,
+                null,
+                null,
+                null);
 
-
-        AutocadastroDTO data = new AutocadastroDTO(cpf,"Aprovar Conta",
-                null, 1.2,
-                null, null,
-                null, null);
-        rabbitMQProducer.sendContaCliente(data);
-
-        return ResponseEntity.ok("Cliente aprovado com sucesso");
+        LOGGER.info("Iniciando Saga Autocadastro: {}", saga.sagaId());
+        orquestrarAutocadastro(saga);
     }
 
-    // PEGAR OS DADOS AQUI É UMA BUCHA, DEPOIS O API GATEWAY FAZ A PESQUISA DOS DADOS COM O GET E FAZ O QUE FOR NECESSÁRIO PARA MONTAR A RESPOSTA
+    public void orquestrarAutocadastro(AutocadastroDTO saga) {
+        if (saga.status() == SagaStatus.ERRO) {
+            LOGGER.error("ROLLBACK SAGA AUTOCADASTRO: {}", saga.mensagemErro());
+            rabbitMQProducer.enviarRollbackCliente(saga); 
+            return;
+        }
 
-
-    public ResponseEntity<RespostaPadraoDTO> removerGerente(String cpf) {
-        //MS-Gerentes -> CPF
-        //MS-Conta -> CPF
-
-        GerenteMsDTO dtoTemp = new GerenteMsDTO(cpf, null,null,null,null, "Deletar");
-        rabbitMQProducer.sendGerenteMsGerente(dtoTemp);
-
-        return ResponseEntity.ok(new RespostaPadraoDTO("Development", 500));
+        switch (saga.stepAtual()) {
+            case INICIO:
+                rabbitMQProducer.enviarParaMsCliente(saga);
+                break;
+            case CLIENTE_CRIADO:
+                rabbitMQProducer.enviarParaMsAuth(saga);
+                break;
+            case AUTH_CRIADO:
+                LOGGER.info("Auth criado (ID: {}). Enviando para MS-Conta...", saga.idAuthCriado());
+                rabbitMQProducer.enviarParaMsConta(saga);
+                break;
+            default:
+                LOGGER.warn("Passo desconhecido no Autocadastro: {}", saga.stepAtual());
+        }
     }
 
-    public ResponseEntity<RespostaPadraoDTO> atualizarGerente(String cpf, @Valid GerenteAttDTO data) {
-
-        //MS-Gerentes -> (Nome, Email, Senha)
-        //MS-Conta -> (Nome)
-
-        GerenteMsDTO dtoTemp = new GerenteMsDTO(cpf, data.nome(), data.email(), null, data.senha(),"Atualizar");
-        rabbitMQProducer.sendGerenteMsGerente(dtoTemp);
-
-        return ResponseEntity.ok(new RespostaPadraoDTO("Development", 500));
+    // --- SAGA 2: APROVAÇÃO DE CLIENTE ---
+    public void iniciarAprovarCliente(String cpf) {
+        AprovacaoDTO saga = new AprovacaoDTO(
+                UUID.randomUUID(),
+                cpf,
+                null,
+                "INICIO",
+                "SUCESSO",
+                null,
+                null,
+                null
+        );
+    
+        LOGGER.info("Iniciando Saga Aprovação (Busca Dados): {}", cpf);
+        orquestrarAprovacao(saga);
     }
 
-    public ResponseEntity<RespostaPadraoDTO> inserirGerente(@Valid GerenteMsDTO data) {
+    public void orquestrarAprovacao(AprovacaoDTO saga) {
+        if ("ERRO".equals(saga.mensagemErro()) || "FALHA".equals(saga.mensagemErro())) {
+            LOGGER.error("ERRO NA SAGA APROVAÇÃO: {}", saga.mensagemErro());
+            return;
+        }
 
-        // MS-Gerentes -> Todos os Dados (Cpf, Nome, Email, Senha, Tipo)
-        // MS-Conta -> (Cpf, Nome)
-
-        GerenteMsDTO dtoTemp = new GerenteMsDTO(data.cpf(), data.nome(), data.email(), data.tipo(), data.senha(), "Criar");
-        rabbitMQProducer.sendGerenteMsGerente(dtoTemp);
-
-        return ResponseEntity.ok(new RespostaPadraoDTO("Development", 500));
+        switch (saga.stepAtual()) {
+            case "INICIO":
+                LOGGER.info("SAGA: Enviando para MS-Cliente aprovar e buscar dados...");
+                rabbitMQProducer.enviarAprovacaoCliente(saga);
+                break;
+        }
     }
 
-// teste pedro alteracaoperfil
-    public void executarSagaAlteracaoPerfil(AlteracaoPerfilDTO dados) {
-        System.out.println("saga service - recebe HTTP Req");
+    public void iniciarInsercaoGerente(GerenteMsDTO data) {
+        LOGGER.info("Iniciando Saga Inserção de Gerente: {}", data.nome());
+
+        GerenteMsDTO dtoSaga = new GerenteMsDTO(
+                data.cpf(), 
+                data.nome(), 
+                data.email(), 
+                data.tipo(), 
+                data.senha(), 
+                "Criar"
+        );
+
+        rabbitMQProducer.enviarSagaGerente(dtoSaga);
+    }
+
+    public void iniciarAtualizacaoGerente(String cpf, GerenteAttDTO data) {
+        LOGGER.info("Iniciando Saga Atualização de Gerente: {}", cpf);
+
+        GerenteMsDTO dtoSaga = new GerenteMsDTO(
+                cpf, 
+                data.nome(), 
+                data.email(), 
+                null,
+                data.senha(),
+                "Atualizar"
+        );
         
+        rabbitMQProducer.enviarSagaGerente(dtoSaga);
+    }
+
+    public void iniciarRemocaoGerente(String cpf) {
+        LOGGER.info("Iniciando Saga Remoção de Gerente: {}", cpf);
+        GerenteMsDTO dtoSaga = new GerenteMsDTO(
+                cpf, 
+                null, null, null, null, 
+                "Deletar"
+        );
+
+        rabbitMQProducer.enviarSagaGerente(dtoSaga);
+    }
+
+    public void iniciarAlteracaoPerfil(AlteracaoPerfilDTO dados) {
+        LOGGER.info("Iniciando Saga Alteração de Perfil para: {}", dados.dadosAtualizados().cpf());
         rabbitMQProducer.sendAtualizarCliente(dados);
     }
 }

@@ -31,24 +31,24 @@ public class ContaController {
     }
 
     @PutMapping("/{numConta}/depositar")
-    public ResponseEntity<ContaPadraoDTO> depositarCliente(@PathVariable String numConta,
+    public ResponseEntity<ContaPadraoDTO> depositarCliente(@PathVariable Integer numConta,
             @RequestBody double valorDepositar) {
         return contaCUDService.depositarCliente(numConta, valorDepositar);
     }
 
     @PutMapping("/{numConta}/sacar")
-    public ResponseEntity<ContaPadraoDTO> sacarCliente(@PathVariable String numConta, @RequestBody double valorSacar) {
+    public ResponseEntity<ContaPadraoDTO> sacarCliente(@PathVariable Integer numConta, @RequestBody double valorSacar) {
         return contaCUDService.sacarCliente(numConta, valorSacar);
     }
 
     @PutMapping("/{numConta}/transferir")
-    public ResponseEntity<String> transferirDinheiro(@PathVariable String numConta, @RequestBody TransferirDTO data) {
+    public ResponseEntity<String> transferirDinheiro(@PathVariable Integer numConta, @RequestBody TransferirDTO data) {
         return contaCUDService.transferir(numConta, data);
     }
 
     @PutMapping("/{numConta}")
-    public ResponseEntity<ContaPadraoDTO> atualizarLimite(@PathVariable String numConta, @RequestBody double limite) {
-        return contaCUDService.atualizarLimite(numConta, limite);
+    public ResponseEntity<ContaPadraoDTO> atualizarLimite(@PathVariable Integer numConta, @RequestBody double limite) {
+        return contaCUDService.alteracaoPerfilLimite(numConta, limite);
     }
 
     // vai ser chamado para construir o dashboard
@@ -64,7 +64,7 @@ public class ContaController {
     }
 
     @GetMapping("/{numConta}/extrato")
-    public ResponseEntity<ExtratoDTO> buscarExtrato(@PathVariable String numConta) {
+    public ResponseEntity<ExtratoDTO> buscarExtrato(@PathVariable Integer numConta) {
         return contaRService.verExtrato(numConta);
     }
 
@@ -74,7 +74,7 @@ public class ContaController {
     }
 
     @GetMapping("/{numConta}/saldo")
-    public ResponseEntity<ContaPadraoDTO> buscarContaCliente(@PathVariable String numConta) {
+    public ResponseEntity<ContaPadraoDTO> buscarContaCliente(@PathVariable Integer numConta) {
         return contaRService.buscarContaCliente(numConta);
     }
 

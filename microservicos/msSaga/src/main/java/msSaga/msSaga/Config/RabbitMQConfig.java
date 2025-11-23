@@ -1,230 +1,142 @@
 package msSaga.msSaga.Config;
 
-
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import tools.jackson.databind.json.JsonMapper;
 
 // File para criar as queues, as exchanges e os bindings
-
 
 @Configuration
 public class RabbitMQConfig {
 
-// Criação da Exchange, vai ter uma só
-
-    @Value("exchangePrincipal")
-    private String exchange;
-
+    @Value("${rabbitmq.exchange.saga}")
+    private String exchangeName;
 
     @Bean
-    public TopicExchange exchange(){
-        return new TopicExchange(exchange);
+    public TopicExchange exchange() {
+        return new TopicExchange(exchangeName);
     }
 
-    // Criação das Queues, Keys e Bindings
+    @Value("${rabbitmq.queue.saga-response}")
+    private String queueSagaResposta;
 
-    //Queue
-    @Value("MsAuth")
-    private String queueMsAuth;
+    @Value("${rabbitmq.key.saga-response}")
+    private String keySagaResposta;
+
     @Bean
-    public Queue queueAuth(){ return new Queue(queueMsAuth);}
-
-    //Key
-    @Value("keyAuth")
-    private String routingKeyAuth;
-
-    //Binding da Queue
-    @Bean
-    public Binding bindingAuth(){
-        return BindingBuilder.bind(queueAuth())
-                .to(exchange())
-                .with(routingKeyAuth);
+    public Queue queueSagaResposta() {
+        return new Queue(queueSagaResposta, true);
     }
 
-    //Queue
-    @Value("MsSaga")
-    private String queueMsSaga;
     @Bean
-    public Queue queueSaga(){ return new Queue(queueMsSaga);}
-
-    //Key
-    @Value("keySaga")
-    private String routingKeySaga;
-
-    //Binding da Queue
-    @Bean
-    public Binding bindingSaga(){
-        return BindingBuilder.bind(queueSaga())
-                .to(exchange())
-                .with(routingKeySaga);
+    public Binding bindingSagaResposta() {
+        return BindingBuilder.bind(queueSagaResposta()).to(exchange()).with(keySagaResposta);
     }
 
+    @Value("${rabbitmq.queue.cliente}")
+    private String queueCliente;
+    @Value("${rabbitmq.key.cliente}")
+    private String keyCliente;
 
-
-
-    //Queue
-    @Value("MsCliente")
-    private String queueMsCliente;
     @Bean
-    public Queue queueCliente(){ return new Queue(queueMsCliente);}
-
-    //Key
-    @Value("keyCliente")
-    private String routingKeyCliente;
-
-    //Binding da Queue
-    @Bean
-    public Binding bindingCliente(){
-        return BindingBuilder.bind(queueCliente())
-                .to(exchange())
-                .with(routingKeyCliente);
+    public Queue queueCliente() {
+        return new Queue(queueCliente);
     }
 
-
-    //Queue
-    @Value("MsGerente")
-    private String queueMsGerente;
     @Bean
-    public Queue queueGerente(){ return new Queue(queueMsGerente);}
-
-    //Key
-    @Value("keyGerente")
-    private String routingKeyGerente;
-
-    //Binding da Queue
-    @Bean
-    public Binding bindingGerente(){
-        return BindingBuilder.bind(queueGerente())
-                .to(exchange())
-                .with(routingKeyGerente);
+    public Binding bindingCliente() {
+        return BindingBuilder.bind(queueCliente()).to(exchange()).with(keyCliente);
     }
 
-    //Queue
-    @Value("MsConta")
-    private String queueMsConta;
-    @Bean
-    public Queue queueConta(){ return new Queue(queueMsConta);}
+    @Value("${rabbitmq.queue.auth}")
+    private String queueAuth;
+    @Value("${rabbitmq.key.auth}")
+    private String keyAuth;
 
-    //Key
-    @Value("keyConta")
-    private String routingKeyConta;
-
-    //Binding da Queue
     @Bean
-    public Binding bindingConta(){
-        return BindingBuilder.bind(queueConta())
-                .to(exchange())
-                .with(routingKeyConta);
+    public Queue queueAuth() {
+        return new Queue(queueAuth);
     }
 
-    //Queue
-    @Value("BancoAtt")
-    private String queueBancoAtt;
     @Bean
-    public Queue queueBanco(){ return new Queue(queueBancoAtt);}
-
-    //Key
-    @Value("keyBanco")
-    private String routingKeyBanco;
-
-    //Binding da Queue
-    @Bean
-    public Binding bindingBanco(){
-        return BindingBuilder.bind(queueBanco())
-                .to(exchange())
-                .with(routingKeyBanco);
+    public Binding bindingAuth() {
+        return BindingBuilder.bind(queueAuth()).to(exchange()).with(keyAuth);
     }
 
+    @Value("${rabbitmq.queue.conta}")
+    private String queueConta;
+    @Value("${rabbitmq.key.conta}")
+    private String keyConta;
 
-// teste pedro alteracaoperfil
-// fila pro sucesso da alteracao perfil
-    @Value("AtualizacaoClienteSucesso")
-    private String filaAtualizacaoClienteSucesso;
     @Bean
-    public Queue filaAlteracaoPerfil() {
-        return new Queue(filaAtualizacaoClienteSucesso);
+    public Queue queueConta() {
+        return new Queue(queueConta);
     }
 
-// key
-    @Value("keyAtualizacaoClienteSucesso")
-    private String routingKeyAlteracaoPerfil;
-
-// binding
     @Bean
-    public Binding bindingAtualizacaoClienteSucesso() {
-        return BindingBuilder
-                .bind(filaAlteracaoPerfil())
-                .to(exchange())
-                .with(routingKeyAlteracaoPerfil);
+    public Binding bindingConta() {
+        return BindingBuilder.bind(queueConta()).to(exchange()).with(keyConta);
     }
 
+    @Value("${rabbitmq.queue.atualizacao-cliente-sucesso}")
+    private String queueAttClienteSucesso;
+    @Value("${rabbitmq.key.atualizacao-cliente-sucesso}")
+    private String keyAttClienteSucesso;
 
-// fila pro sucesso da alteracao da conta
-    @Value("AtualizacaoContaSucesso")
-    private String filaAtualizacaoContaSucesso;
     @Bean
-    public Queue filaAtualizacaoConta() {
-        return new Queue(filaAtualizacaoContaSucesso);
+    public Queue queueAttClienteSucesso() {
+        return new Queue(queueAttClienteSucesso);
     }
 
-// key
-    @Value("keyAtualizacaoContaSucesso")
-    private String routingKeyAtualizacaoConta;
-
-// binding
     @Bean
-    public Binding bindingAtualizacaoContaSucesso() {
-        return BindingBuilder
-                .bind(filaAtualizacaoConta())
-                .to(exchange())
-                .with(routingKeyAtualizacaoConta);
+    public Binding bindingAttClienteSucesso() {
+        return BindingBuilder.bind(queueAttClienteSucesso()).to(exchange()).with(keyAttClienteSucesso);
     }
 
-// Fila pra falha
-    @Value("AtualizacaoContaFalha")
-    private String filaAtualizacaoContaFalha;
+    @Value("${rabbitmq.queue.atualizacao-conta-sucesso}")
+    private String queueAttContaSucesso;
+    @Value("${rabbitmq.key.atualizacao-conta-sucesso}")
+    private String keyAttContaSucesso;
+
     @Bean
-    public Queue filaAtualizacaoContaFalha() {
-        return new Queue(filaAtualizacaoContaFalha);
+    public Queue queueAttContaSucesso() {
+        return new Queue(queueAttContaSucesso);
     }
 
-    // Key
-    @Value("keyAtualizacaoContaFalha")
-    private String routingKeyAtualizacaoContaFalha;
-
-    // Binding
     @Bean
-    public Binding bindingAtualizacaoContaFalha() {
-        return BindingBuilder
-                .bind(filaAtualizacaoContaFalha())
-                .to(exchange())
-                .with(routingKeyAtualizacaoContaFalha);
+    public Binding bindingAttContaSucesso() {
+        return BindingBuilder.bind(queueAttContaSucesso()).to(exchange()).with(keyAttContaSucesso);
     }
 
+    @Value("${rabbitmq.queue.atualizacao-conta-falha}")
+    private String queueAttContaFalha;
+    @Value("${rabbitmq.key.atualizacao-conta-falha}")
+    private String keyAttContaFalha;
 
-
-    // para fazer com que ele envie classes e coisas com JSON parser
     @Bean
-    public MessageConverter converter(){
+    public Queue queueAttContaFalha() {
+        return new Queue(queueAttContaFalha);
+    }
+
+    @Bean
+    public Binding bindingAttContaFalha() {
+        return BindingBuilder.bind(queueAttContaFalha()).to(exchange()).with(keyAttContaFalha);
+    }
+
+    @Bean
+    public MessageConverter converter() {
         return new JacksonJsonMessageConverter();
     }
+
     @Bean
-    public AmqpTemplate amqpTemplate(ConnectionFactory connectionFactory){
+    public AmqpTemplate amqpTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(converter());
         return rabbitTemplate;
     }
-
-
-
-
-
 }

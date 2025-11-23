@@ -1,136 +1,106 @@
 package msSaga.msSaga.consumer;
 
-
-
 import msSaga.msSaga.DTO.AlteracaoPerfilDTO;
+import msSaga.msSaga.DTO.AprovacaoDTO;
 import msSaga.msSaga.DTO.AutocadastroDTO;
 import msSaga.msSaga.DTO.ClienteDTO;
-import msSaga.msSaga.DTO.ResponseDTO;
 import msSaga.msSaga.producer.RabbitMQProducer;
+import msSaga.msSaga.services.SagaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RabbitMQConsumer {
 
-    @Autowired
-    RabbitMQProducer rabbitMQProducer;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQConsumer.class);
 
-    @RabbitListener(queues = {"MsSaga"})
-    public void consume(ResponseDTO message){
-        // A mensagem que eu vou receber aqui não vai ser só uma string, vai ser uma msg com todos os dados do cliente e um cmapo de resposta
-        // e os if's serão baseados nesse campo
+    private final RabbitMQProducer rabbitMQProducer;
+    private final SagaService sagaService;
 
-
-        if (message.cod() == 201 && message.ms().equals("msCliente")){
-            System.out.println(">>> PROCESSANDO: msCliente - Criar conta");
-
-            // lógica após adicionar cliente em Cliente
-            rabbitMQProducer.sendContaAuth(message);
-
-
-        }
-
-        if (message.cod() == 201 && message.ms().equals("ms-auth")){
-            //enviar para conta
-            ResponseDTO respostaTemp = new ResponseDTO(00, message.cpf(),
-                    message.nome(),
-                    message.salario(),
-                    "Criar conta",
-                    message.senha());
-            rabbitMQProducer.sendContaConta(respostaTemp);
-        }
-
-
-        // Lógica de enviar o erro para os MS excluir a conta
-        if (message.cod() == 500 && message.ms().equals("Erro ms-conta -- criar cliente")){
-            AutocadastroDTO data = new AutocadastroDTO(message.cpf(),
-                    message.ms(),
-                    null,
-                    0.0,
-                    null,
-                    null,
-                    null, null);
-            rabbitMQProducer.sendContaCliente(data);
-        }
-
-        if (message.cod() == 500 && message.ms().equals("Erro ms-conta -- criar cliente -- ms-cliente")){
-            // agora preciso que ele vá e delete do ms-auth finalizando esse processo, eu tenho o cpf do cara aqui
-            ResponseDTO temp = new ResponseDTO(00,
-                    message.cpf(), // isso aqui vai estar como email do carinha
-                    null,
-                    0.0,
-                    message.ms(), null);
-            rabbitMQProducer.sendContaAuth(temp);
-        }
-
-
-        // LÓGICA PARA EXCLUIR / ADICIONAR GERENTE NO MS-CONTA
-        // adicionar gerente
-        if (message.cod() == 201 && message.ms().equals("msGerente-criar")){
-            rabbitMQProducer.sendGerenteExcluirAdd(message);
-
-        }
-
-        // remover gerente
-        if (message.cod() == 200 && message.ms().equals("msGerente-deletar")){
-            rabbitMQProducer.sendGerenteExcluirAdd(message);
-
-        }
-
-        // atualizar gerente
-        if (message.cod() == 200 && message.ms().equals("msGerente-atualizar")){
-            rabbitMQProducer.sendGerenteExcluirAdd(message);
-        }
-
-
-        // LÓGICA PARA APROVAÇÃO DA CONTA DO CLIENTE
-        if (message.cod() == 200 && message.ms().equals("msCliente-aprovado")){
-            rabbitMQProducer.sendContaConta(message);
-        }
-
+    public RabbitMQConsumer(RabbitMQProducer rabbitMQProducer, SagaService sagaService) {
+        this.rabbitMQProducer = rabbitMQProducer;
+        this.sagaService = sagaService;
     }
 
-// teste pedro alteracaoperfil
-    @RabbitListener(queues = {"AtualizacaoClienteSucesso"})
+    
+    @RabbitListener(queues = "${rabbitmq.queue.saga-default:MsSaga}")
+    public void receberRespostaSaga(AutocadastroDTO dto) {
+        LOGGER.info("SAGA Recebeu evento Autocadastro: Step={} | Status={}", dto.stepAtual(), dto.status());
+        sagaService.orquestrarAutocadastro(dto);
+    }
+
+
+    @RabbitListener(queues = "${rabbitmq.queue.saga-response:queue-saga-resposta}")
+    public void orquestrarAprovacao(AprovacaoDTO resposta) {
+        
+        LOGGER.info("SAGA ORCHESTRATOR (Aprovação): Recebi resposta. Passo: {} | Erro: {}", resposta.stepAtual(), resposta.mensagemErro());
+
+        if ("FALHA".equals(resposta.mensagemErro()) || "ERRO".equals(resposta.mensagemErro())) {
+            LOGGER.error("SAGA FALHOU NO PASSO: {}. Motivo: {}", resposta.stepAtual(), resposta.mensagemErro());
+            return;
+        }
+
+        switch (resposta.stepAtual()) {
+            case "CLIENTE_APROVADO":
+                LOGGER.info("Saga: Cliente aprovado. Enviando para MS-Conta criar conta...");
+                rabbitMQProducer.enviarCriacaoContaAprovada(resposta);
+                break;
+
+            case "CONTA_CRIADA":
+                LOGGER.info("Saga: Conta criada. Enviando para MS-Auth gerar credenciais...");
+                
+                AprovacaoDTO proximoPassoAuth = new AprovacaoDTO(
+                    resposta.sagaId(),
+                    resposta.cpf(),
+                    resposta.nome(),
+                    "CRIAR_AUTH",
+                    "PENDENTE",
+                    null,
+                    resposta.salario(),
+                    resposta.email()
+                );
+                rabbitMQProducer.enviarAprovacaoAuth(proximoPassoAuth);
+                break;
+
+            case "AUTH_CRIADO":
+                LOGGER.info("SAGA FINALIZADA COM SUCESSO! Cliente: {} ativo.", resposta.nome());
+                break;
+
+            default:
+                LOGGER.warn("Passo desconhecido na saga de aprovação: {}", resposta.stepAtual());
+                break;
+        }
+    }
+
+    @RabbitListener(queues = "${rabbitmq.queue.atualizacao-cliente-sucesso:AtualizacaoClienteSucesso}")
     public void clienteAtualizadoSucesso(AlteracaoPerfilDTO dados) {
-        System.out.println("cliente->saga teste recebe evento alteracao ");
+        LOGGER.info("Saga (Perfil): Cliente atualizado com sucesso. Solicitando atualização de limite de conta.");
         
         try {
-            System.out.println("saga->conta teste clienteAtualizadoSucesso saga consumer.");
-
-            // envia o comando pra atualizar limite
             rabbitMQProducer.sendAtualizarLimite(dados);
-            
         } catch (Exception e) {
-            System.out.println("saga consumer -> ERRO");
+            LOGGER.error("Saga Consumer (Perfil): Erro ao enviar solicitação de limite.", e);
             rabbitMQProducer.sendAtualizarFalha(dados.dadosOriginais());
         }
     }
     
-    // ouve a fila de sucesso pra confirmar que funcionou
-    @RabbitListener(queues = {"AtualizacaoContaSucesso"})
+    @RabbitListener(queues = "${rabbitmq.queue.atualizacao-conta-sucesso:AtualizacaoContaSucesso}")
     public void contaAtualizadaSucesso(AlteracaoPerfilDTO dados) { 
-        System.out.println("conta->saga teste confirmacao sucesso");
+        LOGGER.info("Saga (Perfil): Fluxo finalizado com SUCESSO. Conta e Cliente atualizados.");
     }
-//listener pra falha
-    @RabbitListener(queues = {"AtualizacaoContaFalha"})
+
+    @RabbitListener(queues = "${rabbitmq.queue.atualizacao-conta-falha:AtualizacaoContaFalha}")
     public void contaAtualizadaFalha(AlteracaoPerfilDTO dados) {
-        System.out.println("saga consumer -> erro AtualizacaoContaFalha");
+        LOGGER.error("Saga (Perfil): Falha na atualização da conta. Iniciando rollback do cliente.");
         
         try {
-            System.out.println("saga consumer -> reverter cliente");
-            
             ClienteDTO dadosClienteOriginais = dados.dadosOriginais();            
             rabbitMQProducer.sendAtualizarFalha(dadosClienteOriginais);
-            
+            LOGGER.info("Saga (Perfil): Rollback enviado para MS-Cliente.");
         } catch (Exception e) {
-            System.out.println("saga consumer -> falha reversao.");
+            LOGGER.error("Saga (Perfil): ERRO CRÍTICO NA REVERSÃO.", e);
         }
     }
 }

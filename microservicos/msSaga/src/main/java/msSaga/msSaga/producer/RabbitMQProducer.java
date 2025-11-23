@@ -1,91 +1,103 @@
 package msSaga.msSaga.producer;
 
-
-import msSaga.msSaga.DTO.AlteracaoPerfilDTO;
-import msSaga.msSaga.DTO.AutocadastroDTO;
-import msSaga.msSaga.DTO.ClienteDTO;
-import msSaga.msSaga.DTO.ContaDTO;
-import msSaga.msSaga.DTO.GerenteMsDTO;
-import msSaga.msSaga.DTO.ResponseDTO;
-import msSaga.msSaga.consumer.RabbitMQConsumer;
+import msSaga.msSaga.DTO.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
 
 @Service
 public class RabbitMQProducer {
 
-    @Value("exchangePrincipal")
+    private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQProducer.class);
+    private final RabbitTemplate rabbitTemplate;
+
+    @Value("${rabbitmq.exchange.saga:exchangePrincipal}")
     private String exchange;
 
-    @Value("keyCliente")
-    private String routingKeyCliente;
+    @Value("${rabbitmq.key.cliente-criar}")
+    private String keyClienteCriar;
 
-    @Value("keyConta")
-    private String routingKeyConta;
+    @Value("${rabbitmq.key.auth-criar}")
+    private String keyAuthCriar;
 
-    @Value("keyGerente")
-    private String routingKeyGerente;
+    @Value("${rabbitmq.key.conta-criar}")
+    private String keyContaCriar;
 
-    @Value("keyAuth")
-    private String routingKeyAuth;
+    @Value("${rabbitmq.key.cliente-rollback}")
+    private String keyClienteRollback;
 
-// teste pedro alteracaoperfil
-    @Value("keyAtualizarCliente") 
-    private String routingKeyAtualizarCliente;
+    @Value("${rabbitmq.key.cliente-aprovar}")
+    private String keyClienteAprovar;
 
-    @Value("keyAtualizarConta")
-    private String routingKeyAtualizarLimite;
+    @Value("${rabbitmq.key.auth-aprovar}")
+    private String keyAuthAprovar;
 
-    @Value("keyAtualizarClienteFalha")
-    private String routingKeyAtualizarClienteFalha;
+    @Value("${rabbitmq.key.atualizar-cliente}")
+    private String keyAtualizarCliente;
 
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
+    @Value("${rabbitmq.key.atualizar-limite}")
+    private String keyAtualizarLimite;
 
-    public RabbitMQProducer(RabbitTemplate rabbitTemplate){
+    @Value("${rabbitmq.key.atualizar-cliente-falha}")
+    private String keyAtualizarClienteFalha;
+
+    @Value("${rabbitmq.key.gerente:keyGerente}")
+    private String keyGerente;
+
+    public RabbitMQProducer(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
     }
 
 
-
-    public void sendContaCliente(AutocadastroDTO data){
-        rabbitTemplate.convertAndSend(exchange, routingKeyCliente, data);
+    public void enviarParaMsCliente(AutocadastroDTO saga) {
+        LOGGER.info("Enviando solicitação de CRIAÇÃO para MS-Cliente. SagaID: {}", saga.sagaId());
+        rabbitTemplate.convertAndSend(exchange, keyClienteCriar, saga);
     }
 
-    public void sendContaConta(ResponseDTO data){
-       // envio apenas os dados do cliente, e dentro do Ms-Conta ele vai automaticamente pegar um gerente
-        rabbitTemplate.convertAndSend(exchange,routingKeyConta, data);
+    public void enviarParaMsAuth(AutocadastroDTO saga) {
+        LOGGER.info("Enviando solicitação de CRIAÇÃO para MS-Auth. SagaID: {}", saga.sagaId());
+        rabbitTemplate.convertAndSend(exchange, keyAuthCriar, saga);
     }
 
-    public void sendGerenteExcluirAdd(ResponseDTO data){
-        rabbitTemplate.convertAndSend(exchange, routingKeyConta, data);
+    public void enviarParaMsConta(AutocadastroDTO saga) {
+        LOGGER.info("Enviando solicitação de CRIAÇÃO para MS-Conta. SagaID: {}", saga.sagaId());
+        rabbitTemplate.convertAndSend(exchange, keyContaCriar, saga);
     }
 
-    public void sendContaAuth(ResponseDTO data){
-        rabbitTemplate.convertAndSend(exchange,routingKeyAuth, data);
+    public void enviarRollbackCliente(AutocadastroDTO saga) {
+        LOGGER.warn("Enviando ROLLBACK para MS-Cliente. SagaID: {}", saga.sagaId());
+        rabbitTemplate.convertAndSend(exchange, keyClienteRollback, saga);
     }
 
-    public void sendGerenteMsGerente(GerenteMsDTO data){
-        rabbitTemplate.convertAndSend(exchange,routingKeyGerente,data);
+    public void enviarAprovacaoCliente(AprovacaoDTO saga) {
+        rabbitTemplate.convertAndSend(exchange, keyClienteAprovar, saga);
     }
 
-// teste pedro alteracaoperfil
+    public void enviarCriacaoContaAprovada(AprovacaoDTO saga) {
+        LOGGER.info("SAGA PRODUCER: Enviando solicitação de CRIAÇÃO DE CONTA (aprovada)");
+        rabbitTemplate.convertAndSend(exchange, keyContaCriar, saga);
+    }
+
+    public void enviarAprovacaoAuth(AprovacaoDTO saga) {
+        rabbitTemplate.convertAndSend(exchange, keyAuthAprovar, saga);
+    }
+
     public void sendAtualizarCliente(AlteracaoPerfilDTO dados) {
-        System.out.println("saga->cliente teste sendAtualizarCliente saga producer");
-        rabbitTemplate.convertAndSend(exchange, routingKeyAtualizarCliente, dados);
+        rabbitTemplate.convertAndSend(exchange, keyAtualizarCliente, dados);
     }
 
-    public void sendAtualizarLimite(AlteracaoPerfilDTO dados) { 
-        System.out.println("saga->conta teste sendAtualizarLimite saga producer");
-        rabbitTemplate.convertAndSend(exchange, routingKeyAtualizarLimite, dados);
+    public void sendAtualizarLimite(AlteracaoPerfilDTO dados) {
+        rabbitTemplate.convertAndSend(exchange, keyAtualizarLimite, dados);
     }
 
     public void sendAtualizarFalha(ClienteDTO dadosOriginais) {
-        System.out.println("saga->conta teste sendAtualizarFalha saga producer ");
-        rabbitTemplate.convertAndSend(exchange, routingKeyAtualizarClienteFalha, dadosOriginais);
+        rabbitTemplate.convertAndSend(exchange, keyAtualizarClienteFalha, dadosOriginais);
     }
 
+    public void enviarSagaGerente(GerenteMsDTO dto) {
+        LOGGER.info("Enviando comando para MS-Gerente. Ação: {}", dto.acao());
+        rabbitTemplate.convertAndSend(exchange, keyGerente, dto);
+    }
 }

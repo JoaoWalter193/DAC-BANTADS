@@ -49,7 +49,7 @@ public class ContaRService {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
-    public ResponseEntity<ContaPadraoDTO> buscarContaCliente(String numConta){
+    public ResponseEntity<ContaPadraoDTO> buscarContaCliente(Integer numConta){
         Optional<ContaR> optConta = contaRRepository.findByNumConta(numConta);
 
         if (optConta.isPresent()){
@@ -73,7 +73,7 @@ public class ContaRService {
     }
 
 
-    public ResponseEntity<ExtratoDTO> verExtrato(String numConta){
+    public ResponseEntity<ExtratoDTO> verExtrato(Integer numConta){
         Optional<ContaR> optConta = contaRRepository.findByNumConta(numConta);
 
         if (optConta.isPresent()){
