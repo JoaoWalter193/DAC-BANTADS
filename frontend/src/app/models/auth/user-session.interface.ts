@@ -5,5 +5,5 @@ import { Gerente } from "../gerente/gerente.interface";
 export interface UserSession {
   token: string;
   tipo: 'CLIENTE' | 'GERENTE' | 'ADMINISTRADOR';
-  usuario: Cliente | Gerente |  ;
+  usuario: Cliente | Gerente | Admin;
 }
