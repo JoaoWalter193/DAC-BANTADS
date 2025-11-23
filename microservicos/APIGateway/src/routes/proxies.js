@@ -4,7 +4,10 @@ const {
   getClienteByCpf,
   getClientes,
 } = require("./compositions/clienteComposition");
-const getGerentes = require("./compositions/gerenteComposition");
+const {
+  getGerentes,
+  getClientesDoGerente,
+} = require("./compositions/gerenteComposition");
 
 function setupProxies(app) {
   const SAGA = process.env.SAGA_SERVICE_URL;
@@ -62,29 +65,13 @@ function setupProxies(app) {
     },
   });
 
-  const loginProxyOptions = {
-    target: process.env.AUTH_SERVICE_URL,
-    changeOrigin: true,
-    proxyTimeout: 30000,
-    timeout: 30000,
-
-    onProxyReq(proxyReq, req) {},
-
-    onProxyRes(proxyRes, req, res) {
-      res.header("Access-Control-Allow-Origin", "http://localhost");
-      res.header("Access-Control-Allow-Methods", "POST,OPTIONS");
-      res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-      res.header("Access-Control-Allow-Credentials", "true");
-    },
-  };
-
   app.get("/reboot", (req, res) => {
     res.status(200).json({
       mensagem: "Banco de dados criado conforme especificação",
     });
   });
-
-  app.post(
+  
+	app.post(
     "/login",
     createProxyMiddleware({
       target: process.env.AUTH_SERVICE_URL,
@@ -361,6 +348,13 @@ function setupProxies(app) {
     verifyJWT,
     requireRoles(["GERENTE", "ADMINISTRADOR"]),
     getGerentes
+  );
+
+  app.get(
+    "/gerentes/:cpfGerente/clientes",
+    verifyJWT,
+    requireRoles(["GERENTE", "ADMINISTRADOR"]),
+    (req, res, next) => getClientesDoGerente(req, res, next)
   );
 
   app.post(

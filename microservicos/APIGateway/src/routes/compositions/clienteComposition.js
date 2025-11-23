@@ -118,16 +118,21 @@ const getClientes = async (req, res, next) => {
         contas.map((c) => fetchCliente(c.cpfCliente))
       );
 
-      const final = clientesResp.map((cliente) => ({
-        cpf: cliente.cpf,
-        nome: cliente.nome,
-        email: cliente.email,
-        salario: cliente.salario ?? null,
-        endereco: cliente.endereco,
-        cidade: cliente.cidade,
-        estado: cliente.estado,
-      }));
+      const final = clientesResp.map((cliente, index) => {
+        const conta = contas[index];
+        return {
+          cpf: cliente.cpf,
+          nome: cliente.nome,
+          email: cliente.email,
+          salario: cliente.salario ?? null,
+          endereco: cliente.endereco,
+          cidade: cliente.cidade,
+          estado: cliente.estado,
+          saldo: conta.saldo,
+        };
+      });
 
+      console.log("🔍 Melhores clientes processados:", final);
       return res.status(200).json(final);
     } catch (err) {
       console.error("❌ Erro em melhores_clientes:", err);

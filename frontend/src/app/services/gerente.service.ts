@@ -6,6 +6,17 @@ import { environment } from '../environments/environment';
 import { CriarGerenteDTO } from '../models/gerente/dto/gerente-criar.dto';
 import { AtualizarGerenteDTO } from '../models/gerente/dto/gerente-atualizar.dto';
 
+// Interface para o cliente do gerente (conforme a resposta da API)
+export interface ClienteGerente {
+  cpf: string;
+  nome: string;
+  cidade: string;
+  estado: string;
+  saldo: number;
+  limite: number;
+  link_detalhes: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -14,8 +25,8 @@ export class GerenteService {
 
   constructor(private http: HttpClient) {}
 
-  getGerentes(numero?: 'dashboard') {
-    const params = numero ? { numero } : undefined;
+  getGerentes(filtro?: 'dashboard') {
+    const params = filtro ? { filtro } : undefined;
     return this.http.get<GerenteDashboardDTO[]>(this.baseUrl, {
       params,
     });
@@ -23,6 +34,14 @@ export class GerenteService {
 
   getGerenteByCpf(cpf: string) {
     return this.http.get<Gerente>(`${this.baseUrl}/${cpf}`);
+  }
+
+  getClientesDoGerente(cpfGerente: string, busca?: string) {
+    const params = busca ? { busca } : undefined;
+    return this.http.get<ClienteGerente[]>(
+      `${this.baseUrl}/${cpfGerente}/clientes`,
+      { params }
+    );
   }
 
   criarGerente(dto: CriarGerenteDTO) {
