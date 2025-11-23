@@ -2,11 +2,10 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Cliente } from '../../../models/cliente/cliente.interface';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import { ClienteService } from '../../../services/cliente.service';
-import { ClienteDashboardDTO } from '../../../models/cliente/dto/cliente-dashboard.dto';
 import { ClienteDetalhesDTO } from '../../../models/cliente/dto/cliente-detalhes.dto';
+import { ClienteListaGerenteDTO } from '../../../models/cliente/dto/cliente-lista-gerente.dto'; // ✅ Nova importação
 
 @Component({
   selector: 'app-consultar-cliente',
@@ -18,15 +17,36 @@ export class ConsultarClienteComponent {
   cpf: string = '';
   clienteEncontrado: ClienteDetalhesDTO | null = null;
   erro: string = '';
-  sugestoes: Cliente[] = [];
+  sugestoes: ClienteListaGerenteDTO[] = [];
+  carregando: boolean = false;
 
   constructor(private clienteService: ClienteService) {}
 
   consultarCliente() {
     this.erro = '';
     this.clienteEncontrado = null;
+    this.sugestoes = [];
 
-    const cliente = this.clienteService.consultarCliente(this.cpf);
+    if (!this.cpf || this.cpf.length !== 11) {
+      this.erro = 'CPF deve ter 11 dígitos';
+      return;
+    }
+
+    this.carregando = true;
+
+    this.clienteService.consultarCliente(this.cpf).subscribe({
+      next: (cliente) => {
+        this.clienteEncontrado = cliente;
+        this.carregando = false;
+        console.log('Cliente encontrado:', cliente);
+      },
+      error: (err) => {
+        this.erro = 'Cliente não encontrado';
+        this.clienteEncontrado = null;
+        this.carregando = false;
+        console.error('Erro ao consultar cliente:', err);
+      },
+    });
   }
 
   buscarSugestoes() {
@@ -34,16 +54,21 @@ export class ConsultarClienteComponent {
     this.clienteEncontrado = null;
     this.erro = '';
 
-    if (this.cpf.length >= 1) {
-      this.clienteService.listarClientes().subscribe((todosClientes) => {
-        this.sugestoes = todosClientes.filter((c: { cpf: string; }) => {
-          c.cpf.startsWith(this.cpf)
-        })
+    if (this.cpf.length >= 3) {
+      this.clienteService.listarClientes().subscribe({
+        next: (todosClientes) => {
+          this.sugestoes = todosClientes
+            .filter((c: ClienteListaGerenteDTO) => c.cpf.startsWith(this.cpf))
+            .slice(0, 5);
+        },
+        error: (err) => {
+          console.error('Erro ao buscar sugestões:', err);
+        },
       });
     }
   }
 
-  selecionarSugestao(cliente: Cliente) {
+  selecionarSugestao(cliente: ClienteListaGerenteDTO) {
     this.cpf = cliente.cpf;
     this.sugestoes = [];
     this.consultarCliente();
@@ -55,5 +80,12 @@ export class ConsultarClienteComponent {
     } else {
       return salario / 2;
     }
+  }
+
+  limparBusca() {
+    this.cpf = '';
+    this.clienteEncontrado = null;
+    this.erro = '';
+    this.sugestoes = [];
   }
 }
