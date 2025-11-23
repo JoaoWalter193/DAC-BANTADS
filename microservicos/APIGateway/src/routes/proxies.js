@@ -379,21 +379,56 @@ function setupProxies(app) {
       ...proxyOptions(CLIENTE),
       selfHandleResponse: true,
 
-      onProxyRes: async (proxyRes, req, res) => {
-        let body = "";
+      onProxyReq(proxyReq, req) {
+        console.log("🔍 REJEIÇÃO - Headers:", req.headers);
+        console.log("🔍 REJEIÇÃO - Body:", req.body);
+        console.log("🔍 REJEIÇÃO - CPF:", req.params.cpf);
 
+        if (req.body) {
+          const bodyData =
+            typeof req.body === "string" ? req.body : JSON.stringify(req.body);
+          console.log("🔍 REJEIÇÃO - Enviando body:", bodyData);
+
+          proxyReq.setHeader("Content-Type", "application/json");
+          proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
+          proxyReq.write(bodyData);
+        }
+      },
+
+      onProxyRes: async (proxyRes, req, res) => {
+        console.log(
+          "🔍 REJEIÇÃO - Resposta do MS-Cliente:",
+          proxyRes.statusCode
+        );
+
+        let body = "";
         proxyRes.on("data", (chunk) => {
           body += chunk.toString();
         });
 
         proxyRes.on("end", () => {
+          console.log("🔍 REJEIÇÃO - Body da resposta:", body);
+
           if (proxyRes.statusCode === 200) {
             res.status(200).json({
               mensagem: "Cliente rejeitado com sucesso",
             });
           } else {
-            res.status(proxyRes.statusCode).send(body);
+            try {
+              const jsonData = JSON.parse(body);
+              res.status(proxyRes.statusCode).json(jsonData);
+            } catch {
+              res.status(proxyRes.statusCode).send(body);
+            }
           }
+        });
+      },
+
+      onError: (err, req, res) => {
+        console.error("❌ REJEIÇÃO - Erro no proxy:", err.message);
+        res.status(502).json({
+          erro: "Serviço de clientes indisponível",
+          detalhes: err.message,
         });
       },
     })
