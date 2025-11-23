@@ -20,7 +20,7 @@ public class SagaService {
     @Autowired
     RabbitMQConsumer rabbitMQConsumer;
 
-    public ResponseEntity<RespostaPadraoDTO> autoCadastro (AutocadastroDTO data){
+    public ResponseEntity<testeProfessorDTO> autoCadastro (AutocadastroDTO data){
         /*
 
         1 PASSO - Criar cadastro do cliente em Ms-cliente --> Está enviando, agora preciso ver como faço para a lógica ficar aqui e passar para o prox passo
@@ -37,6 +37,7 @@ public class SagaService {
          */
 
         //Enviar os dados necesśarios para criar o cliente
+
         rabbitMQProducer.sendContaCliente(data);
         // a partir disso ele vai receber a mensagem no Consumer e a lógica vai rodar de lá
         // --> Tenho que perguntar para o professor e pessoas, como fizeram para a lógica continuar aqui
@@ -45,8 +46,8 @@ public class SagaService {
         //Agora tem de enviar os dados para o ms-auth
 
         //Depois do ms-auth tem que enviar para o ms-conta
-
-        return ResponseEntity.ok(new RespostaPadraoDTO("Processo de autocadastro iniciado, mais informações serão enviadas via e-mail", HttpStatus.CREATED.value()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new testeProfessorDTO(data.cpf(),
+                data.email()));
 
     }
 
@@ -94,7 +95,7 @@ public class SagaService {
         GerenteMsDTO dtoTemp = new GerenteMsDTO(data.cpf(), data.nome(), data.email(), data.tipo(), data.senha(), "Criar");
         rabbitMQProducer.sendGerenteMsGerente(dtoTemp);
 
-        return ResponseEntity.ok(new RespostaPadraoDTO("Development", 500));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new RespostaPadraoDTO("Gerente criado", 201));
     }
 
 // teste pedro alteracaoperfil

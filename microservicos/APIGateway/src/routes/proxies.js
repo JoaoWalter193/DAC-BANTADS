@@ -83,8 +83,7 @@ function setupProxies(app) {
       mensagem: "Banco de dados criado conforme especificação",
     });
   });
-
-  app.post(
+	app.post(
     "/login",
     createProxyMiddleware({
       target: process.env.AUTH_SERVICE_URL,

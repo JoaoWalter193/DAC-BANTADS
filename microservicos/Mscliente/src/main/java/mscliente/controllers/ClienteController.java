@@ -26,6 +26,11 @@ public class ClienteController {
         return clienteService.buscarCliente(cpf);
     }
 
+    @GetMapping("/email/{email}")
+    public ResponseEntity<ClienteDTO> buscarClienteEmail(@PathVariable String email) {
+        return clienteService.buscarClienteEmail(email);
+    }
+
     @PostMapping
     public ResponseEntity<ClienteDTO> adicionarCliente(@RequestBody AutocadastroDTO data) {
         return clienteService.adicionarCliente(data);
