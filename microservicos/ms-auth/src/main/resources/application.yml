@@ -60,7 +60,14 @@ rabbitmq:
         saga: exchangePrincipal
     queue:
         auth-create: saga.auth.create.queue
+        auth-approve: saga.auth.approve.queue
+        auth-reject: saga.auth.reject.queue
+        auth-compensate: saga.auth.compensate.queue 
     key:
-        saga-create-auth: saga.auth.created
+        auth-create: saga.auth.created
+        auth-approve: saga.auth.approved
+        auth-reject: saga.auth.rejected
+        auth-compensate: saga.auth.compensate
+        
         saga-create-success: saga.auth.success
         saga-create-fail: saga.auth.fail

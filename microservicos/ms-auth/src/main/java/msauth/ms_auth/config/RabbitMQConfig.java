@@ -15,10 +15,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 
-/**
- * As filas definidas aqui são para CONSUMO de comandos vindos do orquestrador
- * da Saga (ex: saga.auth.create, saga.auth.compensate).
- */
 @Configuration
 public class RabbitMQConfig {
 
@@ -54,21 +50,11 @@ public class RabbitMQConfig {
     private String authCompensateKey;
 
 
-    /**
-     * Define o conversor de mensagens padrão como Jackson2JsonMessageConverter.
-     * Isso garante que os objetos Java sejam serializados/desserializados
-     * de/para JSON automaticamente.
-     */
     @Bean
     public MessageConverter converter() {
         return new Jackson2JsonMessageConverter();
     }
     
-    /**
-     * Cria um template (AmqpTemplate) para PUBLICAÇÃO de mensagens.
-     * Este template é configurado para usar o MessageConverter (JSON) definido acima.
-     * Será usado para enviar respostas/eventos de volta para a Saga.
-     */
     @Bean
     public AmqpTemplate amqpTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
@@ -76,10 +62,6 @@ public class RabbitMQConfig {
         return rabbitTemplate;
     }
 
-    /**
-     * Define a exchange principal (Topic) por onde todos os eventos
-     * da SAGA são roteados.
-     */
     @Bean
     public TopicExchange sagaExchange() {
         return new TopicExchange(sagaExchange);
