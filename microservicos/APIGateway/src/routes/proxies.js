@@ -4,7 +4,10 @@ const {
   getClienteByCpf,
   getClientes,
 } = require("./compositions/clienteComposition");
-const getGerentes = require("./compositions/gerenteComposition");
+const {
+  getGerentes,
+  getClientesDoGerente,
+} = require("./compositions/gerenteComposition");
 
 function setupProxies(app) {
   const SAGA = process.env.SAGA_SERVICE_URL;
@@ -361,6 +364,13 @@ function setupProxies(app) {
     verifyJWT,
     requireRoles(["GERENTE", "ADMINISTRADOR"]),
     getGerentes
+  );
+
+  app.get(
+    "/gerentes/:cpfGerente/clientes",
+    verifyJWT,
+    requireRoles(["GERENTE", "ADMINISTRADOR"]),
+    (req, res, next) => getClientesDoGerente(req, res, next)
   );
 
   app.post(
