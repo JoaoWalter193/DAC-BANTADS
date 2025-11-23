@@ -7,6 +7,7 @@ import { ClienteService } from '../../../services/cliente.service';
 import { FormatarCpfPipe } from '../../../pipes/formatar-cpf.pipe';
 import { ClienteAprovarDTO } from '../../../models/cliente/dto/cliente-aprovar.dto';
 import { ClienteListaDTO } from '../../../models/cliente/dto/cliente-lista.dto';
+import { ClienteRejeitarDTO } from '../../../models/cliente/dto/cliente-rejeitar.dto';
 
 registerLocaleData(localePt, 'pt-BR', localePtExtra);
 
@@ -52,6 +53,7 @@ export class AprovarClienteComponent {
 
   abrirRejeicao(cliente: ClienteAprovarDTO) {
     this.clienteRejeicao = cliente;
+    this.motivoRejeicao = '';
   }
 
   cancelarRejeicao() {
@@ -60,10 +62,29 @@ export class AprovarClienteComponent {
   }
 
   confirmarRejeicao() {
-    if (this.clienteRejeicao) {
-      this.clientesService.rejeitarCliente(this.clienteRejeicao.cpf, {
+    if (this.clienteRejeicao && this.motivoRejeicao.trim()) {
+      const rejeicaoDTO: ClienteRejeitarDTO = {
         motivo: this.motivoRejeicao,
-      });
+      };
+
+      this.clientesService
+        .rejeitarCliente(
+          this.clienteRejeicao.cpf,
+          rejeicaoDTO // ✅ Passa o DTO, não a string
+        )
+        .subscribe({
+          next: () => {
+            console.log('Cliente rejeitado com sucesso');
+            this.getContasPendentes();
+            this.cancelarRejeicao();
+          },
+          error: (err) => {
+            console.error('Erro ao rejeitar cliente:', err);
+            alert('Erro ao rejeitar cliente. Tente novamente.');
+          },
+        });
+    } else {
+      alert('Por favor, informe o motivo da rejeição.');
     }
   }
 }

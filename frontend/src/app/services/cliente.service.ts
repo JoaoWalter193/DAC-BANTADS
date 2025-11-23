@@ -55,6 +55,9 @@ export class ClienteService {
   }
 
   rejeitarCliente(cpf: string, dto: ClienteRejeitarDTO): Observable<any> {
-    return this.http.post(`${this.api}/clientes/${cpf}/rejeitar`, dto);
+    return this.http.post(
+      `${this.api}/clientes/${cpf}/rejeitar`,
+      dto
+    );
   }
 }

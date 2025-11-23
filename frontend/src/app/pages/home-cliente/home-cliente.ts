@@ -12,8 +12,11 @@ import {
 } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ContaService } from '../../services/conta.service';
+import { ExtratoComponent } from '../../modals/extrato/extrato.component';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { ClienteService } from '../../services/cliente.service';
+import { ClienteDetalhesDTO } from '../../models/cliente/dto/cliente-detalhes.dto';
+import { AuthService } from '../../services/auth.service'; // Importar Auth para pegar o ID correto
 
 @Component({
   selector: 'app-home-cliente',
@@ -53,6 +56,7 @@ export class HomeCliente implements OnInit {
   constructor(
     private contaService: ContaService,
     private clienteService: ClienteService,
+    private authService: AuthService, // Injetar AuthService
     private formBuilder: FormBuilder,
     private dialog: MatDialog,
     private router: Router
@@ -157,14 +161,18 @@ export class HomeCliente implements OnInit {
     }
 
     this.contaService.sacar(this.cliente.conta, this.valorSaque).subscribe({
-      next: (res: any) => {
+      next: (res) => {
         this.mostrarMensagem('Saque realizado com sucesso!', 'sucesso');
         this.valorSaque = null;
-        this.atualizarSaldo();
+        this.carregarDadosCliente(this.cliente.cpf);
       },
-      error: (err: any) => {
-        this.mostrarMensagem('Erro ao realizar saque.', 'erro');
-      }
+      error: (err) => {
+        this.mostrarMensagem(
+          'Erro ao sacar: ' +
+            (err.error?.message || 'Saldo insuficiente ou erro interno'),
+          'erro'
+        );
+      },
     });
   }
 
@@ -190,8 +198,8 @@ export class HomeCliente implements OnInit {
   realizarTransferencia(): void {
     if (!this.validarOperacao()) return;
     if (!this.valorTransferencia || !this.contaDestino) {
-       this.mostrarMensagem('Preencha todos os campos.', 'erro');
-       return;
+      this.mostrarMensagem('Preencha valor e conta de destino.', 'erro');
+      return;
     }
 
     this.contaService.transferir(
@@ -212,14 +220,17 @@ export class HomeCliente implements OnInit {
   }
 
   gerarExtrato(): void {
-    if (this.formExtrato.invalid) return;
-
     this.contaService.obterExtrato(this.cliente.conta).subscribe({
-        next: (dados: any) => {
-            console.log('Extrato:', dados);
-            this.mostrarMensagem('Extrato gerado no console.', 'sucesso');
-        },
-        error: (err: any) => this.mostrarMensagem('Erro ao obter extrato.', 'erro')
+      next: (dadosExtrato) => {
+        this.dialog.open(ExtratoComponent, {
+          data: {
+            extrato: dadosExtrato,
+            nomeCliente: this.cliente.nome,
+          },
+          width: '600px',
+        });
+      },
+      error: (err) => this.mostrarMensagem('Erro ao carregar extrato', 'erro'),
     });
   }
 
