@@ -13,24 +13,24 @@
     <div class="cadastro-container">
       <h2>Cadastro</h2>
 
-      <div *ngIf="mensagem" [class]="tipoMensagem === 'sucesso' ? 'mensagem-sucesso' : 'mensagem-erro'" class="mensagem">
+      <div *ngIf="mensagem" [class]="tipoMensagem === 'sucesso' ? 'mensagem-sucesso' : 'mensagem-erro'"
+        class="mensagem">
         {{ mensagem }}
       </div>
 
       <form [formGroup]="cadastroForm" (ngSubmit)="onSubmit()">
-        <input type="text" formControlName="nome" placeholder="Nome Completo *" required>
-        <input type="email" formControlName="email" placeholder="E-mail *" required>
-        <input type="text" formControlName="telefone" placeholder="Telefone *" (input)="formatarTelefone($event)" maxlength="15" required>
-        <input type="text" formControlName="cpf" placeholder="CPF *" (input)="formatarCPF($event)" maxlength="14" required>
-        <input type="text" formControlName="salario" placeholder="Salário *" (input)="formatarSalario($event)" required>
-        <input type="text" formControlName="cep" placeholder="CEP *" (input)="formatarCEP($event)" maxlength="9" required>
-        <input type="text" formControlName="tipo" placeholder="Tipo *" required>
-        <input type="text" formControlName="logradouro" placeholder="Logradouro *" required>
-        <input type="text" formControlName="cidade" placeholder="Cidade *" required>
-        <input type="text" formControlName="estado" placeholder="Estado *" maxlength="2" required>
-        <input type="text" formControlName="numero" placeholder="Número *" (input)="formatarNumero($event)" required>
+        <input type="text" formControlName="nome" placeholder="Nome Completo *">
+        <input type="email" formControlName="email" placeholder="E-mail *">
+        <input type="text" formControlName="cpf" placeholder="CPF *" (input)="formatarCPF($event)">
+        <input type="text" formControlName="salario" placeholder="Salário *" (keyup)="formatarSalario($event)"
+          (keydown)="permitirSomenteNumeros($event)">
+        <input type="text" formControlName="cep" placeholder="CEP *" (input)="formatarCEP($event)">
+        <input type="text" formControlName="endereco" placeholder="Endereço *">
+        <input type="text" formControlName="cidade" placeholder="Cidade *">
+        <input type="text" formControlName="estado" placeholder="Estado *">
         <input type="text" formControlName="complemento" placeholder="Complemento">
-        <button type="submit" [disabled]="carregando" [ngClass]="{'ativo': cadastroForm.valid, 'inativo': cadastroForm.invalid}">
+        <button type="submit" [disabled]="carregando"
+          [ngClass]="{'ativo': cadastroForm.valid, 'inativo': cadastroForm.invalid}">
           {{ carregando ? 'Processando...' : 'Cadastrar' }}
           <span *ngIf="carregando" class="loading"></span>
         </button>

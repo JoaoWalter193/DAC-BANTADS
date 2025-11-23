@@ -1,9 +1,5 @@
-const express = require("express");
 const { axiosInstance, propagateRemoteError } = require("./shared");
 const { createProxyMiddleware } = require("http-proxy-middleware");
-const { verifyJWT, requireRoles } = require("../../middlewares/verifyJWT");
-
-const router = express.Router();
 
 const CLIENTE = process.env.CLIENTE_SERVICE_URL;
 const CONTA = process.env.CONTA_SERVICE_URL;
@@ -15,10 +11,13 @@ if (!CLIENTE || !CONTA || !GERENTE) {
   );
 }
 
-router.get("/", verifyJWT, requireRoles(["GERENTE", "ADMINISTRADOR"]) ,async (req, res, next) => {
+// Middleware para GET /gerentes
+const getGerentes = async (req, res, next) => {
   const { filtro } = req.query;
+  console.log("🔍 GET /gerentes - Filtro:", filtro);
 
   if (filtro !== "dashboard") {
+    console.log("🔍 Usando proxy direto para GERENTE service");
     return createProxyMiddleware({
       target: GERENTE,
       changeOrigin: true,
@@ -26,11 +25,14 @@ router.get("/", verifyJWT, requireRoles(["GERENTE", "ADMINISTRADOR"]) ,async (re
   }
 
   try {
+    console.log("🔍 Processando composition para dashboard");
+
     const gerentesResp = await axiosInstance.get(`${GERENTE}/gerentes`);
     if (gerentesResp.status >= 400)
       return propagateRemoteError(res, gerentesResp);
 
     const gerentes = gerentesResp.data || [];
+    console.log("🔍 Gerentes encontrados:", gerentes.length);
 
     const clientesResp = await axiosInstance.get(
       `${CLIENTE}/clientes?filtro=adm_relatorio_clientes`
@@ -39,6 +41,7 @@ router.get("/", verifyJWT, requireRoles(["GERENTE", "ADMINISTRADOR"]) ,async (re
       return propagateRemoteError(res, clientesResp);
 
     const clientes = clientesResp.data || [];
+    console.log("🔍 Clientes encontrados:", clientes.length);
 
     const contasResponses = await Promise.all(
       clientes.map((c) =>
@@ -51,6 +54,7 @@ router.get("/", verifyJWT, requireRoles(["GERENTE", "ADMINISTRADOR"]) ,async (re
     }
 
     const contas = contasResponses.map((r) => r.data);
+    console.log("🔍 Contas encontradas:", contas.length);
 
     const contasPorGerente = {};
     contas.forEach((conta) => {
@@ -93,12 +97,110 @@ router.get("/", verifyJWT, requireRoles(["GERENTE", "ADMINISTRADOR"]) ,async (re
       };
     });
 
+    console.log("✅ Dashboard gerado com sucesso");
     return res.status(200).json(final);
   } catch (err) {
     console.error("❌ Erro composition GET /gerentes?filtro=dashboard", err);
     if (err && err.remote) return propagateRemoteError(res, err.remote);
     return res.status(500).json({ mensagem: "Erro interno no API Gateway" });
   }
-});
+};
 
-module.exports = router;
+const getClientesDoGerente = async (req, res, next) => {
+  const { cpfGerente } = req.params;
+  const { busca } = req.query;
+
+  console.log(
+    "🔍 GET /gerentes/:cpfGerente/clientes - CPF Gerente:",
+    cpfGerente
+  );
+  console.log("🔍 Parâmetro de busca:", busca);
+
+  try {
+    const gerenteResp = await axiosInstance.get(
+      `${GERENTE}/gerentes/${cpfGerente}`
+    );
+    if (gerenteResp.status >= 400)
+      return propagateRemoteError(res, gerenteResp);
+
+    const gerente = gerenteResp.data;
+    console.log("🔍 Gerente encontrado:", gerente.nome);
+
+    const clientesResp = await axiosInstance.get(`${CLIENTE}/clientes`);
+    if (clientesResp.status >= 400)
+      return propagateRemoteError(res, clientesResp);
+
+    const clientes = clientesResp.data || [];
+    console.log("🔍 Total de clientes encontrados:", clientes.length);
+
+    const contasResponses = await Promise.all(
+      clientes.map((c) =>
+        axiosInstance.get(`${CONTA}/contas/${encodeURIComponent(c.cpf)}`)
+      )
+    );
+
+    const clientesDoGerente = [];
+
+    for (let i = 0; i < clientes.length; i++) {
+      const contaResp = contasResponses[i];
+      if (contaResp.status === 200) {
+        const conta = contaResp.data;
+
+        if (conta.cpfGerente === cpfGerente) {
+          const cliente = clientes[i];
+          clientesDoGerente.push({
+            cpf: cliente.cpf,
+            nome: cliente.nome,
+            cidade: cliente.cidade,
+            estado: cliente.estado,
+            saldo: conta.saldo,
+            limite: conta.limite,
+            email: cliente.email,
+            endereco: cliente.endereco,
+            salario: cliente.salario,
+            numeroConta: conta.numConta,
+            gerente_nome: gerente.nome,
+            gerente_email: gerente.email,
+          });
+        }
+      }
+    }
+
+    console.log(
+      "🔍 Clientes do gerente encontrados:",
+      clientesDoGerente.length
+    );
+
+    let clientesFiltrados = clientesDoGerente;
+    if (busca && busca.trim() !== "") {
+      const termoBusca = busca.toLowerCase().trim();
+      clientesFiltrados = clientesDoGerente.filter(
+        (cliente) =>
+          cliente.cpf.toLowerCase().includes(termoBusca) ||
+          cliente.nome.toLowerCase().includes(termoBusca)
+      );
+      console.log("🔍 Clientes após filtro:", clientesFiltrados.length);
+    }
+
+    clientesFiltrados.sort((a, b) => a.nome.localeCompare(b.nome));
+
+    const resposta = clientesFiltrados.map((cliente) => ({
+      cpf: cliente.cpf,
+      nome: cliente.nome,
+      cidade: cliente.cidade,
+      estado: cliente.estado,
+      saldo: cliente.saldo,
+      limite: cliente.limite,
+      link_detalhes: `/clientes/${cliente.cpf}`,
+    }));
+
+    console.log("✅ Lista de clientes do gerente gerada com sucesso");
+    return res.status(200).json(resposta);
+  } catch (err) {
+    console.error("❌ Erro em GET /gerentes/:cpfGerente/clientes:", err);
+    if (err && err.remote) return propagateRemoteError(res, err.remote);
+    return res.status(500).json({ mensagem: "Erro interno no API Gateway" });
+  }
+};
+
+module.exports = { getGerentes, getClientesDoGerente };
