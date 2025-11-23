@@ -4,7 +4,7 @@ export interface ClienteAutocadastroDTO {
   nome: string;
   salario: number;
   endereco: string;
-  CEP: string;
+  cep: string;
   cidade: string;
   estado: string;
 }

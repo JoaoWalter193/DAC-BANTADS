@@ -1,5 +1,6 @@
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const { verifyJWT, requireRoles } = require("../middlewares/verifyJWT");
+const { getClienteByCpf, getClientes } = require("./compositions/clienteComposition");
 
 function setupProxies(app) {
   const SAGA = process.env.SAGA_SERVICE_URL;
@@ -121,31 +122,7 @@ function setupProxies(app) {
     });
   });
 
-  app.put(
-    "/clientes/:cpf",
-    verifyJWT,
-    createProxyMiddleware({
-      target: CLIENTE,
-      changeOrigin: true,
-
-      onProxyReq(proxyReq, req) {
-        if (req.method === "PUT" && req.body) {
-          let newBody = { ...req.body };
-
-          if (newBody.CEP !== undefined) {
-            newBody.cep = newBody.CEP;
-            delete newBody.CEP;
-          }
-
-          const bodyData = JSON.stringify(newBody);
-
-          proxyReq.setHeader("Content-Type", "application/json");
-          proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
-          proxyReq.write(bodyData);
-        }
-      },
-    })
-  );
+  app.get("/clientes/:cpf", verifyJWT, getClienteByCpf);
 
   app.get(
     "/clientes",
@@ -153,11 +130,11 @@ function setupProxies(app) {
     (req, res, next) => {
       const filtro = req.query.filtro;
 
-      if (!filtro) {
-        return requireRoles(["GERENTE"])(req, res, next);
-      }
-
-      if (filtro === "para_aprovar") {
+      if (
+        !filtro ||
+        filtro === "para_aprovar" ||
+        filtro === "melhores_clientes"
+      ) {
         return requireRoles(["GERENTE"])(req, res, next);
       }
 
@@ -165,15 +142,9 @@ function setupProxies(app) {
         return requireRoles(["ADMINISTRADOR"])(req, res, next);
       }
 
-      if (filtro === "melhores_clientes") {
-        return requireRoles(["GERENTE"])(req, res, next);
-      }
-
-      return res.status(400).json({
-        mensagem: "Filtro inválido",
-      });
+      next();
     },
-    require("./compositions/clienteComposition")
+    getClientes
   );
 
   app.post("/clientes", createProxyMiddleware(proxyOptions(SAGA)));
