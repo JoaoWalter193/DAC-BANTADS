@@ -15,34 +15,36 @@ export class ContaService {
   constructor(private http: HttpClient) {}
 
   obterSaldo(numero: string) {
-    return this.http.post<ContaSaldo>(`${this.api}/${numero}/saldo`, {});
+    return this.http.get<ContaSaldo>(`${this.api}/${numero}/saldo`);
   }
 
   depositar(numero: string, valor: number) {
-    return this.http.post<ContaOperacaoResponse>(
+    return this.http.put<ContaOperacaoResponse>(
       `${this.api}/${numero}/depositar`,
-      { valor }
+      valor
     );
   }
 
   sacar(numero: string, valor: number) {
-    return this.http.post<ContaOperacaoResponse>(
+    return this.http.put<ContaOperacaoResponse>(
       `${this.api}/${numero}/sacar`,
-      { valor }
+      valor
     );
   }
 
   transferir(numeroOrigem: string, destino: string, valor: number) {
-    return this.http.post<ContaTransferenciaResponse>(
+    const body = {
+      numeroConta: destino,
+      valor: valor,
+    };
+
+    return this.http.put<string>(
       `${this.api}/${numeroOrigem}/transferir`,
-      {
-        destino,
-        valor,
-      }
+      body
     );
   }
 
   obterExtrato(numero: string) {
-    return this.http.post<ContaExtrato>(`${this.api}/${numero}/extrato`, {});
+    return this.http.get<ContaExtrato>(`${this.api}/${numero}/extrato`, {});
   }
 }

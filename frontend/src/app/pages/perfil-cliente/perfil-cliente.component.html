@@ -6,7 +6,6 @@
       <h2>Perfil & Endereço</h2>
 
       <div class="form-grupo">
-        <!-- Perfil -->
         <div class="perfil">
           <mat-form-field appearance="outline">
             <mat-label>Nome</mat-label>
@@ -16,8 +15,9 @@
                 profileForm.get('nome')?.touched &&
                 profileForm.get('nome')?.invalid
               "
-              >O nome é obrigatório</mat-error
             >
+              O nome é obrigatório
+            </mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
@@ -28,8 +28,9 @@
                 profileForm.get('email')?.touched &&
                 profileForm.get('email')?.invalid
               "
-              >O e-mail é obrigatório</mat-error
             >
+              O e-mail é obrigatório
+            </mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
@@ -40,8 +41,9 @@
                 profileForm.get('cpf')?.touched &&
                 profileForm.get('cpf')?.invalid
               "
-              >O CPF é obrigatório</mat-error
             >
+              O CPF é obrigatório
+            </mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
@@ -52,8 +54,9 @@
                 profileForm.get('telefone')?.touched &&
                 profileForm.get('telefone')?.invalid
               "
-              >O telefone é obrigatório</mat-error
             >
+              O telefone é obrigatório
+            </mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
@@ -64,64 +67,24 @@
                 profileForm.get('salario')?.touched &&
                 profileForm.get('salario')?.invalid
               "
-              >O salário é obrigatório</mat-error
             >
+              O salário é obrigatório
+            </mat-error>
           </mat-form-field>
         </div>
 
-        <!-- Endereço -->
-        <div class="endereco" formGroupName="endereco">
+        <div class="endereco">
           <mat-form-field appearance="outline">
-            <mat-label>Tipo</mat-label>
-            <input matInput formControlName="tipo" />
+            <mat-label>Endereço Completo</mat-label>
+            <input matInput formControlName="endereco" />
             <mat-error
               *ngIf="
-                profileForm.get('endereco.tipo')?.touched &&
-                profileForm.get('endereco.tipo')?.invalid
+                profileForm.get('endereco')?.touched &&
+                profileForm.get('endereco')?.invalid
               "
-              >O tipo é obrigatório</mat-error
             >
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Logradouro</mat-label>
-            <input matInput formControlName="logradouro" />
-            <mat-error
-              *ngIf="
-                profileForm.get('endereco.logradouro')?.touched &&
-                profileForm.get('endereco.logradouro')?.invalid
-              "
-              >O logradouro é obrigatório</mat-error
-            >
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Número</mat-label>
-            <input matInput formControlName="numero" />
-            <mat-error
-              *ngIf="
-                profileForm.get('endereco.numero')?.touched &&
-                profileForm.get('endereco.numero')?.invalid
-              "
-              >O número é obrigatório</mat-error
-            >
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Complemento</mat-label>
-            <input matInput formControlName="complemento" />
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>CEP</mat-label>
-            <input matInput formControlName="CEP" mask="00000-000" />
-            <mat-error
-              *ngIf="
-                profileForm.get('endereco.CEP')?.touched &&
-                profileForm.get('endereco.CEP')?.invalid
-              "
-              >O CEP é obrigatório</mat-error
-            >
+              O endereço é obrigatório
+            </mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
@@ -129,11 +92,12 @@
             <input matInput formControlName="cidade" />
             <mat-error
               *ngIf="
-                profileForm.get('endereco.cidade')?.touched &&
-                profileForm.get('endereco.cidade')?.invalid
+                profileForm.get('cidade')?.touched &&
+                profileForm.get('cidade')?.invalid
               "
-              >O cidade é obrigatório</mat-error
             >
+              A cidade é obrigatória
+            </mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
@@ -141,11 +105,12 @@
             <input matInput formControlName="estado" />
             <mat-error
               *ngIf="
-                profileForm.get('endereco.estado')?.touched &&
-                profileForm.get('endereco.estado')?.invalid
+                profileForm.get('estado')?.touched &&
+                profileForm.get('estado')?.invalid
               "
-              >O estado é obrigatório</mat-error
             >
+              O estado é obrigatório
+            </mat-error>
           </mat-form-field>
         </div>
       </div>

@@ -13,10 +13,10 @@ import {
 import { MatDialog } from '@angular/material/dialog';
 import { ContaService } from '../../services/conta.service';
 import { ExtratoComponent } from '../../modals/extrato/extrato.component';
-import { Conta } from '../../models/conta/conta.interface';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { ClienteService } from '../../services/cliente.service';
 import { ClienteDetalhesDTO } from '../../models/cliente/dto/cliente-detalhes.dto';
+import { AuthService } from '../../services/auth.service'; // Importar Auth para pegar o ID correto
 
 @Component({
   selector: 'app-home-cliente',
@@ -40,13 +40,13 @@ export class HomeCliente implements OnInit {
   valorTransferencia: number | null = null;
   contaDestino: string | null = null;
   formExtrato: FormGroup;
-  cpf: string = '12345678900'; // Ver a lógica pra poder passar CPF para essa tela - Lucas
   mensagem: string | null = null;
   tipoMensagem: 'sucesso' | 'erro' | null = null;
 
   constructor(
     private contaService: ContaService,
     private clienteService: ClienteService,
+    private authService: AuthService, // Injetar AuthService
     private formBuilder: FormBuilder,
     private dialog: MatDialog
   ) {
@@ -57,8 +57,18 @@ export class HomeCliente implements OnInit {
   }
 
   ngOnInit(): void {
-    this.clienteService.consultarCliente(this.cpf).subscribe((data) => {
-      this.cliente = data;
+    const usuarioLogado = this.authService.getUsuarioLogado();
+    if (usuarioLogado && usuarioLogado.cpf) {
+      this.carregarDadosCliente(usuarioLogado.cpf);
+    }
+  }
+
+  carregarDadosCliente(cpf: string) {
+    this.clienteService.consultarCliente(cpf).subscribe({
+      next: (data) => {
+        this.cliente = data;
+      },
+      error: (err) => console.error('Erro ao carregar cliente', err),
     });
   }
 
@@ -66,11 +76,7 @@ export class HomeCliente implements OnInit {
     operacao: 'saque' | 'deposito' | 'transferencia' | 'extrato' | '' = ''
   ): void {
     this.limparMensagem();
-    if (this.operacaoAtiva === operacao) {
-      this.operacaoAtiva = '';
-    } else {
-      this.operacaoAtiva = operacao;
-    }
+    this.operacaoAtiva = this.operacaoAtiva === operacao ? '' : operacao;
   }
 
   realizarSaque(): void {
@@ -79,12 +85,20 @@ export class HomeCliente implements OnInit {
       return;
     }
 
-    try {
-      this.contaService.sacar(this.cliente.conta || '', this.valorSaque);
-      this.valorSaque = null;
-    } catch (error: any) {
-      this.mostrarMensagem(error.message, 'erro');
-    }
+    this.contaService.sacar(this.cliente.conta, this.valorSaque).subscribe({
+      next: (res) => {
+        this.mostrarMensagem('Saque realizado com sucesso!', 'sucesso');
+        this.valorSaque = null;
+        this.carregarDadosCliente(this.cliente.cpf);
+      },
+      error: (err) => {
+        this.mostrarMensagem(
+          'Erro ao sacar: ' +
+            (err.error?.message || 'Saldo insuficiente ou erro interno'),
+          'erro'
+        );
+      },
+    });
   }
 
   realizarDeposito(): void {
@@ -93,43 +107,68 @@ export class HomeCliente implements OnInit {
       return;
     }
 
-    try {
-      this.contaService.depositar(this.cliente.conta || '', this.valorDeposito);
-      this.valorDeposito = null;
-    } catch (error: any) {
-      this.mostrarMensagem(error.message, 'erro');
-    }
+    this.contaService
+      .depositar(this.cliente.conta, this.valorDeposito)
+      .subscribe({
+        next: (res) => {
+          this.mostrarMensagem('Depósito realizado com sucesso!', 'sucesso');
+          this.valorDeposito = null;
+          this.carregarDadosCliente(this.cliente.cpf);
+        },
+        error: (err) => {
+          this.mostrarMensagem('Erro ao depositar.', 'erro');
+        },
+      });
   }
 
   realizarTransferencia(): void {
     if (!this.valorTransferencia || !this.contaDestino) {
-      this.mostrarMensagem(
-        'Por favor, insira o valor e o numero da conta destino.',
-        'erro'
-      );
+      this.mostrarMensagem('Preencha valor e conta de destino.', 'erro');
       return;
     }
 
-    try {
-      this.contaService.transferir(
-        this.cliente.conta || '',
+    this.contaService
+      .transferir(
+        this.cliente.conta,
         this.contaDestino,
         this.valorTransferencia
-      );
-      this.valorTransferencia = null;
-      this.contaDestino = null;
-    } catch (error: any) {
-      this.mostrarMensagem(error.message, 'erro');
-    }
+      )
+      .subscribe({
+        next: (res) => {
+          this.mostrarMensagem('Transferência realizada!', 'sucesso');
+          this.valorTransferencia = null;
+          this.contaDestino = null;
+          this.carregarDadosCliente(this.cliente.cpf);
+        },
+        error: (err) => {
+          this.mostrarMensagem(
+            'Erro na transferência. Verifique o saldo ou a conta destino.',
+            'erro'
+          );
+        },
+      });
   }
 
   gerarExtrato(): void {
-    this.contaService.obterExtrato(this.cliente.conta || '');
+    this.contaService.obterExtrato(this.cliente.conta).subscribe({
+      next: (dadosExtrato) => {
+        this.dialog.open(ExtratoComponent, {
+          data: {
+            extrato: dadosExtrato,
+            nomeCliente: this.cliente.nome,
+          },
+          width: '600px',
+        });
+      },
+      error: (err) => this.mostrarMensagem('Erro ao carregar extrato', 'erro'),
+    });
   }
 
   private mostrarMensagem(texto: string, tipo: 'sucesso' | 'erro') {
     this.mensagem = texto;
     this.tipoMensagem = tipo;
+
+    setTimeout(() => this.limparMensagem(), 5000);
   }
 
   private limparMensagem() {
