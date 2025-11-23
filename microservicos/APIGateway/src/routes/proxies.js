@@ -1,5 +1,15 @@
 const { createProxyMiddleware } = require("http-proxy-middleware");
-const { verifyJWT, requireRoles } = require("../middlewares/verifyJWT");
+const jwt = require("jsonwebtoken");
+const fs = require("fs");
+const path = require("path");
+const {
+  verifyJWT,
+  requireRoles,
+  salvarEmailParaLogout,
+  salvarEmailParaLogoutPorId,
+  removerEmailDoStorage,
+  removerEmailDoStoragePorId,
+} = require("../middlewares/verifyJWT");
 const {
   getClienteByCpf,
   getClientes,
@@ -9,6 +19,10 @@ const {
   getClientesDoGerente,
 } = require("./compositions/gerenteComposition");
 const { axiosInstance } = require("./compositions/shared");
+const PUBLIC_KEY = fs.readFileSync(
+  path.join(__dirname, "../middlewares/keys/public-key.pem"), // Ajuste o caminho
+  "utf8"
+);
 
 function setupProxies(app) {
   const SAGA = process.env.SAGA_SERVICE_URL;
@@ -72,7 +86,6 @@ function setupProxies(app) {
     });
   });
 
-  // No proxies.js - corrigir a rota /login
   app.post("/login", (req, res, next) => {
     createProxyMiddleware({
       target: process.env.AUTH_SERVICE_URL,
@@ -116,7 +129,6 @@ function setupProxies(app) {
             });
           }
 
-          // Se a resposta estiver vazia ou não for JSON válido
           if (!responseBody || responseBody.trim() === "") {
             console.log(
               "❌ Login falhou - resposta vazia do serviço de autenticação"
@@ -129,7 +141,6 @@ function setupProxies(app) {
           try {
             const data = JSON.parse(responseBody);
 
-            // Verificar se a resposta contém os dados esperados para login válido
             const isValidLoginResponse =
               data &&
               (data.token ||
@@ -144,8 +155,39 @@ function setupProxies(app) {
               });
             }
 
-            // Se chegou aqui, o login é válido
-            console.log("✅ Login realizado com sucesso");
+            // ✅ CORRIGIDO: SALVAR EMAIL PARA USO FUTURO NO LOGOUT
+            const emailDoLogin = req.body.email;
+            if (emailDoLogin) {
+              const token = data.access_token || data.token;
+              if (token) {
+                try {
+                  // ✅ AGORA jwt ESTÁ DEFINIDO
+                  const decoded = jwt.verify(token, PUBLIC_KEY, {
+                    algorithms: ["RS256"],
+                    issuer: "mybackend",
+                  });
+
+                  console.log("🔍 Token decodificado no login:", decoded);
+
+                  // Tenta salvar por CPF se existir
+                  if (decoded.cpf) {
+                    salvarEmailParaLogout(decoded.cpf, emailDoLogin);
+                  }
+                  // Se não tem CPF, salva por ID (sub)
+                  else if (decoded.sub) {
+                    salvarEmailParaLogoutPorId(decoded.sub, emailDoLogin);
+                    console.log("✅ Email salvo usando ID:", decoded.sub);
+                  }
+                } catch (e) {
+                  console.log(
+                    "❌ Erro ao decodificar token para salvar email:",
+                    e.message
+                  );
+                }
+              }
+            }
+
+            console.log("✅ Login realizado com sucesso para:", emailDoLogin);
             res.status(proxyRes.statusCode).json(data);
           } catch (e) {
             console.log(
@@ -161,14 +203,6 @@ function setupProxies(app) {
 
       onError: (err, req, res) => {
         console.error("❌ Login Error:", err.message);
-        res.header("Access-Control-Allow-Origin", "http://localhost");
-        res.header("Access-Control-Allow-Methods", "POST,OPTIONS");
-        res.header(
-          "Access-Control-Allow-Headers",
-          "Content-Type, Authorization"
-        );
-        res.header("Access-Control-Allow-Credentials", "true");
-
         res.status(502).json({
           error: "Serviço de autenticação indisponível",
           details: err.message,
@@ -180,6 +214,20 @@ function setupProxies(app) {
   app.post("/logout", verifyJWT, (req, res) => {
     const user = req.user;
 
+    console.log("🔍 Logout - User object:", {
+      sub: user.sub,
+      email: user.email,
+      cpf: user.cpf,
+      role: user.role,
+    });
+
+    if (user.cpf) {
+      removerEmailDoStorage(user.cpf);
+    }
+    if (user.sub) {
+      removerEmailDoStoragePorId(user.sub);
+    }
+
     return res.status(200).json({
       id: user.sub,
       email: user.email,
@@ -187,7 +235,6 @@ function setupProxies(app) {
       mensagem: "Logout efetuado com sucesso",
     });
   });
-
   app.get("/clientes/:cpf", verifyJWT, getClienteByCpf);
 
   app.get(
@@ -652,14 +699,14 @@ function setupProxies(app) {
     "/gerentes/:cpf",
     verifyJWT,
     requireRoles(["GERENTE", "ADMINISTRADOR"]),
-    createProxyMiddleware(proxyOptions(GERENTE))
+    createProxyMiddleware(proxyOptions(SAGA))
   );
 
   app.put(
     "/gerentes/:cpf",
     verifyJWT,
     requireRoles(["GERENTE", "ADMINISTRADOR"]),
-    createProxyMiddleware(proxyOptions(GERENTE))
+    createProxyMiddleware(proxyOptions(SAGA))
   );
 
   console.log("✅ Proxies configurados.");
