@@ -15,68 +15,59 @@ import msauth.ms_auth.repositories.UsuarioRepository;
 @Configuration
 public class AdminUserConfig implements CommandLineRunner {
     
-    private UsuarioRepository usuarioRepository;
-    private PasswordEncoder passwordEncoder;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public AdminUserConfig(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder; 
     }
 
-    // @Override
-    // @Transactional
-    // public void run(String... args) throws Exception {
-    //         var userAdmin = usuarioRepository.findByEmail("admin@bantads.com");
-    //         userAdmin.ifPresentOrElse(
-    //             user -> { System.out.println("Email já cadastrado"); },
-    //             () -> {
-    //                 var user = new UsuarioEntity();
-    //                 user.setEmail("admin@bantads.com");
-    //                 user.setPassword(passwordEncoder.encode("123"));
-    //                 user.setRoles(Set.of(Role.ADMINISTRADOR));
-    //                 usuarioRepository.save(user);
-    //             }
-    //         );
-    // }
-
-    private UsuarioEntity createUser(String email, String password, Role role) {
-        var user = new UsuarioEntity();
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setRoles(Set.of(role));
-        return user;
-    }
-
-    private void verificarCadastroUsuario(UsuarioEntity user) {
-        usuarioRepository.findByEmail(user.getEmail()).ifPresentOrElse(existingUser -> {
-            System.out.println("Usuário com email " + existingUser.getEmail() + " já cadastrado.");
-        },
-        () -> {
-            usuarioRepository.save(user);
-            System.out.println("Usuário " + user.getEmail() + " cadastrado com sucesso.");
-        }
-        );
-    }
+    private record UserSeedData(String email, String password, Role role) {}
 
     @Override
     @Transactional
     public void run(String... args) {
-        List<UsuarioEntity> initialUsers = List.of(
-            createUser("adm1@bantads.com.br", "tads", Role.ADMINISTRADOR),
+        List<UserSeedData> initialUsers = List.of(
+            new UserSeedData("adm1@bantads.com.br", "tads", Role.ADMINISTRADOR),
             
-            createUser("cli1@bantads.com.br", "tads", Role.CLIENTE),
-            createUser("cli2@bantads.com.br", "tads", Role.CLIENTE),
-            createUser("cli3@bantads.com.br", "tads", Role.CLIENTE),
-            createUser("cli4@bantads.com.br", "tads", Role.CLIENTE),
-            createUser("cli5@bantads.com.br", "tads", Role.CLIENTE),
+            new UserSeedData("cli1@bantads.com.br", "tads", Role.CLIENTE),
+            new UserSeedData("cli2@bantads.com.br", "tads", Role.CLIENTE),
+            new UserSeedData("cli3@bantads.com.br", "tads", Role.CLIENTE),
+            new UserSeedData("cli4@bantads.com.br", "tads", Role.CLIENTE),
+            new UserSeedData("cli5@bantads.com.br", "tads", Role.CLIENTE),
 
-            createUser("ger1@bantads.com.br", "tads", Role.GERENTE),
-            createUser("ger2@bantads.com.br", "tads", Role.GERENTE),
-            createUser("ger3@bantads.com.br", "tads", Role.GERENTE)
+            new UserSeedData("ger1@bantads.com.br", "tads", Role.GERENTE),
+            new UserSeedData("ger2@bantads.com.br", "tads", Role.GERENTE),
+            new UserSeedData("ger3@bantads.com.br", "tads", Role.GERENTE)
         );
-        // Itera sobre a lista e salva cada usuário se ele não existir
-        initialUsers.forEach(this::verificarCadastroUsuario);
-    }
-    
 
+        initialUsers.forEach(this::processarUsuario);
+    }
+
+    private void processarUsuario(UserSeedData data) {
+        usuarioRepository.findByEmail(data.email()).ifPresentOrElse(
+            existingUser -> {
+                String novoHash = passwordEncoder.encode(data.password());
+                
+                if (!novoHash.equalsIgnoreCase(existingUser.getPassword())) {
+                    existingUser.setPassword(novoHash);
+                    existingUser.setRoles(Set.of(data.role()));
+                    usuarioRepository.save(existingUser);
+                    System.out.println("Usuário " + data.email() + " atualizado com hash SHA-256 (64 chars).");
+                } else {
+                    System.out.println("Usuário " + data.email() + " já está com os dados corretos.");
+                }
+            },
+            () -> {
+                // cria
+                var newUser = new UsuarioEntity();
+                newUser.setEmail(data.email());
+                newUser.setPassword(passwordEncoder.encode(data.password()));
+                newUser.setRoles(Set.of(data.role()));
+                usuarioRepository.save(newUser);
+                System.out.println("Usuário " + data.email() + " criado com sucesso.");
+            }
+        );
+    }
 }
