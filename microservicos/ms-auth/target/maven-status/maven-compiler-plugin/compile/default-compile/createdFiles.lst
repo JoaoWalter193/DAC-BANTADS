@@ -14,8 +14,8 @@ msauth/ms_auth/dto/LoginResponse.class
 msauth/ms_auth/config/RsaKeyProperties.class
 msauth/ms_auth/MsAuthApplication.class
 msauth/ms_auth/entities/UsuarioEntity.class
-msauth/ms_auth/dto/SagaEvent.class
 msauth/ms_auth/dto/SagaRequest.class
+msauth/ms_auth/dto/SagaEvent.class
 msauth/ms_auth/config/RabbitMQConfig.class
 msauth/ms_auth/dto/UsuarioResponse.class
 msauth/ms_auth/dto/AuthRequest.class
