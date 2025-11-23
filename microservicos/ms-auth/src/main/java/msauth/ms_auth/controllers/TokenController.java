@@ -28,7 +28,6 @@ import msauth.ms_auth.repositories.UsuarioRepository;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
 @RestController
 @Tag(name = "Login", description = "Endpoints para autenticação de usuários (cliente, gerente e admin)")
 public class TokenController {
@@ -36,17 +35,17 @@ public class TokenController {
     private final UsuarioRepository usuarioRepository;
     private PasswordEncoder passwordEncoder;
 
-    public TokenController(JwtEncoder jwtEncoder, UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+    public TokenController(JwtEncoder jwtEncoder, UsuarioRepository usuarioRepository,
+            PasswordEncoder passwordEncoder) {
         this.jwtEncoder = jwtEncoder;
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    @Operation(summary = "Efetua o login do usuário", 
-               description = "Autentica o usuário e retorna um token")
+    @Operation(summary = "Efetua o login do usuário", description = "Autentica o usuário e retorna um token")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Login efetuado com sucesso"),
-        @ApiResponse(responseCode = "401", description = "Usuário e/ou senha inválidos", content = @Content)
+            @ApiResponse(responseCode = "200", description = "Login efetuado com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Usuário e/ou senha inválidos", content = @Content)
     })
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
@@ -64,12 +63,13 @@ public class TokenController {
                 .collect(Collectors.joining(" "));
 
         var claims = JwtClaimsSet.builder()
-                        .issuer("mybackend")
-                        .subject(user.getId())
-                        .issuedAt(now)
-                        .expiresAt(now.plusSeconds(3600L))
-                        .claim("scope", scopes)
-                        .build();
+                .issuer("mybackend")
+                .subject(user.getId())
+                .issuedAt(now)
+                .expiresAt(now.plusSeconds(3600L))
+                .claim("cpf", user.getCpf())
+                .claim("scope", scopes)
+                .build();
 
         var jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
         String roleUsuario = user.getRoles().stream()
@@ -81,5 +81,5 @@ public class TokenController {
 
         return ResponseEntity.ok(new LoginResponse(jwtValue, "Bearer", roleUsuario, usuarioResponse));
     }
-    
+
 }
