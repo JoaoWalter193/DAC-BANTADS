@@ -262,27 +262,6 @@ public class ClienteService {
 
     }
 
-    public ResponseEntity<ClienteDTO> buscarClienteEmail (String email){
-        Optional<Cliente> clienteOpt = clienteRepository.findByEmail(email);
-
-        if (clienteOpt.isPresent()) {
-            Cliente clienteTemp = clienteOpt.get();
-            ClienteDTO dtoTemp = new ClienteDTO(
-                    clienteTemp.getCpf(),
-                    clienteTemp.getNome(),
-                    clienteTemp.getEmail(),
-                    clienteTemp.getSalario(),
-                    clienteTemp.getEndereco(),
-                    clienteTemp.getCep(),
-                    clienteTemp.getCidade(),
-                    clienteTemp.getEstado());
-
-            return ResponseEntity.ok(dtoTemp);
-        }
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    }
-
     public ResponseEntity<GeralDTO> rejeitarCliente(String cpf, String motivoRejeite) {
         Optional<Cliente> clienteOpt = clienteRepository.findByCpf(cpf);
         if (clienteOpt.isPresent()) {
@@ -353,7 +332,5 @@ public class ClienteService {
 
         }
     }
-
-
 
 }
