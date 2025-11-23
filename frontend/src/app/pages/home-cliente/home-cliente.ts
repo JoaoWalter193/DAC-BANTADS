@@ -56,7 +56,7 @@ export class HomeCliente implements OnInit {
   constructor(
     private contaService: ContaService,
     private clienteService: ClienteService,
-    private authService: AuthService, // Injetar AuthService
+    private authService: AuthService,
     private formBuilder: FormBuilder,
     private dialog: MatDialog,
     private router: Router
@@ -220,17 +220,32 @@ export class HomeCliente implements OnInit {
   }
 
   gerarExtrato(): void {
-    this.contaService.obterExtrato(this.cliente.conta).subscribe({
-      next: (dadosExtrato) => {
-        this.dialog.open(ExtratoComponent, {
-          data: {
-            extrato: dadosExtrato,
-            nomeCliente: this.cliente.nome,
-          },
-          width: '600px',
-        });
-      },
-      error: (err) => this.mostrarMensagem('Erro ao carregar extrato', 'erro'),
+    if (this.formExtrato.invalid) {
+        this.mostrarMensagem('Selecione as datas.', 'erro');
+        return;
+    }
+
+    const { dataInicio, dataFim } = this.formExtrato.value;
+
+    this.contaService.obterExtrato(this.cliente.conta, dataInicio, dataFim).subscribe({
+        next: (dadosApi: any) => {
+            const dadosCompletos = {
+                ...dadosApi,
+                periodo: {
+                    inicio: dataInicio,
+                    fim: dataFim
+                }
+            };
+
+            this.dialog.open(ExtratoComponent, {
+                width: '800px',
+                data: {
+                    extrato: dadosCompletos,
+                    nomeCliente: this.cliente.nome
+                }
+            });
+        },
+        error: (err: any) => this.mostrarMensagem('Erro ao obter extrato.', 'erro')
     });
   }
 
