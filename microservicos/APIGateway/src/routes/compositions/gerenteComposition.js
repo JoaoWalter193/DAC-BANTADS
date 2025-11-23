@@ -21,6 +21,18 @@ const getGerentes = async (req, res, next) => {
     return createProxyMiddleware({
       target: GERENTE,
       changeOrigin: true,
+      pathRewrite: (path, req) => {
+        const newPath = path.split("?")[0];
+        console.log("🔍 Path rewrite:", path, "->", newPath);
+        return newPath;
+      },
+      onError: (err, req, res) => {
+        console.error("❌ Erro no proxy para serviço de gerente:", err);
+        res.status(502).json({
+          mensagem: "Serviço de gerentes indisponível",
+          detalhes: err.message,
+        });
+      },
     })(req, res, next);
   }
 
@@ -28,20 +40,48 @@ const getGerentes = async (req, res, next) => {
     console.log("🔍 Processando composition para dashboard");
 
     const gerentesResp = await axiosInstance.get(`${GERENTE}/gerentes`);
-    if (gerentesResp.status >= 400)
+    if (gerentesResp.status >= 400) {
+      console.error("❌ Erro ao buscar gerentes:", gerentesResp.status);
       return propagateRemoteError(res, gerentesResp);
+    }
 
-    const gerentes = gerentesResp.data || [];
+    const gerentes = gerentesResp.data || []; // ✅ MOVER para ANTES do uso
     console.log("🔍 Gerentes encontrados:", gerentes.length);
+
+    // ✅ AGORA podemos verificar o length
+    if (gerentes.length === 0) {
+      console.log("🔍 Nenhum gerente encontrado, retornando array vazio");
+      return res.status(200).json([]);
+    }
 
     const clientesResp = await axiosInstance.get(
       `${CLIENTE}/clientes?filtro=adm_relatorio_clientes`
     );
-    if (clientesResp.status >= 400)
+    if (clientesResp.status >= 400) {
       return propagateRemoteError(res, clientesResp);
+    }
 
     const clientes = clientesResp.data || [];
     console.log("🔍 Clientes encontrados:", clientes.length);
+
+    // Se não há clientes, retornar gerentes sem clientes
+    if (clientes.length === 0) {
+      console.log(
+        "🔍 Nenhum cliente encontrado, retornando gerentes sem clientes"
+      );
+      const final = gerentes.map((gerente) => ({
+        gerente: {
+          cpf: gerente.cpf,
+          nome: gerente.nome,
+          email: gerente.email,
+          tipo: gerente.tipo,
+        },
+        clientes: [],
+        saldo_positivo: 0,
+        saldo_negativo: 0,
+      }));
+      return res.status(200).json(final);
+    }
 
     const contasResponses = await Promise.all(
       clientes.map((c) =>
@@ -97,6 +137,9 @@ const getGerentes = async (req, res, next) => {
       };
     });
 
+    // ✅ Ordenar por nome do gerente
+    final.sort((a, b) => a.gerente.nome.localeCompare(b.gerente.nome));
+
     console.log("✅ Dashboard gerado com sucesso");
     return res.status(200).json(final);
   } catch (err) {
@@ -106,6 +149,7 @@ const getGerentes = async (req, res, next) => {
   }
 };
 
+// O restante do código (getClientesDoGerente) permanece igual...
 const getClientesDoGerente = async (req, res, next) => {
   const { cpfGerente } = req.params;
   const { busca } = req.query;

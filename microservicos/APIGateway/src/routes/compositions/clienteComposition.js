@@ -84,15 +84,17 @@ const getClientes = async (req, res, next) => {
       const clientes = clientesResp.data || [];
       console.log("🔍 Clientes encontrados:", clientes.length);
 
-      const final = clientes.map((c) => ({
-        cpf: c.cpf,
-        nome: c.nome,
-        email: c.email,
-        salario: c.salario ?? null,
-        endereco: c.endereco,
-        cidade: c.cidade,
-        estado: c.estado,
-      }));
+      const final = clientes
+        .map((c) => ({
+          cpf: c.cpf,
+          nome: c.nome,
+          email: c.email,
+          salario: c.salario ?? null,
+          endereco: c.endereco,
+          cidade: c.cidade,
+          estado: c.estado,
+        }))
+        .sort((a, b) => a.nome.localeCompare(b.nome));
 
       return res.status(200).json(final);
     } catch (err) {

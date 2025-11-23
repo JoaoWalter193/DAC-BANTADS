@@ -72,26 +72,62 @@ function setupProxies(app) {
     });
   });
 
-  app.post(
-    "/login",
+  // No proxies.js - corrigir a rota /login
+  app.post("/login", (req, res, next) => {
     createProxyMiddleware({
       target: process.env.AUTH_SERVICE_URL,
       changeOrigin: true,
       proxyTimeout: 30000,
       timeout: 30000,
+      selfHandleResponse: true, // Importante para controlar a resposta
 
       onProxyReq(proxyReq, req) {
         if (req.body && Object.keys(req.body).length > 0) {
           const bodyData = JSON.stringify(req.body);
-
           proxyReq.setHeader("Content-Type", "application/json");
           proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
-
           proxyReq.write(bodyData);
         }
       },
 
-      onProxyRes(proxyRes, req, res) {
+      onProxyRes: (proxyRes, req, res) => {
+        console.log("🔍 Login - Status do Auth:", proxyRes.statusCode);
+
+        let responseBody = "";
+        proxyRes.on("data", (chunk) => {
+          responseBody += chunk;
+        });
+
+        proxyRes.on("end", () => {
+          // Configurar headers CORS
+          res.header("Access-Control-Allow-Origin", "http://localhost");
+          res.header("Access-Control-Allow-Methods", "POST,OPTIONS");
+          res.header(
+            "Access-Control-Allow-Headers",
+            "Content-Type, Authorization"
+          );
+          res.header("Access-Control-Allow-Credentials", "true");
+
+          // Se o auth service retornar 401, mantemos 401
+          if (proxyRes.statusCode === 401) {
+            console.log("❌ Login falhou - credenciais inválidas");
+            return res.status(401).json({
+              mensagem: "Credenciais inválidas",
+            });
+          }
+
+          // Para outros status, repassamos a resposta original
+          try {
+            const data = JSON.parse(responseBody);
+            res.status(proxyRes.statusCode).json(data);
+          } catch (e) {
+            res.status(proxyRes.statusCode).send(responseBody);
+          }
+        });
+      },
+
+      onError: (err, req, res) => {
+        console.error("❌ Login Error:", err.message);
         res.header("Access-Control-Allow-Origin", "http://localhost");
         res.header("Access-Control-Allow-Methods", "POST,OPTIONS");
         res.header(
@@ -99,9 +135,14 @@ function setupProxies(app) {
           "Content-Type, Authorization"
         );
         res.header("Access-Control-Allow-Credentials", "true");
+
+        res.status(502).json({
+          error: "Serviço de autenticação indisponível",
+          details: err.message,
+        });
       },
-    })
-  );
+    })(req, res, next);
+  });
 
   app.post("/logout", verifyJWT, (req, res) => {
     const user = req.user;
