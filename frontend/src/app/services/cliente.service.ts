@@ -1,14 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ClienteAutocadastroDTO } from '../models/cliente/dto/cliente-autocadastro.dto';
 import { environment } from '../environments/environment';
-import { ClienteListaDTO } from '../models/cliente/dto/cliente-lista.dto';
-import { ClienteListaGerenteDTO } from '../models/cliente/dto/cliente-lista-gerente.dto'; // ✅ Nova importação
-import { ClienteAprovarDTO } from '../models/cliente/dto/cliente-aprovar.dto';
-import { ClienteRejeitarDTO } from '../models/cliente/dto/cliente-rejeitar.dto';
 import { ClienteDetalhesDTO } from '../models/cliente/dto/cliente-detalhes.dto';
 import { ClienteAtualizarDTO } from '../models/cliente/dto/cliente-atualizar.dto';
-import { ClienteAutocadastroDTO } from '../models/cliente/dto/cliente-autocadastro.dto';
+import { ClienteRelatorioDTO } from '../models/cliente/dto/cliente-relatorio-dto';
+import { ClienteListaGerenteDTO } from '../models/cliente/dto/cliente-lista-gerente.dto';
+import { ClienteAprovarDTO } from '../models/cliente/dto/cliente-aprovar.dto';
+import { ClienteRejeitarDTO } from '../models/cliente/dto/cliente-rejeitar.dto';
+import { ClienteListaDTO } from '../models/cliente/dto/cliente-lista.dto';
+
 
 @Injectable({
   providedIn: 'root',
@@ -34,9 +36,11 @@ export class ClienteService {
 
   listarClientes(
     filtro: 'adm_relatorio_clientes'
-  ): Observable<ClienteDetalhesDTO[]>;
+  ): Observable<ClienteRelatorioDTO[]>;
 
-  listarClientes(filtro: 'melhores_clientes'): Observable<ClienteDetalhesDTO[]>;
+  listarClientes(
+    filtro: 'melhores_clientes'
+  ): Observable<ClienteRelatorioDTO[]>;
 
   listarClientes(filtro?: string): Observable<ClienteListaGerenteDTO[]>;
 

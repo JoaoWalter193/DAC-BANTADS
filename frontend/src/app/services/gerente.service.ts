@@ -1,13 +1,27 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Gerente } from '../models/gerente/gerente.interface';
-import { GerenteDashboardDTO } from '../models/gerente/dto/gerente-dashboard.dto';
+import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
-import { CriarGerenteDTO } from '../models/gerente/dto/gerente-criar.dto';
-import { AtualizarGerenteDTO } from '../models/gerente/dto/gerente-atualizar.dto';
 
-// Interface para o cliente do gerente (conforme a resposta da API)
-export interface ClienteGerente {
+export interface Gerente {
+  cpf: string;
+  nome: string;
+  email: string;
+  tipo: 'GERENTE' | 'ADMINISTRADOR';
+}
+
+interface GerenteDashboardDTO {
+  gerente: {
+    cpf: string;
+    nome: string;
+    email: string;
+    tipo: string;
+  };
+  clientes: any[];
+  saldo_positivo: number;
+  saldo_negativo: number;
+}
+interface ClienteGerente {
   cpf: string;
   nome: string;
   cidade: string;
@@ -17,26 +31,43 @@ export interface ClienteGerente {
   link_detalhes: string;
 }
 
+export interface CriarGerenteDTO {
+  nome: string;
+  email: string;
+  cpf: string;
+}
+
+export interface AtualizarGerenteDTO {
+  nome?: string;
+  email?: string;
+  tipo?: 'GERENTE' | 'ADMINISTRADOR';
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class GerenteService {
-  private readonly baseUrl = `${environment.apiUrl}/gerentes`;
+  private readonly baseUrl = `${
+    environment.apiUrl || 'http://localhost:3000'
+  }/gerentes`;
 
   constructor(private http: HttpClient) {}
 
-  getGerentes(filtro?: 'dashboard') {
+  getGerentes(filtro?: 'dashboard'): Observable<GerenteDashboardDTO[]> {
     const params = filtro ? { filtro } : undefined;
     return this.http.get<GerenteDashboardDTO[]>(this.baseUrl, {
       params,
     });
   }
 
-  getGerenteByCpf(cpf: string) {
+  getGerenteByCpf(cpf: string): Observable<Gerente> {
     return this.http.get<Gerente>(`${this.baseUrl}/${cpf}`);
   }
 
-  getClientesDoGerente(cpfGerente: string, busca?: string) {
+  getClientesDoGerente(
+    cpfGerente: string,
+    busca?: string
+  ): Observable<ClienteGerente[]> {
     const params = busca ? { busca } : undefined;
     return this.http.get<ClienteGerente[]>(
       `${this.baseUrl}/${cpfGerente}/clientes`,
@@ -44,15 +75,15 @@ export class GerenteService {
     );
   }
 
-  criarGerente(dto: CriarGerenteDTO) {
+  criarGerente(dto: CriarGerenteDTO): Observable<Gerente> {
     return this.http.post<Gerente>(this.baseUrl, dto);
   }
 
-  atualizarGerente(cpf: string, dto: AtualizarGerenteDTO) {
+  atualizarGerente(cpf: string, dto: AtualizarGerenteDTO): Observable<Gerente> {
     return this.http.put<Gerente>(`${this.baseUrl}/${cpf}`, dto);
   }
 
-  removerGerente(cpf: string) {
-    return this.http.delete(`${this.baseUrl}/${cpf}`);
+  removerGerente(cpf: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${cpf}`);
   }
 }

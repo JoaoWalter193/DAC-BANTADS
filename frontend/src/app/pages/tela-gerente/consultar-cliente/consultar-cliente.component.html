@@ -1,137 +1,180 @@
 <section class="tela-gerente">
-    <div class="gerente-header">
-        <h2>Consultar Cliente</h2>
-        <div class="section-links">
-            <a routerLink="/tela-gerente">Voltar ao Painel</a>
-        </div>
+  <div class="gerente-header">
+    <h2>Consultar Cliente</h2>
+    <div class="section-links">
+      <a routerLink="/tela-gerente">Voltar ao Painel</a>
     </div>
+  </div>
 
-    <div class="gerente-content">
-        <div class="clientes-dashboard">
-            <div class="card-dashboard">
-                <h3>Buscar Cliente por CPF</h3>
+  <div class="gerente-content">
+    <div class="clientes-dashboard">
+      <div class="card-dashboard">
+        <h3>Buscar Cliente por CPF</h3>
 
-                <!-- Formulário de consulta -->
-                <form class="consulta" (ngSubmit)="consultarCliente()" #consultaForm="ngForm">
-                    <div class="form-group">
-                        <label for="cpf">CPF do Cliente:</label>
-                        <input id="cpf" name="cpf" type="text" [(ngModel)]="cpf" (ngModelChange)="buscarSugestoes()"
-                            placeholder="Digite o CPF (somente números)" maxlength="11" pattern="[0-9]{11}" required
-                            #cpfInput="ngModel" [class.error]="cpfInput.invalid && cpfInput.touched" />
-                        <div *ngIf="cpfInput.invalid && cpfInput.touched" class="validation-error">
-                            CPF deve conter exatamente 11 dígitos numéricos
-                        </div>
-                    </div>
-
-                    <div class="button-group">
-                        <button type="submit" [disabled]="!cpf || cpf.length !== 11 || carregando">
-                            {{ carregando ? 'Consultando...' : 'Consultar' }}
-                        </button>
-                        <button type="button" (click)="limparBusca()" class="btn-secondary">
-                            Limpar
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Loading -->
-                <div *ngIf="carregando" class="loading">
-                    <p>Buscando informações do cliente...</p>
-                </div>
-
-                <!-- Sugestões -->
-                <div *ngIf="sugestoes.length > 0 && !clienteEncontrado" class="sugestoes-container">
-                    <h4>Sugestões:</h4>
-                    <ul class="sugestoes">
-                        <li *ngFor="let cliente of sugestoes" (click)="selecionarSugestao(cliente)"
-                            class="sugestao-item">
-                            <div class="sugestao-info">
-                                <strong>{{ cliente.nome }}</strong>
-                                <small>{{ cliente.cpf | formatarCpf }}</small>
-                                <span class="sugestao-detalhes">{{ cliente.cidade }} - {{ cliente.estado }}</span>
-                                <span class="sugestao-saldo"
-                                    [ngClass]="{ 'saldo-positivo': cliente.saldo >= 0, 'saldo-negativo': cliente.saldo < 0 }">
-                                    Saldo: {{ cliente.saldo | currency : "BRL" }}
-                                </span>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Resultado -->
-                <div *ngIf="clienteEncontrado" class="cliente-detalhes">
-                    <h3>Detalhes do Cliente</h3>
-
-                    <div class="info-section">
-                        <h4>Dados Pessoais</h4>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <strong>Nome:</strong> {{ clienteEncontrado.nome }}
-                            </div>
-                            <div class="info-item">
-                                <strong>CPF:</strong> {{ clienteEncontrado.cpf | formatarCpf }}
-                            </div>
-                            <div class="info-item">
-                                <strong>Email:</strong> {{ clienteEncontrado.email }}
-                            </div>
-                            <div class="info-item">
-                                <strong>Salário:</strong> {{ clienteEncontrado.salario | currency : "BRL" }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="info-section">
-                        <h4>Endereço</h4>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <strong>Endereço:</strong> {{ clienteEncontrado.endereco }}
-                            </div>
-                            <div class="info-item">
-                                <strong>Cidade:</strong> {{ clienteEncontrado.cidade }}
-                            </div>
-                            <div class="info-item">
-                                <strong>Estado:</strong> {{ clienteEncontrado.estado }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="info-section">
-                        <h4>Informações da Conta</h4>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <strong>Número da Conta:</strong> {{ clienteEncontrado.conta }}
-                            </div>
-                            <div class="info-item" [ngClass]="{ 
-                                   'saldo-negativo': clienteEncontrado.saldo < 0, 
-                                   'saldo-positivo': clienteEncontrado.saldo >= 0 
-                                 }">
-                                <strong>Saldo:</strong>
-                                {{ clienteEncontrado.saldo | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR" }}
-                            </div>
-                            <div class="info-item">
-                                <strong>Limite:</strong> {{ clienteEncontrado.limite | currency : "BRL" : "symbol" :
-                                "1.2-2" : "pt-BR" }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="info-section">
-                        <h4>Gerente Responsável</h4>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <strong>Nome:</strong> {{ clienteEncontrado.gerente_nome }}
-                            </div>
-                            <div class="info-item">
-                                <strong>Email:</strong> {{ clienteEncontrado.gerente_email }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Feedback de erro -->
-                <div *ngIf="erro && !carregando" class="erro">
-                    <strong>Erro:</strong> {{ erro }}
-                </div>
+        <!-- Formulário de consulta -->
+        <form
+          class="consulta"
+          (ngSubmit)="consultarCliente()"
+          #consultaForm="ngForm"
+        >
+          <div class="form-group">
+            <label for="cpf">CPF do Cliente:</label>
+            <input
+              id="cpf"
+              name="cpf"
+              type="text"
+              [(ngModel)]="cpf"
+              (ngModelChange)="buscarSugestoes()"
+              placeholder="Digite o CPF (somente números)"
+              maxlength="11"
+              pattern="[0-9]{11}"
+              required
+              #cpfInput="ngModel"
+              [class.error]="cpfInput.invalid && cpfInput.touched"
+            />
+            <div
+              *ngIf="cpfInput.invalid && cpfInput.touched"
+              class="validation-error"
+            >
+              CPF deve conter exatamente 11 dígitos numéricos
             </div>
+          </div>
+
+          <div class="button-group">
+            <button
+              type="submit"
+              [disabled]="!cpf || cpf.length !== 11 || carregando"
+            >
+              {{ carregando ? "Consultando..." : "Consultar" }}
+            </button>
+            <button type="button" (click)="limparBusca()" class="btn-secondary">
+              Limpar
+            </button>
+          </div>
+        </form>
+
+        <!-- Loading -->
+        <div *ngIf="carregando" class="loading">
+          <p>Buscando informações do cliente...</p>
         </div>
+
+        <!-- Sugestões -->
+        <div
+          *ngIf="sugestoes.length > 0 && !clienteEncontrado"
+          class="sugestoes-container"
+        >
+          <h4>Sugestões:</h4>
+          <ul class="sugestoes">
+            <li
+              *ngFor="let cliente of sugestoes"
+              (click)="selecionarSugestao(cliente)"
+              class="sugestao-item"
+            >
+              <div class="sugestao-info">
+                <strong>{{ cliente.nome }}</strong>
+                <small>{{ cliente.cpf | formatarCpf }}</small>
+                <span class="sugestao-detalhes"
+                  >{{ cliente.cidade }} - {{ cliente.estado }}</span
+                >
+                <span
+                  class="sugestao-saldo"
+                  [ngClass]="{
+                    'saldo-positivo': cliente.saldo >= 0,
+                    'saldo-negativo': cliente.saldo < 0
+                  }"
+                >
+                  Saldo: {{ cliente.saldo | currency : "BRL" }}
+                </span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Resultado -->
+        <div *ngIf="clienteEncontrado" class="cliente-detalhes">
+          <h3>Detalhes do Cliente</h3>
+
+          <div class="info-section">
+            <h4>Dados Pessoais</h4>
+            <div class="info-grid">
+              <div class="info-item">
+                <strong>Nome:</strong> {{ clienteEncontrado.nome }}
+              </div>
+              <div class="info-item">
+                <strong>CPF:</strong> {{ clienteEncontrado.cpf | formatarCpf }}
+              </div>
+              <div class="info-item">
+                <strong>Email:</strong> {{ clienteEncontrado.email }}
+              </div>
+              <div class="info-item">
+                <strong>Salário:</strong>
+                {{ clienteEncontrado.salario | currency : "BRL" }}
+              </div>
+            </div>
+          </div>
+
+          <div class="info-section">
+            <h4>Endereço</h4>
+            <div class="info-grid">
+              <div class="info-item">
+                <strong>Endereço:</strong> {{ clienteEncontrado.endereco }}
+              </div>
+              <div class="info-item">
+                <strong>Cidade:</strong> {{ clienteEncontrado.cidade }}
+              </div>
+              <div class="info-item">
+                <strong>Estado:</strong> {{ clienteEncontrado.estado }}
+              </div>
+            </div>
+          </div>
+
+          <div class="info-section">
+            <h4>Informações da Conta</h4>
+            <div class="info-grid">
+              <div class="info-item">
+                <strong>Número da Conta:</strong> {{ clienteEncontrado.conta }}
+              </div>
+              <div
+                class="info-item"
+                [ngClass]="{
+                  'saldo-negativo': clienteEncontrado.saldo < 0,
+                  'saldo-positivo': clienteEncontrado.saldo >= 0
+                }"
+              >
+                <strong>Saldo:</strong>
+                {{
+                  clienteEncontrado.saldo
+                    | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"
+                }}
+              </div>
+              <div class="info-item">
+                <strong>Limite:</strong>
+                {{
+                  clienteEncontrado.limite
+                    | currency : "BRL" : "symbol" : "1.2-2" : "pt-BR"
+                }}
+              </div>
+            </div>
+          </div>
+
+          <div class="info-section">
+            <h4>Gerente Responsável</h4>
+            <div class="info-grid">
+              <div class="info-item">
+                <strong>Nome:</strong> {{ clienteEncontrado.nome_gerente }}
+              </div>
+              <div class="info-item">
+                <strong>Email:</strong> {{ clienteEncontrado.gerente_email }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feedback de erro -->
+        <div *ngIf="erro && !carregando" class="erro">
+          <strong>Erro:</strong> {{ erro }}
+        </div>
+      </div>
     </div>
+  </div>
 </section>

@@ -1,6 +1,5 @@
 package msgerente.services;
 
-
 import msgerente.domain.*;
 
 import msgerente.repositories.GerenteRepository;
@@ -29,61 +28,94 @@ public class GerenteService {
     }
 
     private boolean validarCPF(String cpf) {
-        if (cpf == null) return false;
+        if (cpf == null)
+            return false;
         cpf = sanitizeCpf(cpf);
-        if (cpf.length() != 11 || cpf.matches("(\\d)\\1{10}")) return false;
+        if (cpf.length() != 11 || cpf.matches("(\\d)\\1{10}"))
+            return false;
 
         try {
             int sum = 0;
-            for (int i = 0; i < 9; i++) sum += Character.getNumericValue(cpf.charAt(i)) * (10 - i);
+            for (int i = 0; i < 9; i++)
+                sum += Character.getNumericValue(cpf.charAt(i)) * (10 - i);
             int firstCheck = (sum * 10) % 11;
-            if (firstCheck == 10) firstCheck = 0;
-            if (firstCheck != Character.getNumericValue(cpf.charAt(9))) return false;
+            if (firstCheck == 10)
+                firstCheck = 0;
+            if (firstCheck != Character.getNumericValue(cpf.charAt(9)))
+                return false;
 
             sum = 0;
-            for (int i = 0; i < 10; i++) sum += Character.getNumericValue(cpf.charAt(i)) * (11 - i);
+            for (int i = 0; i < 10; i++)
+                sum += Character.getNumericValue(cpf.charAt(i)) * (11 - i);
             int secondCheck = (sum * 10) % 11;
-            if (secondCheck == 10) secondCheck = 0;
-            if (secondCheck != Character.getNumericValue(cpf.charAt(10))) return false;
+            if (secondCheck == 10)
+                secondCheck = 0;
+            if (secondCheck != Character.getNumericValue(cpf.charAt(10)))
+                return false;
             return true;
         } catch (Exception e) {
             return false;
         }
     }
 
-    public ResponseEntity<GerenteDTO> infoGerente(String cpf){
+    public ResponseEntity<GerenteDTO> infoGerente(String cpf) {
         Gerente gerenteTemp = gerenteRepository.findByCpf(cpf);
-        GerenteDTO respTemp = new GerenteDTO(gerenteTemp.getCpf(), gerenteTemp.getNome(), gerenteTemp.getEmail(), gerenteTemp.getTipo());
+
+        // FIX: Adicionar verificação de nulo
+        if (gerenteTemp == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        GerenteDTO respTemp = new GerenteDTO(gerenteTemp.getCpf(), gerenteTemp.getNome(), gerenteTemp.getEmail(),
+                gerenteTemp.getTipo());
         return ResponseEntity.ok(respTemp);
     }
 
     public ResponseEntity<List<Gerente>> listarGerentes() {
+        // Assume que listarGerentes retorna todos os gerentes, independente do tipo.
+        // Se a intenção é listar apenas tipo "GERENTE", mantenha findByTipo("GERENTE").
+        // Vou manter findByTipo("GERENTE") conforme o original, mas é crucial garantir
+        // que
+        // a lista de gerentes para o dashboard inclua todos os tipos se o requisito R15
+        // exigir.
         List<Gerente> listaTemp = gerenteRepository.findByTipo("GERENTE");
-        if (listaTemp.size() != 0 ){
-            return ResponseEntity.ok(listaTemp);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(listaTemp);
-        }
+
+        // FIX: Mesmo que a lista esteja vazia, retornar OK com lista vazia é mais comum
+        // para listagens
+        // e o código do API Gateway espera uma lista vazia ou nula (gerentesResp.data
+        // || []).
+        return ResponseEntity.ok(listaTemp);
     }
 
-
-    public ResponseEntity<GerenteDTO> atualizarGerente(String cpf, AtualizarGerenteDTO data){
+    public ResponseEntity<GerenteDTO> atualizarGerente(String cpf, AtualizarGerenteDTO data) {
         Gerente gerenteTemp = gerenteRepository.findByCpf(cpf);
-            gerenteTemp.setNome(data.nome());
-            gerenteTemp.setEmail(data.email());
-            gerenteTemp.setSenha(data.senha());
 
-            GerenteDTO dto = new GerenteDTO(gerenteTemp.getCpf(), gerenteTemp.getNome(), gerenteTemp.getEmail(), gerenteTemp.getTipo());
+        // FIX: Adicionar verificação de nulo
+        if (gerenteTemp == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
 
-            gerenteRepository.save(gerenteTemp);
-            return ResponseEntity.ok(dto);
+        gerenteTemp.setNome(data.nome());
+        gerenteTemp.setEmail(data.email());
+        gerenteTemp.setSenha(data.senha()); // Cuidado: A senha geralmente deve ser atualizada em um serviço de auth
+
+        GerenteDTO dto = new GerenteDTO(gerenteTemp.getCpf(), gerenteTemp.getNome(), gerenteTemp.getEmail(),
+                gerenteTemp.getTipo());
+
+        gerenteRepository.save(gerenteTemp);
+        return ResponseEntity.ok(dto);
     }
 
-    public ResponseEntity<GerenteDTO> inserirGerente (AdicionarGerenteDTO data) {
+    public ResponseEntity<GerenteDTO> inserirGerente(AdicionarGerenteDTO data) {
         Gerente gerenteTemp = new Gerente(data.cpf(), data.nome(), data.email(), data.senha(), data.tipo());
 
         if (gerenteRepository.findByCpf(data.cpf()) != null) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+
+        // FIX: Adicionar validação de CPF
+        if (!validarCPF(data.cpf())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
         gerenteRepository.save(gerenteTemp);
@@ -96,32 +128,32 @@ public class GerenteService {
                 "msGerente-add");
         rabbitMQProducer.sendMessageSaga(responseTemp);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(new GerenteDTO(data.cpf(), data.nome(), data.email(), data.tipo()));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new GerenteDTO(data.cpf(), data.nome(), data.email(), data.tipo()));
     }
 
-        public ResponseEntity<GerenteDTO> deletarGerente (String cpf){
+    public ResponseEntity<GerenteDTO> deletarGerente(String cpf) {
 
-            Gerente gerenteTemp = gerenteRepository.findByCpf(cpf);
+        Gerente gerenteTemp = gerenteRepository.findByCpf(cpf);
 
-            if (gerenteTemp != null) {
+        if (gerenteTemp != null) {
 
-                gerenteRepository.delete(gerenteTemp);
+            gerenteRepository.delete(gerenteTemp);
 
-                //enviar gerente para excluir das contas
-                ResponseDTO responseTemp = new ResponseDTO(200,
-                        gerenteTemp.getCpf(),
-                        gerenteTemp.getNome(),
-                        0.0,
-                        "msGerente-excluir");
-                rabbitMQProducer.sendMessageSaga(responseTemp);
+            // enviar gerente para excluir das contas
+            ResponseDTO responseTemp = new ResponseDTO(200,
+                    gerenteTemp.getCpf(),
+                    gerenteTemp.getNome(),
+                    0.0,
+                    "msGerente-excluir");
+            rabbitMQProducer.sendMessageSaga(responseTemp);
 
-
-                GerenteDTO dto = new GerenteDTO(gerenteTemp.getCpf(), gerenteTemp.getNome(), gerenteTemp.getEmail(), gerenteTemp.getTipo());
-                return ResponseEntity.ok(dto);
-            }
-            else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
+            GerenteDTO dto = new GerenteDTO(gerenteTemp.getCpf(), gerenteTemp.getNome(), gerenteTemp.getEmail(),
+                    gerenteTemp.getTipo());
+            return ResponseEntity.ok(dto);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+    }
 
 }
