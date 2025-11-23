@@ -58,7 +58,7 @@ public class GerenteService {
     }
 
     public ResponseEntity<List<Gerente>> listarGerentes() {
-        List<Gerente> listaTemp = gerenteRepository.findByTipo("GERENTE");
+        List<Gerente> listaTemp = gerenteRepository.findAll();
         if (listaTemp.size() != 0 ){
             return ResponseEntity.ok(listaTemp);
         } else {
@@ -96,7 +96,7 @@ public class GerenteService {
                 "msGerente-add");
         rabbitMQProducer.sendMessageSaga(responseTemp);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(new GerenteDTO(data.cpf(), data.nome(), data.email(), data.tipo()));
+        return ResponseEntity.ok(new GerenteDTO(data.cpf(), data.nome(), data.email(), data.tipo()));
     }
 
         public ResponseEntity<GerenteDTO> deletarGerente (String cpf){

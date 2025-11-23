@@ -14,8 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class
-RabbitMQConsumer {
+public class RabbitMQConsumer {
 
     @Autowired
     RabbitMQProducer rabbitMQProducer;
@@ -39,7 +38,6 @@ RabbitMQConsumer {
 
         if (message.cod() == 201 && message.ms().equals("ms-auth")){
             //enviar para conta
-            LOGGER.info("CHEGOU NO MS-SAGA para enviar para o MS Conta");
             ResponseDTO respostaTemp = new ResponseDTO(00, message.cpf(),
                     message.nome(),
                     message.salario(),
