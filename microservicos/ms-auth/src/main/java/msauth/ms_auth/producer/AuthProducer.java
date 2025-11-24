@@ -13,7 +13,7 @@ import msauth.ms_auth.dto.SagaEvent;
 public class AuthProducer {
 
 
-    @Value("${rabbitmq.exchange.saga}")
+    @Value("exchangePrincipal")
     private String sagaExchange;
 
     @Value("${rabbitmq.key.saga-create-success}")
@@ -22,7 +22,7 @@ public class AuthProducer {
     @Value("${rabbitmq.key.saga-create-fail}")
     private String sagaAuthFailKey;
 
-    @Value("KeySaga")
+    @Value("keySaga")
     public String routingKeySaga;
 
     private final AmqpTemplate rabbitTemplate;
@@ -43,7 +43,9 @@ public class AuthProducer {
 
    // apenas para enviar para a Saga
     public void sendSagaConta(ResponseDTO data){
+        System.out.println("ENVIANDO DO SEND SAGA - VERIFICAR AGORA MSSAGA");
         rabbitTemplate.convertAndSend(sagaExchange, routingKeySaga,data);
+        System.out.println("Passou o convertAndSend " + data.toString());
     }
 
 }

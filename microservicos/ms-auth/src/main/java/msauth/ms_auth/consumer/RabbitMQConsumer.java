@@ -86,7 +86,6 @@ public class RabbitMQConsumer {
                         null,
                         emailDoCliente
                 );
-
                 authProducer.sendSagaConta(temp);
 
             } catch (Exception e) {

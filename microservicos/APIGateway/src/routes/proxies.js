@@ -257,6 +257,7 @@ function setupProxies(app) {
   app.get(
     "/clientes",
     verifyJWT,
+    requireRoles(["GERENTE", "ADMINISTRADOR"]),
     (req, res, next) => {
       const filtro = req.query.filtro;
 
@@ -315,7 +316,7 @@ function setupProxies(app) {
     console.log("🔍 Verificando se email já existe:", email);
 
     try {
-      const emailCheckUrl = `${CLIENTE}/clientes/email/${encodeURIComponent(
+      const emailCheckUrl = `${CLIENTE}clientes/email/${encodeURIComponent(
         email
       )}`;
       console.log("🔍 Fazendo request para:", emailCheckUrl);
@@ -449,8 +450,12 @@ function setupProxies(app) {
     }
   });
 
-  app.post("/clientes/:cpf/aprovar", createProxyMiddleware(proxyOptions(SAGA)));
-
+app.post(
+  "/clientes/:cpf/aprovar",
+  verifyJWT,
+  requireRoles(["GERENTE", "ADMINISTRADOR"]),
+  createProxyMiddleware(proxyOptions(SAGA))
+);
   app.post(
     "/clientes/:cpf/rejeitar",
     verifyJWT,

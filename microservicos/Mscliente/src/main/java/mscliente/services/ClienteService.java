@@ -118,7 +118,7 @@ public class ClienteService {
     }
 
     public ResponseEntity<ClienteDTO> buscarCliente(String cpf) {
-        Optional<Cliente> clienteOpt = clienteRepository.findByCpf(cpf);
+        Optional<Cliente> clienteOpt = clienteRepository.findByCpfAndStatusNot(cpf,"REJEITADO");
 
         if (clienteOpt.isPresent()) {
             Cliente clienteTemp = clienteOpt.get();
@@ -143,7 +143,7 @@ public class ClienteService {
         // gerar Senha aleatoria
         try {
 
-            Optional<Cliente> optCliente = clienteRepository.findByCpf(data.cpf());
+            Optional<Cliente> optCliente = clienteRepository.findByCpfAndStatusNot(data.cpf(), "REJEITADO");
 
             if (optCliente.isPresent()) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).build();
@@ -193,7 +193,7 @@ public class ClienteService {
     }
 
     public ResponseEntity<ClienteDTO> atualizarCliente(AtualizarClienteDTO data, String cpf) {
-        Optional<Cliente> optCliente = clienteRepository.findByCpf(cpf);
+        Optional<Cliente> optCliente = clienteRepository.findByCpfAndStatusNot(cpf,"REJEITADO");
 
         if (optCliente.isPresent()) {
             try {
@@ -227,7 +227,7 @@ public class ClienteService {
 
     public ResponseEntity<ClienteDTO> aprovarCliente(String cpf) {
 
-        Optional<Cliente> optCliente = clienteRepository.findByCpf(cpf);
+        Optional<Cliente> optCliente = clienteRepository.findByCpfAndStatusNot(cpf,"REJEITADO");
         if (optCliente.isPresent()) {
             Cliente clienteTemp = optCliente.get();
             clienteTemp.setStatus("APROVADO");
@@ -285,7 +285,7 @@ public class ClienteService {
     }
 
     public ResponseEntity<GeralDTO> rejeitarCliente(String cpf, String motivoRejeite) {
-        Optional<Cliente> clienteOpt = clienteRepository.findByCpf(cpf);
+        Optional<Cliente> clienteOpt = clienteRepository.findByCpfAndStatusNot(cpf,"REJEITADO");
         if (clienteOpt.isPresent()) {
 
             Cliente clienteTemp = clienteOpt.get();
@@ -305,7 +305,7 @@ public class ClienteService {
     // teste pedro alteracaoperfil
     // atualizacao e reversao
     public void atualizarClienteSaga(ClienteDTO dadosAtualizados) {
-        Optional<Cliente> optCliente = clienteRepository.findByCpf(dadosAtualizados.cpf());
+        Optional<Cliente> optCliente = clienteRepository.findByCpfAndStatusNot(dadosAtualizados.cpf(), "REJEITADO");
         if (optCliente.isEmpty()) {
             throw new RuntimeException("Cliente nao encontrado.");
         }
@@ -325,7 +325,7 @@ public class ClienteService {
 
     // reverte em caso de erro
     public void reverterPara(ClienteDTO dadosOriginais) {
-        Optional<Cliente> optCliente = clienteRepository.findByCpf(dadosOriginais.cpf());
+        Optional<Cliente> optCliente = clienteRepository.findByCpfAndStatusNot(dadosOriginais.cpf(), "REJEITADO");
 
         if (optCliente.isPresent()) {
             Cliente cliente = optCliente.get();
@@ -344,7 +344,7 @@ public class ClienteService {
     }
 
     public void deletarContaErro(String cpf) {
-        Optional<Cliente> optCliente = clienteRepository.findByCpf(cpf);
+        Optional<Cliente> optCliente = clienteRepository.findByCpfAndStatusNot(cpf,"REJEITADO");
         if (optCliente.isPresent()) {
             Cliente cliente = optCliente.get();
             emailService.sendEmailErro(cliente.getEmail(), cliente.getEmail());

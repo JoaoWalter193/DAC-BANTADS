@@ -1,4 +1,4 @@
-// verifyJWT.js - versão corrigida
+// verifyJWT.js - versão com token blacklist
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const path = require("path");
@@ -10,6 +10,9 @@ const PUBLIC_KEY = fs.readFileSync(
 
 // ✅ DEFINIR O MAPA AQUI (fora das funções)
 const emailStorage = new Map();
+
+// ✅ NOVO: Token blacklist para logout
+const tokenBlacklist = new Set();
 
 function verifyJWT(req, res, next) {
   const enabled =
@@ -41,6 +44,12 @@ function verifyJWT(req, res, next) {
   if (!token) {
     console.log("❌ VerifyJWT - Token vazio");
     return res.status(401).json({ mensagem: "O usuário não está logado" });
+  }
+
+  // ✅ NOVA VERIFICAÇÃO: Check token blacklist
+  if (tokenBlacklist.has(token)) {
+    console.log("❌ VerifyJWT - Token invalidado via logout");
+    return res.status(401).json({ mensagem: "Token inválido - logout realizado" });
   }
 
   try {
@@ -110,6 +119,39 @@ function verifyJWT(req, res, next) {
 
     return res.status(401).json({ mensagem: "Token inválido ou expirado" });
   }
+}
+
+// ✅ NOVA FUNÇÃO: Adicionar token à blacklist
+function invalidateToken(token) {
+  if (token) {
+    tokenBlacklist.add(token);
+    console.log("✅ Token adicionado à blacklist:", token.substring(0, 10) + "...");
+
+    // Opcional: Limpar token após expiração
+    try {
+      const decoded = jwt.decode(token);
+      if (decoded && decoded.exp) {
+        const expiresIn = decoded.exp * 1000 - Date.now();
+        if (expiresIn > 0) {
+          setTimeout(() => {
+            tokenBlacklist.delete(token);
+            console.log("🕒 Token removido da blacklist (expirou)");
+          }, expiresIn);
+        }
+      }
+    } catch (e) {
+      console.log("⚠️ Não foi possível decodificar token para limpeza automática");
+    }
+  }
+}
+
+// ✅ NOVA FUNÇÃO: Obter token do request
+function getTokenFromRequest(req) {
+  const authHeader = req.headers["authorization"] || req.headers["Authorization"];
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    return authHeader.split(" ")[1];
+  }
+  return null;
 }
 
 function salvarEmailParaLogout(cpf, email) {
@@ -200,4 +242,6 @@ module.exports = {
   salvarEmailParaLogoutPorId,
   removerEmailDoStorage,
   removerEmailDoStoragePorId,
+  invalidateToken,           // ✅ EXPORTAR NOVAS FUNÇÕES
+  getTokenFromRequest,       // ✅ EXPORTAR NOVAS FUNÇÕES
 };

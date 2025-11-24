@@ -17,7 +17,7 @@ const getClienteByCpf = async (req, res) => {
 
   try {
     const clienteResp = await axiosInstance.get(
-      `${CLIENTE}/clientes/${encodeURIComponent(cpf)}`
+      `${CLIENTE}clientes/${encodeURIComponent(cpf)}`
     );
     if (clienteResp.status !== 200)
       return propagateRemoteError(res, clienteResp);
@@ -26,7 +26,7 @@ const getClienteByCpf = async (req, res) => {
     let conta = null;
     try {
       const contaResp = await axiosInstance.get(
-        `${CONTA}/contas/${encodeURIComponent(cpf)}`
+        `${CONTA}contas/${encodeURIComponent(cpf)}`
       );
       if (contaResp.status === 200) conta = contaResp.data;
     } catch (e) {
@@ -96,7 +96,7 @@ const getClientes = async (req, res, next) => {
     console.log("🔍 Processando composition para Relatório de Clientes (R16)");
     try {
       // 1. Buscar Clientes (Dados base)
-      const clientesUrl = `${CLIENTE}/clientes?filtro=${filtro}`;
+      const clientesUrl = `${CLIENTE}clientes?filtro=${filtro}`;
       console.log("🔍 Fetching clientes from:", clientesUrl);
       const clientesResp = await axiosInstance.get(clientesUrl);
       if (clientesResp.status >= 400)
@@ -114,7 +114,7 @@ const getClientes = async (req, res, next) => {
       const contasResponses = await Promise.all(
         clientes.map((c) =>
           axiosInstance
-            .get(`${CONTA}/contas/${encodeURIComponent(c.cpf)}`)
+            .get(`${CONTA}contas/${encodeURIComponent(c.cpf)}`)
             .catch((error) => {
               if (error.response) return error.response;
               throw error;
@@ -222,7 +222,7 @@ const getClientes = async (req, res, next) => {
     try {
       console.log("🔍 Fetching melhores clientes from CONTA service");
       const contasResp = await axiosInstance.get(
-        `${CONTA}/contas/melhoresClientes`
+        `${CONTA}contas/melhoresClientes`
       );
       if (contasResp.status >= 400)
         return propagateRemoteError(res, contasResp);
@@ -234,7 +234,7 @@ const getClientes = async (req, res, next) => {
       const clientesResp = await Promise.all(
         contas.map((c) =>
           axiosInstance
-            .get(`${CLIENTE}/clientes/${encodeURIComponent(c.cpfCliente)}`)
+            .get(`${CLIENTE}clientes/${encodeURIComponent(c.cpfCliente)}`)
             .catch((error) => {
               if (error.response) return error.response;
               throw error;
@@ -271,7 +271,7 @@ const getClientes = async (req, res, next) => {
   if (!filtro) {
     try {
       console.log("🔍 Fetching todos os clientes");
-      const allClientesResp = await axiosInstance.get(`${CLIENTE}/clientes`);
+      const allClientesResp = await axiosInstance.get(`${CLIENTE}clientes`);
       if (allClientesResp.status >= 400)
         return propagateRemoteError(res, allClientesResp);
 
@@ -283,7 +283,7 @@ const getClientes = async (req, res, next) => {
       for (const c of clientes) {
         try {
           await axiosInstance.get(
-            `${CONTA}/contas/${encodeURIComponent(c.cpf)}`
+            `${CONTA}contas/${encodeURIComponent(c.cpf)}`
           );
           clientesComConta.push(c);
         } catch (e) {
