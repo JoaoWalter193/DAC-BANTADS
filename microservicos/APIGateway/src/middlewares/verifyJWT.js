@@ -1,4 +1,4 @@
-// verifyJWT.js - versão com token blacklist
+// verifyJWT.js - versão corrigida
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const path = require("path");
@@ -9,12 +9,11 @@ const PUBLIC_KEY = fs.readFileSync(
 );
 
 const emailStorage = new Map();
-
 const tokenBlacklist = new Set();
 
 function verifyJWT(req, res, next) {
   const enabled =
-    String(process.env.ENABLE_AUTH || "false").toLowerCase() === "true";
+    String(process.env.ENABLE_AUTH || "true").toLowerCase() === "true";
   if (!enabled) {
     console.log("Autenticação desabilitada");
     return next();
@@ -28,19 +27,30 @@ function verifyJWT(req, res, next) {
     authHeader ? "Presente" : "Ausente"
   );
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    console.log("VerifyJWT - Header Authorization inválido ou ausente");
+  if (!authHeader) {
+    console.log("VerifyJWT - Header Authorization ausente");
     return res.status(401).json({ mensagem: "O usuário não está logado" });
   }
 
-  const token = authHeader.split(" ")[1];
+  let token;
+  if (authHeader.startsWith("Bearer ")) {
+    token = authHeader.substring(7);
+  } else {
+    token = authHeader;
+  }
+
   console.log(
     "VerifyJWT - Token recebido:",
     token ? `Presente (${token.length} chars)` : "Ausente"
   );
 
-  if (!token) {
-    console.log("VerifyJWT - Token vazio");
+  if (
+    !token ||
+    token === "null" ||
+    token === "undefined" ||
+    token === "Bearer"
+  ) {
+    console.log("VerifyJWT - Token vazio ou inválido");
     return res.status(401).json({ mensagem: "O usuário não está logado" });
   }
 
@@ -62,9 +72,10 @@ function verifyJWT(req, res, next) {
       email: decoded.email,
       scope: decoded.scope,
       exp: decoded.exp,
+      cpf: decoded.cpf,
     });
 
-    let role = "";
+    let role = "CLIENTE";
     if (decoded.scope) {
       role = decoded.scope.replace("ROLE_", "");
     }
@@ -75,25 +86,28 @@ function verifyJWT(req, res, next) {
 
     if (decoded.cpf && emailStorage.has(decoded.cpf)) {
       email = emailStorage.get(decoded.cpf);
-      console.log("Email recuperado do storage:", email);
+      console.log("Email recuperado do storage por CPF:", email);
     } else if (decoded.sub && emailStorage.has(decoded.sub)) {
       email = emailStorage.get(decoded.sub);
       console.log("Email recuperado do storage por ID:", email);
+    } else if (decoded.email) {
+      email = decoded.email;
+      console.log("Email recuperado do token:", email);
     } else {
-      email = "";
-      console.log("Email não encontrado no storage, usando string vazia");
+      console.log("Email não encontrado - usando vazio");
     }
 
     req.user = {
       sub: decoded.sub || null,
       email: email,
+      cpf: decoded.cpf || null,
       role: role,
       raw: decoded,
     };
 
     console.log(
       "VerifyJWT - Token válido. Email:",
-      req.user.email ? req.user.email : "(vazio)",
+      req.user.email,
       "Role:",
       req.user.role
     );
@@ -109,7 +123,7 @@ function verifyJWT(req, res, next) {
       return res.status(401).json({ mensagem: "Token inválido" });
     }
 
-    return res.status(401).json({ mensagem: "Token inválido ou expirado" });
+    return res.status(401).json({ mensagem: "Falha na autenticação" });
   }
 }
 
@@ -141,10 +155,13 @@ function invalidateToken(token) {
 function getTokenFromRequest(req) {
   const authHeader =
     req.headers["authorization"] || req.headers["Authorization"];
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    return authHeader.split(" ")[1];
+  if (!authHeader) return null;
+
+  if (authHeader.startsWith("Bearer ")) {
+    return authHeader.substring(7);
+  } else {
+    return authHeader;
   }
-  return null;
 }
 
 function salvarEmailParaLogout(cpf, email) {
@@ -189,7 +206,7 @@ function removerEmailDoStoragePorId(id) {
 function requireRoles(roles = []) {
   return (req, res, next) => {
     const enabled =
-      String(process.env.ENABLE_AUTH || "false").toLowerCase() === "true";
+      String(process.env.ENABLE_AUTH || "true").toLowerCase() === "true";
     if (!enabled) {
       console.log("Verificação de roles desabilitada");
       return next();

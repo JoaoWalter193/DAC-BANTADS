@@ -13,15 +13,12 @@ const GERENTES_LIST_PATH = "gerentes/lista";
 
 const getGerentes = async (req, res, next) => {
   const { filtro } = req.query;
-  console.log("🔍 GET /gerentes - Filtro:", filtro);
-
-  if (filtro !== "dashboard" && filtro !== "adm_relatorio_clientes") {
+  console.log("GET /gerentes - Filtro:", filtro);
+  if (
+    !filtro ||
+    (filtro !== "dashboard" && filtro !== "adm_relatorio_clientes")
+  ) {
     console.log("🔍 Usando proxy direto para GERENTE service");
-
-    console.log(`[LOG PROXY] Destino (Target): ${GERENTE}`);
-    console.log(
-      `[LOG PROXY] Reescrita (Rewrite): ^/gerentes$ -> ${GERENTES_LIST_PATH}`
-    );
 
     return createProxyMiddleware({
       target: GERENTE,
@@ -29,14 +26,51 @@ const getGerentes = async (req, res, next) => {
       pathRewrite: {
         "^/gerentes$": GERENTES_LIST_PATH,
       },
+      selfHandleResponse: true,
+      onProxyRes: async (proxyRes, req, res) => {
+        let body = "";
+        proxyRes.on("data", (chunk) => (body += chunk.toString()));
+
+        proxyRes.on("end", () => {
+          console.log(
+            `GET /gerentes - Resposta (${proxyRes.statusCode}):`,
+            body
+          );
+
+          res.header("Access-Control-Allow-Origin", "http://localhost");
+          res.header(
+            "Access-Control-Allow-Methods",
+            "GET,POST,PUT,DELETE,OPTIONS"
+          );
+          res.header(
+            "Access-Control-Allow-Headers",
+            "Content-Type, Authorization"
+          );
+          res.header("Access-Control-Allow-Credentials", "true");
+
+          try {
+            const data = body ? JSON.parse(body) : [];
+
+            if (!Array.isArray(data)) {
+              console.log("Resposta não é array, convertendo:", data);
+              const arrayData = data ? [data] : [];
+              return res.status(proxyRes.statusCode).json(arrayData);
+            }
+
+            console.log(`Retornando ${data.length} gerentes`);
+            return res.status(proxyRes.statusCode).json(data);
+          } catch (e) {
+            console.error("Erro ao processar resposta dos gerentes:", e);
+            return res.status(200).json([]);
+          }
+        });
+      },
     })(req, res, next);
   }
 
   try {
     if (filtro === "adm_relatorio_clientes") {
-      console.log(
-        "🔍 Processando composition para Relatório de Clientes (R16)"
-      );
+      console.log("Processando composition para Relatório de Clientes (R16)");
 
       const gerentesResp = await axiosInstance.get(
         `${GERENTE}${GERENTES_LIST_PATH}`
@@ -106,12 +140,12 @@ const getGerentes = async (req, res, next) => {
 
       relatorioFinal.sort((a, b) => a.nome.localeCompare(b.nome));
 
-      console.log("✅ Relatório de clientes composto e ordenado com sucesso.");
+      console.log("Relatório de clientes composto e ordenado com sucesso.");
       return res.status(200).json(relatorioFinal);
     }
 
     if (filtro === "dashboard") {
-      console.log("🔍 Processando composition para dashboard");
+      console.log("Processando composition para dashboard");
 
       const gerentesResp = await axiosInstance.get(
         `${GERENTE}${GERENTES_LIST_PATH}`
@@ -120,14 +154,14 @@ const getGerentes = async (req, res, next) => {
         return propagateRemoteError(res, gerentesResp);
 
       const gerentes = gerentesResp.data || [];
-      console.log("🔍 Gerentes encontrados:", gerentes.length);
+      console.log("Gerentes encontrados:", gerentes.length);
 
       const clientesResp = await axiosInstance.get(`${CLIENTE}clientes`);
       if (clientesResp.status >= 400)
         return propagateRemoteError(res, clientesResp);
 
       const clientes = clientesResp.data || [];
-      console.log("🔍 Clientes encontrados:", clientes.length);
+      console.log("Clientes encontrados:", clientes.length);
 
       const contasResponses = await Promise.all(
         clientes.map((c) =>
@@ -197,7 +231,7 @@ const getGerentes = async (req, res, next) => {
 
       final.sort((a, b) => b.saldo_positivo - a.saldo_positivo);
 
-      console.log("✅ Dashboard gerado com sucesso");
+      console.log("Dashboard gerado com sucesso");
       return res.status(200).json(final);
     }
   } catch (err) {

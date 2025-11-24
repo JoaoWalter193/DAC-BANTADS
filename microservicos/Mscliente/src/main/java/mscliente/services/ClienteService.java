@@ -53,7 +53,7 @@ public class ClienteService {
             return ResponseEntity.ok(listaDTO);
         } else if (filtro.equals("adm_relatorio_clientes")) {
             // todos os clientes
-            List<Cliente> listaTemp = clienteRepository.findAll();
+            List<Cliente> listaTemp = clienteRepository.findByStatusNot("REJEITADO");
             List<ClienteDTO> listaDTO = new ArrayList<>();
 
             for (Cliente cliente : listaTemp) {

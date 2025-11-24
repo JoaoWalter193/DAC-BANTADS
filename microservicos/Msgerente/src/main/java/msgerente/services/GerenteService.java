@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import msgerente.producer.RabbitMQProducer;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -143,6 +144,25 @@ public class GerenteService {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+    }
+
+    public ResponseEntity<GerenteDTO> buscarGerenteEmail(String email) {
+        Optional<Gerente> ger = gerenteRepository.findByEmail(email);
+        Optional<Gerente> gerenteOpt = gerenteRepository.findByEmail(email);
+
+        if (gerenteOpt.isPresent() || ger.isPresent()) {
+            Gerente gerenteTemp = gerenteOpt.get();
+            GerenteDTO dtoTemp = new GerenteDTO(
+                    gerenteTemp.getCpf(),
+                    gerenteTemp.getNome(),
+                    gerenteTemp.getEmail(),
+                    gerenteTemp.getTipo()
+            );
+
+            return ResponseEntity.ok(dtoTemp);
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
 }
