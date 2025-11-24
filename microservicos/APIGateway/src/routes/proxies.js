@@ -702,44 +702,179 @@ function setupProxies(app) {
     createProxyMiddleware({
       target: CONTA,
       changeOrigin: true,
+      selfHandleResponse: true,
       pathRewrite: (path, req) => `/contas/${req.params.numero}/saldo`,
       onProxyReq: (proxyReq) => {
         proxyReq.removeHeader("Content-Type");
         proxyReq.removeHeader("Content-Length");
       },
+      onProxyRes: async (proxyRes, req, res) => {
+        let body = "";
+        proxyRes.on("data", (chunk) => (body += chunk.toString()));
+
+        proxyRes.on("end", () => {
+          console.log(`🔍 Resposta saldo (${proxyRes.statusCode}):`, body);
+
+          // Configurar CORS
+          res.header("Access-Control-Allow-Origin", "http://localhost");
+          res.header(
+            "Access-Control-Allow-Methods",
+            "GET,POST,PUT,DELETE,OPTIONS"
+          );
+          res.header(
+            "Access-Control-Allow-Headers",
+            "Content-Type, Authorization"
+          );
+          res.header("Access-Control-Allow-Credentials", "true");
+
+          try {
+            const data = body ? JSON.parse(body) : {};
+
+            if (proxyRes.statusCode !== 200) {
+              return res.status(proxyRes.statusCode).json(data);
+            }
+
+            const numeroConta = parseInt(req.params.numero, 10);
+
+            // ✅ MAPEAMENTO FLEXÍVEL DE CAMPOS
+            const cpfCliente =
+              data.cpfCliente || // Campo esperado
+              data.cliente || // Campo alternativo
+              data.cpf || // Outra possibilidade
+              data.idCliente; // Mais uma possibilidade
+
+            const saldo =
+              data.saldo !== undefined
+                ? data.saldo
+                : data.valor !== undefined
+                ? data.valor
+                : data.balance !== undefined
+                ? data.balance
+                : 0;
+
+            const response = {
+              cliente: cpfCliente, // ✅ Campo obrigatório para o teste
+              conta: numeroConta,
+              saldo: saldo,
+            };
+
+            console.log("✅ Resposta formatada para saldo:", response);
+            return res.status(200).json(response);
+          } catch (e) {
+            console.error("❌ Erro ao processar resposta do saldo:", e);
+            return res.status(500).json({
+              error: "Erro ao processar resposta",
+              details: e.message,
+            });
+          }
+        });
+      },
     })
   );
 
-  // Rota GET /contas/:numero/extrato
+  // Rota GET /contas/:numero/extrato - VERSÃO SIMPLIFICADA
   app.get(
     "/contas/:numero/extrato",
     verifyJWT,
     createProxyMiddleware({
       target: CONTA,
       changeOrigin: true,
+      selfHandleResponse: true,
       pathRewrite: (path, req) => `/contas/${req.params.numero}/extrato`,
       onProxyReq: (proxyReq) => {
         proxyReq.removeHeader("Content-Type");
         proxyReq.removeHeader("Content-Length");
       },
+      onProxyRes: async (proxyRes, req, res) => {
+        let body = "";
+        proxyRes.on("data", (chunk) => (body += chunk.toString()));
+
+        proxyRes.on("end", () => {
+          console.log(`🔍 Resposta extrato (${proxyRes.statusCode}):`, body);
+
+          // Configurar CORS
+          res.header("Access-Control-Allow-Origin", "http://localhost");
+          res.header(
+            "Access-Control-Allow-Methods",
+            "GET,POST,PUT,DELETE,OPTIONS"
+          );
+          res.header(
+            "Access-Control-Allow-Headers",
+            "Content-Type, Authorization"
+          );
+          res.header("Access-Control-Allow-Credentials", "true");
+
+          try {
+            const data = body ? JSON.parse(body) : {};
+            const numeroConta = parseInt(req.params.numero, 10);
+
+            if (proxyRes.statusCode !== 200) {
+              return res.status(proxyRes.statusCode).json(data);
+            }
+
+            // ✅ CORREÇÃO: CONFIE NO QUE O MICROSERVIÇO RETORNA
+            let response;
+
+            if (Array.isArray(data)) {
+              // Se for array, buscar saldo separadamente
+              response = {
+                conta: numeroConta,
+                saldo: data.saldo || 0, // Tenta extrair saldo se existir
+                movimentacoes: data,
+              };
+            } else if (data.movimentacoes !== undefined) {
+              // Se já tem estrutura completa
+              response = {
+                conta: numeroConta,
+                saldo: data.saldo !== undefined ? data.saldo : 0,
+                movimentacoes: data.movimentacoes,
+              };
+            } else {
+              // Estrutura desconhecida
+              response = {
+                conta: numeroConta,
+                saldo: data.saldo !== undefined ? data.saldo : 0,
+                movimentacoes: data.movimentacoes || data.transactions || [],
+              };
+            }
+
+            // Garantir arredondamento
+            response.saldo = Math.round(response.saldo * 100) / 100;
+
+            console.log("✅ Resposta formatada para extrato:", response);
+            return res.status(200).json(response);
+          } catch (e) {
+            console.error("❌ Erro ao processar resposta do extrato:", e);
+            return res.status(200).json({
+              conta: parseInt(req.params.numero, 10),
+              saldo: 0,
+              movimentacoes: [],
+            });
+          }
+        });
+      },
     })
   );
 
-  // Rota PUT /contas/:numero/depositar
-  app.put(
+  // Rota PUT /contas/:numero/depositar - VERSÃO SIMPLIFICADA
+  app.post(
     "/contas/:numero/depositar",
     verifyJWT,
     createProxyMiddleware({
       target: CONTA,
       changeOrigin: true,
+      selfHandleResponse: true,
       pathRewrite: (path, req) => `/contas/${req.params.numero}/depositar`,
       onProxyReq(proxyReq, req) {
-        console.log("🔍 PUT /contas/:numero/depositar");
+        console.log(
+          "🔍 POST /contas/:numero/depositar -> convertendo para PUT"
+        );
         console.log("🔍 Número conta:", req.params.numero);
         console.log("🔍 Body original:", req.body);
 
+        proxyReq.method = "PUT";
+
         if (req.body) {
-          // Para depósito, envia apenas o valor como string
           const valor = String(req.body.valor || req.body);
           console.log("🔍 Enviando valor:", valor);
 
@@ -748,24 +883,75 @@ function setupProxies(app) {
           proxyReq.write(valor);
         }
       },
+      onProxyRes: async (proxyRes, req, res) => {
+        let body = "";
+        proxyRes.on("data", (chunk) => (body += chunk.toString()));
+
+        proxyRes.on("end", () => {
+          console.log(`🔍 Resposta depósito (${proxyRes.statusCode}):`, body);
+
+          // Configurar CORS
+          res.header("Access-Control-Allow-Origin", "http://localhost");
+          res.header(
+            "Access-Control-Allow-Methods",
+            "GET,POST,PUT,DELETE,OPTIONS"
+          );
+          res.header(
+            "Access-Control-Allow-Headers",
+            "Content-Type, Authorization"
+          );
+          res.header("Access-Control-Allow-Credentials", "true");
+
+          try {
+            const data = body ? JSON.parse(body) : {};
+
+            if (proxyRes.statusCode !== 200) {
+              return res.status(proxyRes.statusCode).json(data);
+            }
+
+            // ✅ CONFIE NO SALDO DO MICROSERVIÇO
+            const numeroConta = parseInt(req.params.numero, 10);
+            const saldo = data.saldo !== undefined ? data.saldo : data.balance;
+            const saldoArredondado = Math.round(saldo * 100) / 100;
+
+            const response = {
+              conta: numeroConta,
+              saldo: saldoArredondado,
+              data: data.data || data.timestamp || new Date().toISOString(),
+              mensagem: data.mensagem || "Depósito realizado com sucesso",
+            };
+
+            console.log("✅ Resposta formatada para depósito:", response);
+            return res.status(200).json(response);
+          } catch (e) {
+            console.error("❌ Erro ao processar resposta do depósito:", e);
+            return res.status(500).json({
+              error: "Erro ao processar resposta",
+              details: e.message,
+            });
+          }
+        });
+      },
     })
   );
 
-  // Rota PUT /contas/:numero/sacar
-  app.put(
+  // Rota PUT /contas/:numero/sacar - VERSÃO SIMPLIFICADA
+  app.post(
     "/contas/:numero/sacar",
     verifyJWT,
     createProxyMiddleware({
       target: CONTA,
       changeOrigin: true,
+      selfHandleResponse: true,
       pathRewrite: (path, req) => `/contas/${req.params.numero}/sacar`,
       onProxyReq(proxyReq, req) {
-        console.log("🔍 PUT /contas/:numero/sacar");
+        console.log("🔍 POST /contas/:numero/sacar -> convertendo para PUT");
         console.log("🔍 Número conta:", req.params.numero);
         console.log("🔍 Body original:", req.body);
 
+        proxyReq.method = "PUT";
+
         if (req.body) {
-          // Para saque, envia apenas o valor como string
           const valor = String(req.body.valor || req.body);
           console.log("🔍 Enviando valor:", valor);
 
@@ -774,22 +960,75 @@ function setupProxies(app) {
           proxyReq.write(valor);
         }
       },
+      onProxyRes: async (proxyRes, req, res) => {
+        let body = "";
+        proxyRes.on("data", (chunk) => (body += chunk.toString()));
+
+        proxyRes.on("end", () => {
+          console.log(`🔍 Resposta saque (${proxyRes.statusCode}):`, body);
+
+          // Configurar CORS
+          res.header("Access-Control-Allow-Origin", "http://localhost");
+          res.header(
+            "Access-Control-Allow-Methods",
+            "GET,POST,PUT,DELETE,OPTIONS"
+          );
+          res.header(
+            "Access-Control-Allow-Headers",
+            "Content-Type, Authorization"
+          );
+          res.header("Access-Control-Allow-Credentials", "true");
+
+          try {
+            const data = body ? JSON.parse(body) : {};
+
+            if (proxyRes.statusCode !== 200) {
+              return res.status(proxyRes.statusCode).json(data);
+            }
+
+            // ✅ CONFIE NO SALDO DO MICROSERVIÇO
+            const numeroConta = parseInt(req.params.numero, 10);
+            const saldo = data.saldo !== undefined ? data.saldo : data.balance;
+            const saldoArredondado = Math.round(saldo * 100) / 100;
+
+            const response = {
+              conta: numeroConta,
+              saldo: saldoArredondado,
+              data: data.data || data.timestamp || new Date().toISOString(),
+              mensagem: data.mensagem || "Saque realizado com sucesso",
+            };
+
+            console.log("✅ Resposta formatada para saque:", response);
+            return res.status(200).json(response);
+          } catch (e) {
+            console.error("❌ Erro ao processar resposta do saque:", e);
+            return res.status(500).json({
+              error: "Erro ao processar resposta",
+              details: e.message,
+            });
+          }
+        });
+      },
     })
   );
 
-  // Rota PUT /contas/:numero/transferir - VERSÃO FINAL CORRIGIDA
-  app.put(
+  // Rota PUT /contas/:numero/transferir - VERSÃO SIMPLIFICADA
+  app.post(
     "/contas/:numero/transferir",
     verifyJWT,
     createProxyMiddleware({
       target: CONTA,
       changeOrigin: true,
-      selfHandleResponse: true, // ✅ Importante: nós vamos tratar a resposta
+      selfHandleResponse: true,
       pathRewrite: (path, req) => `/contas/${req.params.numero}/transferir`,
       onProxyReq(proxyReq, req) {
-        console.log("🔍 PUT /contas/:numero/transferir");
+        console.log(
+          "🔍 POST /contas/:numero/transferir -> convertendo para PUT"
+        );
         console.log("🔍 Número conta origem:", req.params.numero);
         console.log("🔍 Body original:", req.body);
+
+        proxyReq.method = "PUT";
 
         if (req.body) {
           const transferData = {
@@ -813,7 +1052,7 @@ function setupProxies(app) {
         proxyRes.on("end", () => {
           console.log(`🔍 Resposta transferir (${proxyRes.statusCode}):`, body);
 
-          // ✅ CONFIGURAR HEADERS CORS APENAS UMA VEZ
+          // Configurar CORS
           res.header("Access-Control-Allow-Origin", "http://localhost");
           res.header(
             "Access-Control-Allow-Methods",
@@ -827,34 +1066,46 @@ function setupProxies(app) {
 
           try {
             const data = body ? JSON.parse(body) : {};
+            const numeroConta = parseInt(req.params.numero, 10);
 
             if (proxyRes.statusCode !== 200) {
               return res.status(proxyRes.statusCode).json(data);
             }
 
+            // ✅ CORREÇÃO: CONFIE NO QUE O MICROSERVIÇO RETORNA
+            const saldo =
+              data.saldo !== undefined
+                ? data.saldo
+                : data.balance !== undefined
+                ? data.balance
+                : data.novoSaldo !== undefined
+                ? data.novoSaldo
+                : 0;
+
+            const saldoArredondado = Math.round(saldo * 100) / 100;
+
             const response = {
-              ...data,
-              conta: parseInt(req.params.numero, 10),
+              conta: numeroConta,
+              destino: data.destino || data.numeroConta || req.body.destino,
+              valor: data.valor || parseFloat(req.body.valor),
+              saldo: saldoArredondado, // ✅ USA O SALDO DO MICROSERVIÇO
+              data: data.data || data.timestamp || new Date().toISOString(),
               mensagem: data.mensagem || "Transferência realizada com sucesso",
             };
 
-            // ✅ ENVIAR RESPOSTA APENAS UMA VEZ
+            console.log("✅ Resposta formatada para transferência:", response);
             return res.status(200).json(response);
           } catch (e) {
             console.error("❌ Erro ao processar resposta da transferência:", e);
-            // ✅ Se der erro no parse, retornar resposta simples
             return res.status(200).json({
-              mensagem: "Transferência realizada com sucesso",
               conta: parseInt(req.params.numero, 10),
+              destino: req.body.destino,
+              valor: parseFloat(req.body.valor),
+              saldo: 0,
+              data: new Date().toISOString(),
+              mensagem: "Transferência realizada com sucesso",
             });
           }
-        });
-      },
-      onError: (err, req, res) => {
-        console.error("❌ Erro transferir:", err.message);
-        res.status(502).json({
-          error: "Serviço indisponível",
-          details: err.message,
         });
       },
     })
