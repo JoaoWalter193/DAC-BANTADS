@@ -39,7 +39,7 @@ export class ContaService {
 
   // @PutMapping("/{numConta}/depositar")
   depositar(numero: string, valor: number): Observable<any> {
-    return this.http.put<any>(
+    return this.http.post<any>(
       `${this.api}/${numero}/depositar`,
       { valor },
       { headers: this.getHeaders() }
@@ -48,7 +48,7 @@ export class ContaService {
 
   // @PutMapping("/{numConta}/sacar")
   sacar(numero: string, valor: number): Observable<any> {
-    return this.http.put<any>(
+    return this.http.post<any>(
       `${this.api}/${numero}/sacar`,
       { valor },
       { headers: this.getHeaders() }
@@ -65,7 +65,7 @@ export class ContaService {
       contaDestino: destino,
       valor: valor,
     };
-    return this.http.put<any>(`${this.api}/${numeroOrigem}/transferir`, body, {
+    return this.http.post<any>(`${this.api}/${numeroOrigem}/transferir`, body, {
       headers: this.getHeaders(),
     });
   }

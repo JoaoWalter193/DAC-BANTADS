@@ -28,7 +28,7 @@ public class MovimentacoesR {
 
     // para saques e depositos
     public MovimentacoesR(String tipo, String clienteOrigemNome, String clienteOrigemCpf,
-                         double valor, int origem) {
+                         double valor, Integer origem) {
         this.data = Instant.now().truncatedTo(ChronoUnit.MILLIS);
         this.tipo = tipo;
         this.clienteOrigemNome = clienteOrigemNome;
@@ -40,7 +40,7 @@ public class MovimentacoesR {
     // para transferencias
     public MovimentacoesR(String tipo, String clienteOrigemNome, String clienteOrigemCpf,
                          String clienteDestinoNome, String clienteDestinoCpf,
-                         double valor, int origem) {
+                         double valor, Integer origem) {
         this.data = Instant.now().truncatedTo(ChronoUnit.MILLIS);
         this.tipo = tipo;
         this.clienteOrigemNome = clienteOrigemNome;
@@ -103,7 +103,7 @@ public class MovimentacoesR {
     private double valor;
 
     @Column(name = "origem")
-    private int origem;
+    private Integer origem;
 
 
 }

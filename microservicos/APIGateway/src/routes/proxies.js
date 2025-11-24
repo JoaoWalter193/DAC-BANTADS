@@ -485,6 +485,7 @@ function setupProxies(app) {
       const cepAtual = dadosAtualizados.cep || dadosOriginais.cep;
       const cepCorrigido = cepAtual ? cepAtual.replace(/\D/g, "") : "";
 
+
       const sagaPayload = {
         dadosOriginais: {
           cpf: dadosOriginais.cpf,
@@ -840,6 +841,7 @@ function setupProxies(app) {
           proxyReq.setHeader("Content-Type", "application/json");
           proxyReq.setHeader("Content-Length", Buffer.byteLength(valor));
           proxyReq.write(valor);
+          proxyReq.end();
         }
       },
       onProxyRes: async (proxyRes, req, res) => {
@@ -914,6 +916,7 @@ function setupProxies(app) {
           proxyReq.setHeader("Content-Type", "application/json");
           proxyReq.setHeader("Content-Length", Buffer.byteLength(valor));
           proxyReq.write(valor);
+          proxyReq.end();
         }
       },
       onProxyRes: async (proxyRes, req, res) => {
@@ -996,6 +999,7 @@ function setupProxies(app) {
           proxyReq.setHeader("Content-Type", "application/json");
           proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
           proxyReq.write(bodyData);
+          proxyReq.end();
         }
       },
       onProxyRes: async (proxyRes, req, res) => {
