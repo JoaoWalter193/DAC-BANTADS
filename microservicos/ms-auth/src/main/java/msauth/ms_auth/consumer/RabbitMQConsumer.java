@@ -46,7 +46,7 @@ public class RabbitMQConsumer {
     @RabbitListener(queues = { "MsAuth" })
     public void receber(ResponseDTO data) {
 
-        if (data.ms().equals("Erro ms-conta -- criar cliente -- ms-cliente")) {
+        if (data.ms().equals("Erro ms-origem -- criar cliente -- ms-cliente")) {
             authService.deletarAutenticacao(data.cpf());
         } else {
 

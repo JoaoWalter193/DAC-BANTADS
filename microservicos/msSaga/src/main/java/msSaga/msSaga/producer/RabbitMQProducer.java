@@ -79,12 +79,12 @@ public class RabbitMQProducer {
     }
 
     public void sendAtualizarLimite(AlteracaoPerfilDTO dados) { 
-        System.out.println("saga->conta teste sendAtualizarLimite saga producer");
+        System.out.println("saga->origem teste sendAtualizarLimite saga producer");
         rabbitTemplate.convertAndSend(exchange, routingKeyAtualizarLimite, dados);
     }
 
     public void sendAtualizarFalha(ClienteDTO dadosOriginais) {
-        System.out.println("saga->conta teste sendAtualizarFalha saga producer ");
+        System.out.println("saga->origem teste sendAtualizarFalha saga producer ");
         rabbitTemplate.convertAndSend(exchange, routingKeyAtualizarClienteFalha, dadosOriginais);
     }
 

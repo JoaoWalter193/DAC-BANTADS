@@ -25,8 +25,8 @@ public class SagaService {
 
         1 PASSO - Criar cadastro do cliente em Ms-cliente --> Está enviando, agora preciso ver como faço para a lógica ficar aqui e passar para o prox passo
         2 PASSO - Criar cadastro do cliente em Ms-auth
-        3 PASSO - Criar a conta do cliente em Ms-conta
-        4 PASSO - Alocar conta do cliente para um gerente
+        3 PASSO - Criar a origem do cliente em Ms-origem
+        4 PASSO - Alocar origem do cliente para um gerente
         -- em teoria acaba aqui esta saga, pois a partir disso fica a questão de quando o gerente irá aprovar o cliente
 
         5 PASSO - Gerente aprovou = Enviar senha aleatoria para o cliente por email
@@ -45,7 +45,7 @@ public class SagaService {
 
         //Agora tem de enviar os dados para o ms-auth
 
-        //Depois do ms-auth tem que enviar para o ms-conta
+        //Depois do ms-auth tem que enviar para o ms-origem
         return ResponseEntity.status(HttpStatus.CREATED).body(new testeProfessorDTO(data.cpf(),
                 data.email()));
 

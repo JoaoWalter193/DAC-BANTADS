@@ -242,7 +242,7 @@ public class ClienteService {
                     null);
             rabbitMQProducer.sendClienteSaga(responseTemp);
 
-            // falta enviar o e-mail para o mano com a senha da conta confirmando que
+            // falta enviar o e-mail para o mano com a senha da origem confirmando que
             // recebeu
             String senhaDeshasheada = cpfParaSenha.remove(clienteTemp.getCpf());
             emailService.sendPasswordEmail(clienteTemp.getEmail(), clienteTemp.getNome(), senhaDeshasheada);

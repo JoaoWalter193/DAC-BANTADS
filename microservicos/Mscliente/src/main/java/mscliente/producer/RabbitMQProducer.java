@@ -62,7 +62,7 @@ public class RabbitMQProducer {
 
         ResponseDTO message = new ResponseDTO(500,email,
                 null ,null,
-                "Erro ms-conta -- criar cliente -- ms-cliente",
+                "Erro ms-origem -- criar cliente -- ms-cliente",
                 null);;
         rabbitTemplate.convertAndSend(exchange,routingKeySaga,message);
     }

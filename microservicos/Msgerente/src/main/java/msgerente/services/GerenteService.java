@@ -109,7 +109,7 @@ public class GerenteService {
 
         gerenteRepository.save(gerenteTemp);
 
-        // enviar gerente para adicionar contas no Ms-conta
+        // enviar gerente para adicionar contas no Ms-origem
         ResponseDTO responseTemp = new ResponseDTO(201,
                 data.cpf(),
                 data.nome(),

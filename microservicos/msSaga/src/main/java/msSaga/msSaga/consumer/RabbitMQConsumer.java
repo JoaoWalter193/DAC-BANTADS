@@ -29,7 +29,7 @@ RabbitMQConsumer {
 
 
         if (message.cod() == 201 && message.ms().equals("msCliente")){
-            System.out.println(">>> PROCESSANDO: msCliente - Criar conta");
+            System.out.println(">>> PROCESSANDO: msCliente - Criar origem");
 
             // lógica após adicionar cliente em Cliente
             rabbitMQProducer.sendContaAuth(message);
@@ -38,19 +38,19 @@ RabbitMQConsumer {
         }
 
         if (message.cod() == 201 && message.ms().equals("ms-auth")){
-            //enviar para conta
+            //enviar para origem
             LOGGER.info("CHEGOU NO MS-SAGA para enviar para o MS Conta");
             ResponseDTO respostaTemp = new ResponseDTO(00, message.cpf(),
                     message.nome(),
                     message.salario(),
-                    "Criar conta",
+                    "Criar origem",
                     message.senha());
             rabbitMQProducer.sendContaConta(respostaTemp);
         }
 
 
-        // Lógica de enviar o erro para os MS excluir a conta
-        if (message.cod() == 500 && message.ms().equals("Erro ms-conta -- criar cliente")){
+        // Lógica de enviar o erro para os MS excluir a origem
+        if (message.cod() == 500 && message.ms().equals("Erro ms-origem -- criar cliente")){
             AutocadastroDTO data = new AutocadastroDTO(message.cpf(),
                     message.ms(),
                     null,
@@ -61,7 +61,7 @@ RabbitMQConsumer {
             rabbitMQProducer.sendContaCliente(data);
         }
 
-        if (message.cod() == 500 && message.ms().equals("Erro ms-conta -- criar cliente -- ms-cliente")){
+        if (message.cod() == 500 && message.ms().equals("Erro ms-origem -- criar cliente -- ms-cliente")){
             // agora preciso que ele vá e delete do ms-auth finalizando esse processo, eu tenho o cpf do cara aqui
             ResponseDTO temp = new ResponseDTO(00,
                     message.cpf(), // isso aqui vai estar como email do carinha
@@ -104,7 +104,7 @@ RabbitMQConsumer {
         System.out.println("cliente->saga teste recebe evento alteracao ");
         
         try {
-            System.out.println("saga->conta teste clienteAtualizadoSucesso saga consumer.");
+            System.out.println("saga->origem teste clienteAtualizadoSucesso saga consumer.");
 
             // envia o comando pra atualizar limite
             rabbitMQProducer.sendAtualizarLimite(dados);
@@ -118,7 +118,7 @@ RabbitMQConsumer {
     // ouve a fila de sucesso pra confirmar que funcionou
     @RabbitListener(queues = {"AtualizacaoContaSucesso"})
     public void contaAtualizadaSucesso(AlteracaoPerfilDTO dados) { 
-        System.out.println("conta->saga teste confirmacao sucesso");
+        System.out.println("origem->saga teste confirmacao sucesso");
     }
 //listener pra falha
     @RabbitListener(queues = {"AtualizacaoContaFalha"})

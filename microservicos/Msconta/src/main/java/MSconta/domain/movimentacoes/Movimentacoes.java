@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
@@ -21,25 +20,27 @@ public class Movimentacoes {
 
     // para saques e depositos
     public Movimentacoes (String tipo, String clienteOrigemNome, String clienteOrigemCpf,
-                          double valor){
-        this.dataHora = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"));
+                          double valor, int origem){
+        this.data = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"));
         this.tipo = tipo;
         this.clienteOrigemNome = clienteOrigemNome;
         this.clienteOrigemCpf = clienteOrigemCpf;
         this.valor = valor;
+        this.origem = origem;
     }
 
     // para transferencias
     public Movimentacoes(String tipo, String clienteOrigemNome, String clienteOrigemCpf,
                          String clienteDestinoNome, String clienteDestinoCpf,
-                         double valor){
-        this.dataHora = LocalDateTime.now();
+                         double valor, int origem){
+        this.data = LocalDateTime.now();
         this.tipo = tipo;
         this.clienteOrigemNome = clienteOrigemNome;
         this.clienteOrigemCpf = clienteOrigemCpf;
         this.clienteDestinoNome = clienteDestinoNome;
         this.clienteDestinoCpf = clienteDestinoCpf;
         this.valor = valor;
+        this.origem = origem;
     }
 
 
@@ -49,7 +50,7 @@ public class Movimentacoes {
     private int id;
 
     @Column(name = "datahora")
-    private LocalDateTime dataHora;
+    private LocalDateTime data;
 
     @Column(name = "tipo")
     private String tipo;
@@ -69,9 +70,12 @@ public class Movimentacoes {
     @Column(name = "valor")
     private double valor;
 
+    @Column(name = "origem")
+    private int origem;
+
 
     public MovimentacoesR virarMovimentacoesR (){
-        return new MovimentacoesR(this.id,this.dataHora,this.tipo,this.clienteOrigemNome,this.clienteOrigemCpf,this.clienteDestinoNome,this.clienteDestinoCpf,this.valor);
+        return new MovimentacoesR(this.id,this.data,this.tipo,this.clienteOrigemNome,this.clienteOrigemCpf,this.clienteDestinoNome,this.clienteDestinoCpf,this.valor, this.origem);
     }
 
 

@@ -167,7 +167,7 @@ public class RabbitMQConfig {
     }
 
 
-// fila pro sucesso da alteracao da conta
+// fila pro sucesso da alteracao da origem
     @Value("AtualizacaoContaSucesso")
     private String filaAtualizacaoContaSucesso;
     @Bean

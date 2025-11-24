@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
@@ -28,48 +27,52 @@ public class MovimentacoesR {
 
     // para saques e depositos
     public MovimentacoesR(String tipo, String clienteOrigemNome, String clienteOrigemCpf,
-                         double valor) {
-        this.dataHora = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"));
+                         double valor, int origem) {
+        this.data = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"));
         this.tipo = tipo;
         this.clienteOrigemNome = clienteOrigemNome;
         this.clienteOrigemCpf = clienteOrigemCpf;
         this.valor = valor;
+        this.origem = origem;
     }
 
     // para transferencias
     public MovimentacoesR(String tipo, String clienteOrigemNome, String clienteOrigemCpf,
                          String clienteDestinoNome, String clienteDestinoCpf,
-                         double valor) {
-        this.dataHora = LocalDateTime.now();
+                         double valor, int origem) {
+        this.data = LocalDateTime.now();
         this.tipo = tipo;
         this.clienteOrigemNome = clienteOrigemNome;
         this.clienteOrigemCpf = clienteOrigemCpf;
         this.clienteDestinoNome = clienteDestinoNome;
         this.clienteDestinoCpf = clienteDestinoCpf;
         this.valor = valor;
+        this.origem = origem;
     }
 
 
     public MovimentacoesR(MovimentacoesR movTemp) {
-        this.dataHora = movTemp.getDataHora();
+        this.data = movTemp.getData();
         this.tipo = movTemp.getTipo();
         this.clienteOrigemNome = movTemp.getClienteOrigemNome();
         this.clienteOrigemCpf = movTemp.getClienteOrigemCpf();
         this.clienteDestinoNome = movTemp.getClienteDestinoNome();
         this.clienteDestinoCpf = movTemp.getClienteDestinoCpf();
         this.valor = movTemp.getValor();
+        this.origem = movTemp.getOrigem();
     }
 
     public MovimentacoesR(LocalDateTime localDateTime, String tipo, String clienteOrigemNome, String clienteOrigemCpf,
-                          String clienteDestinoNome, String clienteDestinoCpf, double valor) {
+                          String clienteDestinoNome, String clienteDestinoCpf, double valor, int origem) {
 
-        this.dataHora = localDateTime;
+        this.data = localDateTime;
         this.tipo = tipo;
         this.clienteOrigemNome = clienteOrigemNome;
         this.clienteOrigemCpf = clienteOrigemCpf;
         this.clienteDestinoNome = clienteDestinoNome;
         this.clienteDestinoCpf = clienteDestinoCpf;
         this.valor = valor;
+        this.origem = origem;
     }
 
     @Id
@@ -78,7 +81,7 @@ public class MovimentacoesR {
     private int id;
 
     @Column(name = "datahora")
-    private LocalDateTime dataHora;
+    private LocalDateTime data;
 
     @Column(name = "tipo")
     private String tipo;
@@ -97,6 +100,9 @@ public class MovimentacoesR {
 
     @Column(name = "valor")
     private double valor;
+
+    @Column(name = "origem")
+    private int origem;
 
 
 }

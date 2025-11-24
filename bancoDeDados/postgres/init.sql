@@ -77,7 +77,8 @@ clienteOrigemNome VARCHAR(100),
 clienteOrigemCpf VARCHAR(11),
 clienteDestinoNome VARCHAR(100),
 clienteDestinoCpf VARCHAR(100),
-valor DECIMAL(8,2)
+valor DECIMAL(8,2),
+origem INTEGER
 );
 
 -- Schema ContaR
@@ -102,7 +103,8 @@ clienteOrigemNome VARCHAR(100),
 clienteOrigemCpf VARCHAR(11),
 clienteDestinoNome VARCHAR(100),
 clienteDestinoCpf VARCHAR(100),
-valor DECIMAL(8,2)
+valor DECIMAL(8,2),
+origem INTEGER
 );
 
 

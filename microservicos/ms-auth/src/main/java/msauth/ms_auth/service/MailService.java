@@ -39,7 +39,7 @@ public class MailService {
         String emailContent = String.format(
                 "Olá %s,\n\n" +
                         "Agradecemos por se realizar o cadastro em nosso sistema!\n\n" +
-                        "Infelizmente sua conta foi negada devido: %s\n\n" +
+                        "Infelizmente sua origem foi negada devido: %s\n\n" +
                         "Atenciosamente,\n" +
                         "Equipe DinDin", nome, motivo);
 

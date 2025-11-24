@@ -25,7 +25,7 @@ public class RabbitMQConfig {
     }
 
 
-// fila pra atualizar o limite da conta
+// fila pra atualizar o limite da origem
     @Value("AtualizarConta")
     private String filaAtualizarConta;
     @Bean

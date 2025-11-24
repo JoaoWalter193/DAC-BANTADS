@@ -15,7 +15,7 @@ import java.util.List;
 public class ContaController {
 
     // tem que fazer um CRUD porem na parte do GET ele
-    // vai pegar da conta de leitura, o resto vai fazer primero
+    // vai pegar da origem de leitura, o resto vai fazer primero
     // no banco de insercao , depois mandar mensgaem para fila que ele vai ouvir
     // e vai uar para inserir os dados no banco de Query
 

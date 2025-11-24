@@ -40,7 +40,7 @@ public class ContaCUDService {
     public ResponseEntity<String> adicionarConta (AdicionarContaDTO data) {
 
         try {
-            //Lógica para achar o gerente que tem menos cliente e alocar esta conta a ele
+            //Lógica para achar o gerente que tem menos cliente e alocar esta origem a ele
             GerenteDTO gerenteTemp = contaRRepository
                     .findGerentesOrdenadosPorQuantidadeDeContas(PageRequest.of(0, 1))
                     .stream()
@@ -76,8 +76,8 @@ public class ContaCUDService {
             double novoSaldo = contaCUDTemp.getSaldo() + valorDepositar;
             contaCUDTemp.setSaldo(novoSaldo);
 
-             Movimentacoes movimentacoesTemp = new Movimentacoes("deposito",contaCUDTemp.getNomeCliente(),
-                     contaCUDTemp.getCpfCliente(), valorDepositar);
+             Movimentacoes movimentacoesTemp = new Movimentacoes("depósito",contaCUDTemp.getNomeCliente(),
+                     contaCUDTemp.getCpfCliente(), valorDepositar, contaCUDTemp.getNumConta());
 
             movimentacaoRepository.save(movimentacoesTemp);
             contaCUDRepository.save(contaCUDTemp);
@@ -108,7 +108,7 @@ public class ContaCUDService {
                 double novoSaldo = contaCUDTemp.getSaldo() - valorSacar;
                 contaCUDTemp.setSaldo(novoSaldo);
                 Movimentacoes movimentacoesTemp = new Movimentacoes("saque",contaCUDTemp.getNomeCliente(),
-                        contaCUDTemp.getCpfCliente(), valorSacar);
+                        contaCUDTemp.getCpfCliente(), valorSacar, contaCUDTemp.getNumConta());
 
                 movimentacaoRepository.save(movimentacoesTemp);
                 contaCUDRepository.save(contaCUDTemp);
@@ -141,12 +141,14 @@ public class ContaCUDService {
             ContaCUD contaCUDDono = contaVerificaDono.get().virarContaCUD();
             ContaCUD contaCUDRecebedor = contaVerificaRecebedor.get().virarContaCUD();
 
+
+
             contaCUDDono.setSaldo(contaCUDDono.getSaldo()-data.valor());
             contaCUDRecebedor.setSaldo(contaCUDRecebedor.getSaldo()+ data.valor());
 
-            Movimentacoes movimentacoesTemp = new Movimentacoes("deposito",contaCUDDono.getNomeCliente(),
+            Movimentacoes movimentacoesTemp = new Movimentacoes("depósito",contaCUDDono.getNomeCliente(),
                     contaCUDDono.getCpfCliente(), contaCUDRecebedor.getNomeCliente(), contaCUDRecebedor.getCpfCliente(),
-                    data.valor());
+                    data.valor(), contaCUDDono.getNumConta());
 
             movimentacaoRepository.save(movimentacoesTemp);
             contaCUDRepository.save(contaCUDDono);
@@ -156,7 +158,7 @@ public class ContaCUDService {
 
 
 
-            return ResponseEntity.ok(new MensagemDTO("Saldo transferido com sucesso"));
+            return ResponseEntity.ok(new MensagemDTO(numConta, data.numeroConta(), data.valor(),contaCUDDono.getSaldo(), movimentacoesTemp.getData()));
         }
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -221,7 +223,7 @@ public class ContaCUDService {
 
     public void adicionarGerente (GerenteDTO gerenteAdd){
 
-        // vai buscar o gerente que possui mais conta, pegar uma conta dele, e jogar para o gerente que foi adicinoado
+        // vai buscar o gerente que possui mais origem, pegar uma origem dele, e jogar para o gerente que foi adicinoado
 
         Optional<ContaR> contaTemp = contaRRepository.findContaAtivaDoGerenteComMaisContas();
 
@@ -281,7 +283,7 @@ public class ContaCUDService {
             tentativas++;
 
             if (tentativas > 100) {
-                throw new RuntimeException("Não foi possível gerar número de conta único");
+                throw new RuntimeException("Não foi possível gerar número de origem único");
             }
 
         } while (contaRRepository.existsByNumConta(numeroConta));

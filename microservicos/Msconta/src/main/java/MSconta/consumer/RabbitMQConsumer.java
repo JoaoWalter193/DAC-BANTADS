@@ -53,7 +53,7 @@ public class RabbitMQConsumer {
 
     @RabbitListener(queues = {"MsConta"})
     public void consume(ResponseDTO message) {
-        if (message.ms().equals("Criar conta")) {
+        if (message.ms().equals("Criar origem")) {
             System.out.println("CHEGOU ATÉ AQUI PARA CRIAR A CONTA DO CARA");
             AdicionarContaDTO contaTemp = new AdicionarContaDTO(message.cpf(),
                     message.nome(),
@@ -154,7 +154,7 @@ public class RabbitMQConsumer {
                     MovimentacoesR movimentacaoTemp = new MovimentacoesR(data.dataHora(), data.tipo(),
                             data.clienteOrigemNome(), data.clienteOrigameCpf(),
                             data.clienteDestinoNome(), data.clieneDestinoCpf(),
-                            data.valor());
+                            data.valor(), contaTemp.getNumConta());
 
                     contaRRepository.save(contaTemp);
                     movimentacaoRRepository.save(movimentacaoTemp);
@@ -181,7 +181,7 @@ public class RabbitMQConsumer {
                     MovimentacoesR movimentacaoTemp = new MovimentacoesR(data.dataHora(), data.tipo(),
                             data.clienteOrigemNome(), data.clienteOrigameCpf(),
                             data.clienteDestinoNome(), data.clieneDestinoCpf(),
-                            data.valor());
+                            data.valor(),contaTemp.getNumConta());
 
                     contaRRepository.save(contaTemp2);
                     contaRRepository.save(contaTemp);
@@ -199,16 +199,16 @@ public class RabbitMQConsumer {
     @RabbitListener(queues = {"AtualizarConta"})
     public void atualizarLimite(AlteracaoPerfilDTO dados) {
         ClienteDTO dadosCliente = dados.dadosAtualizados();
-        System.out.println("saga->conta atualizar limite");
+        System.out.println("saga->origem atualizar limite");
         
         try {
             contaCUDService.alteracaoPerfilLimite(dadosCliente.cpf(), dadosCliente.salario());
             
-            System.out.println("conta->saga limite alterado suceesso");
+            System.out.println("origem->saga limite alterado suceesso");
             rabbitMQProducer.publicarEventoLimiteAtualizadoSucesso(dados);
 
         } catch (Exception e) {
-            System.out.println("conta->saga falha limite ");
+            System.out.println("origem->saga falha limite ");
             rabbitMQProducer.publicarEventoLimiteAtualizadoFalha(dados);
         }
     }

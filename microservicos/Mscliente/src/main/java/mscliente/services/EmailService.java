@@ -38,7 +38,7 @@ public class EmailService {
         String emailContent = String.format(
                 "Olá %s,\n\n" +
                         "Agradecemos por se realizar o cadastro em nosso sistema!\n\n" +
-                        "Infelizmente sua conta foi negada devido: %s\n\n" +
+                        "Infelizmente sua origem foi negada devido: %s\n\n" +
                         "Atenciosamente,\n" +
                         "Equipe DinDin", nome, motivo);
 
@@ -51,11 +51,11 @@ public class EmailService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("dindintads@gmail.com");
         message.setTo(toEmail);
-        message.setSubject("DinDin - Erro no processamento de conta");
+        message.setSubject("DinDin - Erro no processamento de origem");
 
         String emailContent = String.format(
                 "Olá %s,\n\n" +
-                "A equipe do DinDin sente em informar que houve um erro no cadstro de sua conta, para mais informações, retorne este email\n\n" +
+                "A equipe do DinDin sente em informar que houve um erro no cadstro de sua origem, para mais informações, retorne este email\n\n" +
                 "Agradecimentos, DinDin", nome);
 
         message.setText(emailContent);
