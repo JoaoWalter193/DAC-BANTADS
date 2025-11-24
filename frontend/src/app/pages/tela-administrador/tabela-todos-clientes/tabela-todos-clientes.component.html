@@ -13,6 +13,7 @@
         <th>CPF do Gerente</th>
       </tr>
     </thead>
+
     <tbody>
       <tr *ngFor="let cliente of clientes">
         <td>{{ cliente.nome }}</td>
@@ -24,8 +25,8 @@
           {{ cliente.saldo | currency : "BRL" }}
         </td>
         <td>{{ cliente.limite | currency : "BRL" }}</td>
-        <td>{{ cliente.gerente_nome }}</td>
-        <td>{{ cliente.gerente | formatarCpf }}</td>
+        <td>{{ cliente.nome_gerente }}</td>
+        <td>{{ cliente.gerente ? (cliente.gerente | formatarCpf) : "" }}</td>
       </tr>
       <tr *ngIf="clientes.length === 0">
         <td colspan="9">Nenhum cliente cadastrado.</td>

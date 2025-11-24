@@ -9,6 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GerenteService } from '../../services/gerente.service';
+// Importação AtualizarGerenteDTO (assumida, use a sua)
 import { AtualizarGerenteDTO } from '../../models/gerente/dto/gerente-atualizar.dto';
 
 @Component({

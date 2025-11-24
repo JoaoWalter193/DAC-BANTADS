@@ -1,14 +1,29 @@
 <app-navbar></app-navbar>
 
 <section class="tela-conta">
-  <!-- Informações da Conta -->
-  <div class="card card-info">
+  <div
+    *ngIf="!cliente"
+    style="
+      color: white;
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 1.2rem;
+    "
+  >
+    <p>Carregando dados da conta...</p>
+  </div>
+
+  <div class="card card-info" *ngIf="cliente">
     <h2>Informações</h2>
 
     <div class="saldo-container">
       <span>Saldo disponível</span>
       <div class="info-saldo">
-        <mat-icon fontIcon="wallet" aria-hidden="false" aria-label="Ícone de 'wallet'"></mat-icon>
+        <mat-icon
+          fontIcon="wallet"
+          aria-hidden="false"
+          aria-label="Ícone de 'wallet'"
+        ></mat-icon>
         <span [ngClass]="{ 'saldo-negativo': cliente.saldo < 0 }">
           {{ cliente.saldo | currency:"BRL":"symbol":"1.2-2" }}
         </span>
@@ -22,22 +37,45 @@
       </button>
 
       <div *ngIf="operacaoAtiva == 'extrato'" class="campos-operacao">
-        <form [formGroup]="formExtrato" (ngSubmit)="gerarExtrato()" class="form-extrato">
+        <form
+          [formGroup]="formExtrato"
+          (ngSubmit)="gerarExtrato()"
+          class="form-extrato"
+        >
           <div class="input-group">
             <label for="dataInicio">Data de Início:</label>
-            <input type="date" id="dataInicio" formControlName="dataInicio" class="valor-input" />
+            <input
+              type="date"
+              id="dataInicio"
+              formControlName="dataInicio"
+              class="valor-input"
+            />
           </div>
 
           <div class="input-group">
             <label for="dataFim">Data de Fim:</label>
-            <input type="date" id="dataFim" formControlName="dataFim" class="valor-input" />
+            <input
+              type="date"
+              id="dataFim"
+              formControlName="dataFim"
+              class="valor-input"
+            />
           </div>
 
-          <button type="submit" class="btn-enviar" [disabled]="formExtrato.invalid">Gerar Extrato</button>
+          <button
+            type="submit"
+            class="btn-enviar"
+            [disabled]="formExtrato.invalid"
+          >
+            Gerar Extrato
+          </button>
         </form>
 
-        <div *ngIf="mensagem && operacaoAtiva == 'extrato'" class="mensagem-operacao"
-          [ngClass]="{ 'sucesso': tipoMensagem === 'sucesso', 'erro': tipoMensagem === 'erro' }">
+        <div
+          *ngIf="mensagem && operacaoAtiva == 'extrato'"
+          class="mensagem-operacao"
+          [ngClass]="{ 'sucesso': tipoMensagem === 'sucesso', 'erro': tipoMensagem === 'erro' }"
+        >
           {{ mensagem }}
         </div>
       </div>
@@ -51,55 +89,90 @@
     </div>
   </div>
 
-  <!-- Operações -->
-  <div class="card card-operacoes">
+  <div class="card card-operacoes" *ngIf="cliente">
     <h2>Operações</h2>
 
     <div class="operacoes">
-      <!-- Saque -->
       <div class="operacao" [class.operacao-ativa]="operacaoAtiva == 'saque'">
         <button class="btn-op" (click)="expandirOperacao('saque')">
           <span>Saque</span>
           <mat-icon fontIcon="chevron_right"></mat-icon>
         </button>
         <div *ngIf="operacaoAtiva == 'saque'" class="campos-operacao">
-          <input type="number" placeholder="Insira um valor" [(ngModel)]="valorSaque" class="valor-input" />
+          <input
+            type="number"
+            placeholder="Insira um valor"
+            [(ngModel)]="valorSaque"
+            class="valor-input"
+          />
           <button class="btn-enviar" (click)="realizarSaque()">Enviar</button>
-          <div *ngIf="mensagem && operacaoAtiva == 'saque'" class="mensagem-operacao"
-            [ngClass]="{ 'sucesso': tipoMensagem === 'sucesso', 'erro': tipoMensagem === 'erro' }">
+          <div
+            *ngIf="mensagem && operacaoAtiva == 'saque'"
+            class="mensagem-operacao"
+            [ngClass]="{ 'sucesso': tipoMensagem === 'sucesso', 'erro': tipoMensagem === 'erro' }"
+          >
             {{ mensagem }}
           </div>
         </div>
       </div>
 
-      <!-- Depósito -->
-      <div class="operacao" [class.operacao-ativa]="operacaoAtiva == 'deposito'">
+      <div
+        class="operacao"
+        [class.operacao-ativa]="operacaoAtiva == 'deposito'"
+      >
         <button class="btn-op" (click)="expandirOperacao('deposito')">
           <span>Depósito</span>
           <mat-icon fontIcon="chevron_right"></mat-icon>
         </button>
         <div *ngIf="operacaoAtiva == 'deposito'" class="campos-operacao">
-          <input type="number" placeholder="Insira um valor" [(ngModel)]="valorDeposito" class="valor-input" />
-          <button class="btn-enviar" (click)="realizarDeposito()">Enviar</button>
-          <div *ngIf="mensagem && operacaoAtiva == 'deposito'" class="mensagem-operacao"
-            [ngClass]="{ 'sucesso': tipoMensagem === 'sucesso', 'erro': tipoMensagem === 'erro' }">
+          <input
+            type="number"
+            placeholder="Insira um valor"
+            [(ngModel)]="valorDeposito"
+            class="valor-input"
+          />
+          <button class="btn-enviar" (click)="realizarDeposito()">
+            Enviar
+          </button>
+          <div
+            *ngIf="mensagem && operacaoAtiva == 'deposito'"
+            class="mensagem-operacao"
+            [ngClass]="{ 'sucesso': tipoMensagem === 'sucesso', 'erro': tipoMensagem === 'erro' }"
+          >
             {{ mensagem }}
           </div>
         </div>
       </div>
 
-      <!-- Transferência -->
-      <div class="operacao" [class.operacao-ativa]="operacaoAtiva == 'transferencia'">
+      <div
+        class="operacao"
+        [class.operacao-ativa]="operacaoAtiva == 'transferencia'"
+      >
         <button class="btn-op" (click)="expandirOperacao('transferencia')">
           <span>Transferência</span>
           <mat-icon fontIcon="chevron_right"></mat-icon>
         </button>
         <div *ngIf="operacaoAtiva == 'transferencia'" class="campos-operacao">
-          <input type="number" placeholder="Insira um valor" [(ngModel)]="valorTransferencia" class="valor-input" />
-          <input type="text" placeholder="Conta de destino" [(ngModel)]="contaDestino" class="valor-input" />
-          <button class="btn-enviar" (click)="realizarTransferencia()">Enviar</button>
-          <div *ngIf="mensagem && operacaoAtiva == 'transferencia'" class="mensagem-operacao"
-            [ngClass]="{ 'sucesso': tipoMensagem === 'sucesso', 'erro': tipoMensagem === 'erro' }">
+          <input
+            type="number"
+            placeholder="Insira um valor"
+            [(ngModel)]="valorTransferencia"
+            class="valor-input"
+          />
+          <input
+            type="text"
+            placeholder="Conta de destino"
+            [(ngModel)]="contaDestino"
+            class="valor-input"
+          />
+          <button class="btn-enviar" (click)="realizarTransferencia()">
+            Enviar
+          </button>
+          <div
+            *ngIf="mensagem && operacaoAtiva == 'transferencia'"
+            class="mensagem-operacao"
+            [ngClass]="{ 'sucesso': tipoMensagem === 'sucesso', 'erro': tipoMensagem === 'erro' }"
+          >
             {{ mensagem }}
           </div>
         </div>

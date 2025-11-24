@@ -165,8 +165,8 @@ export class HomeCliente implements OnInit {
   realizarSaque(): void {
     if (!this.validarOperacao()) return;
     if (!this.valorSaque || this.valorSaque <= 0) {
-      this.mostrarMensagem('Insira um valor positivo.', 'erro');
-      return;
+       this.mostrarMensagem('Insira um valor positivo.', 'erro');
+       return;
     }
 
     this.contaService.sacar(this.cliente.conta, this.valorSaque).subscribe({
@@ -188,8 +188,8 @@ export class HomeCliente implements OnInit {
   realizarDeposito(): void {
     if (!this.validarOperacao()) return;
     if (!this.valorDeposito || this.valorDeposito <= 0) {
-      this.mostrarMensagem('Insira um valor positivo.', 'erro');
-      return;
+       this.mostrarMensagem('Insira um valor positivo.', 'erro');
+       return;
     }
 
     this.contaService

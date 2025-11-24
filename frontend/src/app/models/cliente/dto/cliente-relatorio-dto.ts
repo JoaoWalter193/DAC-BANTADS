@@ -1,10 +1,7 @@
-export interface ClienteDetalhesDTO {
+export interface ClienteRelatorioDTO {
   cpf: string;
   nome: string;
   email: string;
-  endereco: string;
-  cidade: string;
-  estado: string;
   salario: number;
   conta: string;
   saldo: number;
@@ -12,4 +9,7 @@ export interface ClienteDetalhesDTO {
   gerente: string;
   nome_gerente: string;
   gerente_email: string;
+  endereco: string;
+  cidade: string;
+  estado: string;
 }
