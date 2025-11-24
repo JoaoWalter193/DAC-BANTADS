@@ -23,21 +23,21 @@
         </thead>
         <tbody>
           <tr *ngFor="let gerente of gerentes">
-            <td>{{ gerente.gerente.nome }}</td>
-            <td>{{ gerente.gerente.cpf | formatarCpf }}</td>
-            <td>{{ gerente.gerente.email }}</td>
+            <td>{{ gerente.nome }}</td>
+            <td>{{ gerente.cpf | formatarCpf }}</td>
+            <td>{{ gerente.email }}</td>
             <td class="btns">
               <button
                 class="botaoEditar"
                 type="button"
-                (click)="editarGerente(gerente.gerente.cpf)"
+                (click)="editarGerente(gerente.cpf)"
               >
                 Editar
               </button>
               <button
                 class="botaoExcluir"
                 type="button"
-                (click)="excluirGerente(gerente)"
+                (click)="excluirGerente(gerente.cpf)"
               >
                 Excluir
               </button>
@@ -49,4 +49,6 @@
     </div>
   </div>
 </div>
+<!-- A modal customizada de exclusão foi removida daqui, pois você solicitou manter a estrutura. -->
+
 <app-footer></app-footer>

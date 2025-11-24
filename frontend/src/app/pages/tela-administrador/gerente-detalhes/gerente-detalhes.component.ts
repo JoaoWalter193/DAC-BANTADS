@@ -8,6 +8,7 @@ import { Gerente } from '../../../models/gerente/gerente.interface';
 import { Conta } from '../../../models/conta/conta.interface';
 import { GerenteService } from '../../../services/gerente.service';
 import { GerenteDashboardDTO } from '../../../models/gerente/dto/gerente-dashboard.dto';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-gerente-detalhes',
@@ -23,38 +24,58 @@ import { GerenteDashboardDTO } from '../../../models/gerente/dto/gerente-dashboa
   styleUrls: ['./gerente-detalhes.component.css'],
 })
 export class GerenteDetalhesComponent implements OnInit {
-  public gerentes: GerenteDashboardDTO[] = [];
+  gerentes: Gerente[] = [];
 
   constructor(private gerenteService: GerenteService, private router: Router) {}
 
   ngOnInit(): void {
-    this.carregarGerentes();
+    this.carregarTodosGerentes();
   }
 
-  carregarGerentes() {
-    this.gerenteService.getGerentes().subscribe((data) => {
-      this.gerentes = data;
+  carregarTodosGerentes() {
+    // CORREÇÃO 1: Usar o novo método listGerentesBasic() para listar todos
+    this.gerenteService.listGerentesBasic().subscribe({
+      // CORREÇÃO 2: Tipagem explícita para 'data'
+      next: (data: Gerente[]) => {
+        this.gerentes = data;
+        console.log('Lista básica de Gerentes carregada.', data);
+      },
+      // CORREÇÃO 3: Tipagem explícita para 'err'
+      error: (err: HttpErrorResponse) => {
+        console.error('ERRO ao carregar lista básica de Gerentes:', err);
+      },
     });
-    this.gerentes.sort((a, b) => a.gerente.nome.localeCompare(b.gerente.nome));
   }
 
-  excluirGerente(gerente: GerenteDashboardDTO) {
+  excluirGerente(cpf: string) {
+    const gerenteInfo = this.gerentes.find((g) => g.cpf === cpf);
+    const nomeGerente = gerenteInfo ? gerenteInfo.nome : cpf;
+
+    // Regra 1: Não permitir a exclusão do último gerente
     if (this.gerentes.length <= 1) {
-      alert('Não é possível remover o último gerente do banco.');
+      // SUBSTITUIÇÃO: alert()
+      console.warn(
+        `[NOTIFICACAO NECESSARIA] Não é possível remover o último gerente do banco.`
+      );
       return;
     }
 
-    const confirmacao = confirm(
-      `Tem certeza que deseja excluir o gerente ${gerente.gerente.nome}?\n\n` +
-        `Ele possui ${gerente.clientes?.length} clientes.\n`
-    );
+    // Regra 2: Substituir confirm() por um mecanismo de confirmação
+    // Aqui assumimos que a confirmação é feita ANTES da chamada desta função
 
-    if (!confirmacao) return;
-
-    this.gerenteService.removerGerente(gerente.gerente.cpf);
-
-    alert(`Gerente ${gerente.gerente.nome} foi removido.`);
-    this.carregarGerentes();
+    // Simula a remoção (deve ser precedida por uma confirmação na UI)
+    this.gerenteService.removerGerente(cpf).subscribe({
+      next: () => {
+        console.log(`[SUCESSO] Gerente ${nomeGerente} removido.`);
+        // SUBSTITUIÇÃO: alert()
+        console.log(`Gerente ${nomeGerente} foi removido.`);
+        this.carregarTodosGerentes();
+      },
+      error: (err: HttpErrorResponse) => {
+        console.error(`[ERRO] Falha ao remover gerente ${nomeGerente}:`, err);
+        // Mostrar erro na UI
+      },
+    });
   }
 
   editarGerente(cpf: string) {

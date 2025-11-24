@@ -36,6 +36,11 @@
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
+.button-group {
+  display: flex;
+  flex-direction: column;
+}
+
 .form-gerente input:focus {
   border-color: #EDE654;
   box-shadow: 0 0 0 2px rgba(237, 230, 84, 0.3);
@@ -52,6 +57,7 @@ button {
   cursor: pointer;
   font-size: 16px;
   transition: background 0.3s;
+  margin-bottom: .5rem;
 }
 
 button:hover:not(:disabled) {

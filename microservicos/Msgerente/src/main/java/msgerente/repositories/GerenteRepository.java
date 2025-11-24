@@ -8,6 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface GerenteRepository extends JpaRepository<Gerente, String> {
-
+    List<Gerente> findByTipo(String tipo);
     Gerente findByCpf(String cpf);
 }

@@ -86,4 +86,8 @@ export class GerenteService {
   removerGerente(cpf: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${cpf}`);
   }
+
+  listGerentesBasic(): Observable<Gerente[]> {
+    return this.http.get<Gerente[]>(this.baseUrl);
+  }
 }

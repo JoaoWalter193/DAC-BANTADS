@@ -1,5 +1,6 @@
 export interface AtualizarGerenteDTO {
-  nome?: string;
-  email?: string;
+  nome?: string;
+  email?: string;
+  tipo?: 'GERENTE' | 'ADMINISTRADOR';
   senha?: string;
 }
