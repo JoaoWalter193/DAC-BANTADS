@@ -11,10 +11,12 @@
 /app/src/main/java/msauth/ms_auth/dto/AutocadastroSagaRequest.java
 /app/src/main/java/msauth/ms_auth/dto/LoginRequest.java
 /app/src/main/java/msauth/ms_auth/dto/LoginResponse.java
+/app/src/main/java/msauth/ms_auth/dto/LoginResponseDTO.java
 /app/src/main/java/msauth/ms_auth/dto/RejeitarSagaRequest.java
 /app/src/main/java/msauth/ms_auth/dto/ResponseDTO.java
 /app/src/main/java/msauth/ms_auth/dto/SagaEvent.java
 /app/src/main/java/msauth/ms_auth/dto/SagaRequest.java
+/app/src/main/java/msauth/ms_auth/dto/UserDTO.java
 /app/src/main/java/msauth/ms_auth/dto/UsuarioCriadoDTO.java
 /app/src/main/java/msauth/ms_auth/dto/UsuarioResponse.java
 /app/src/main/java/msauth/ms_auth/entities/Role.java

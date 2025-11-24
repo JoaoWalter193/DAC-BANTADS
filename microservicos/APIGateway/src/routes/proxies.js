@@ -24,6 +24,10 @@ const PUBLIC_KEY = fs.readFileSync(
   "utf8"
 );
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function setupProxies(app) {
   const SAGA = process.env.SAGA_SERVICE_URL;
   const AUTH = process.env.AUTH_SERVICE_URL;
@@ -96,7 +100,20 @@ function setupProxies(app) {
 
       onProxyReq(proxyReq, req) {
         if (req.body && Object.keys(req.body).length > 0) {
-          const bodyData = JSON.stringify(req.body);
+          console.log(
+            "🔍 Body original recebido no login:",
+            JSON.stringify(req.body)
+          );
+
+          // ✅ MAPEAMENTO DOS CAMPOS: login -> email, senha -> password
+          const mappedBody = {
+            email: req.body.login || req.body.email, // Aceita ambos
+            password: req.body.senha || req.body.password, // Aceita ambos
+          };
+
+          console.log("🔍 Body mapeado para auth:", JSON.stringify(mappedBody));
+
+          const bodyData = JSON.stringify(mappedBody);
           proxyReq.setHeader("Content-Type", "application/json");
           proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
           proxyReq.write(bodyData);
@@ -156,7 +173,7 @@ function setupProxies(app) {
             }
 
             // ✅ CORRIGIDO: SALVAR EMAIL PARA USO FUTURO NO LOGOUT
-            const emailDoLogin = req.body.email;
+            const emailDoLogin = req.body.email || req.body.login;
             if (emailDoLogin) {
               const token = data.access_token || data.token;
               if (token) {
@@ -262,6 +279,9 @@ function setupProxies(app) {
 
   app.post("/clientes", async (req, res, next) => {
     console.log("🔍 === INICIANDO AUTOCADASTRO ===");
+
+    await sleep(1000);
+
     console.log("🔍 Body recebido:", JSON.stringify(req.body, null, 2));
 
     const { email, cpf, nome, salario, endereco, cep, cidade, estado } =
@@ -429,68 +449,7 @@ function setupProxies(app) {
     }
   });
 
-  app.post(
-    "/clientes/:cpf/aprovar",
-    createProxyMiddleware({
-      ...proxyOptions(SAGA),
-      selfHandleResponse: true,
-
-      onProxyRes: async (proxyRes, req, res) => {
-        const cpf = req.params.cpf;
-        console.log("🔍 Iniciando aprovação para CPF:", cpf);
-
-        let sagaResponse = "";
-        proxyRes.on("data", (chunk) => (sagaResponse += chunk.toString()));
-
-        proxyRes.on("end", async () => {
-          console.log("🔍 Resposta do SAGA:", sagaResponse);
-          console.log("🔍 Status do SAGA:", proxyRes.statusCode);
-
-          try {
-            // Aguarde um pouco para o processamento assíncrono
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-
-            const contaUrl = `${process.env.CONTA_SERVICE_URL}/contas/${cpf}`;
-            console.log("🔍 Buscando conta em:", contaUrl);
-
-            const contaResponse = await fetch(contaUrl);
-            console.log("🔍 Status da busca da conta:", contaResponse.status);
-
-            if (!contaResponse.ok) {
-              console.log(
-                "❌ Conta não encontrada. Status:",
-                contaResponse.status
-              );
-              return res.status(500).json({
-                erro: "Conta não encontrada após aprovação.",
-                detalhes: `Status: ${contaResponse.status}`,
-              });
-            }
-
-            const dadosConta = await contaResponse.json();
-            console.log("🔍 Dados da conta encontrada:", dadosConta);
-
-            const respostaSwagger = {
-              cliente: cpf,
-              numero: dadosConta.numeroConta,
-              saldo: dadosConta.saldo,
-              limite: dadosConta.limite,
-              gerente: dadosConta.cpfGerente,
-              criacao: dadosConta.dataCriacao,
-            };
-
-            return res.status(200).json(respostaSwagger);
-          } catch (err) {
-            console.error("❌ Erro na composition:", err);
-            return res.status(500).json({
-              erro: "Erro interno na aprovação.",
-              detalhes: err.message,
-            });
-          }
-        });
-      },
-    })
-  );
+  app.post("/clientes/:cpf/aprovar", createProxyMiddleware(proxyOptions(SAGA)));
 
   app.post(
     "/clientes/:cpf/rejeitar",
@@ -620,7 +579,7 @@ function setupProxies(app) {
               proxyReq.write(valorRaw);
               return;
             }
-            
+
             const bodyData = JSON.stringify(newBody);
             proxyReq.setHeader("Content-Type", "application/json");
             proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
@@ -644,21 +603,17 @@ function setupProxies(app) {
 
             const numeroConta = req.params.numero;
             if (item.path === "saldo") {
-              return res
-                .status(200)
-                .json({
-                  cliente: data?.cpfCliente,
-                  conta: numeroConta,
-                  saldo: data?.saldo,
-                });
-            }
-            return res
-              .status(200)
-              .json({
-                ...data,
+              return res.status(200).json({
+                cliente: data?.cpfCliente,
                 conta: numeroConta,
-                mensagem: "Operação realizada com sucesso",
+                saldo: data?.saldo,
               });
+            }
+            return res.status(200).json({
+              ...data,
+              conta: numeroConta,
+              mensagem: "Operação realizada com sucesso",
+            });
           });
         },
       })

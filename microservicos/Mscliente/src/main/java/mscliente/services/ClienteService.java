@@ -263,9 +263,10 @@ public class ClienteService {
     }
 
     public ResponseEntity<ClienteDTO> buscarClienteEmail (String email){
+        Optional<Cliente> cli = clienteRepository.findByEmail(email);
         Optional<Cliente> clienteOpt = clienteRepository.findByEmail(email);
 
-        if (clienteOpt.isPresent()) {
+        if (clienteOpt.isPresent() || cli.isPresent()) {
             Cliente clienteTemp = clienteOpt.get();
             ClienteDTO dtoTemp = new ClienteDTO(
                     clienteTemp.getCpf(),

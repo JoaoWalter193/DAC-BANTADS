@@ -53,6 +53,8 @@ const getClienteByCpf = async (req, res) => {
       }
     }
 
+    const limite = cliente ? cliente.salario/2 : null;
+
     const finalData = {
       cpf: cliente.cpf,
       nome: cliente.nome,
@@ -65,7 +67,7 @@ const getClienteByCpf = async (req, res) => {
 
       conta: conta?.numConta || null,
       saldo: conta?.saldo ?? 0,
-      limite: conta?.limite ?? 0,
+      limite: limite ?? 0,
 
       gerente: conta?.cpfGerente || null,
       nome_gerente: gerente?.nome || "Não Atribuído",
