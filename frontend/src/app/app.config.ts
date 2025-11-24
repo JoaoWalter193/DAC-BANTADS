@@ -16,6 +16,7 @@ import {
 } from '@angular/common/http';
 import { authInterceptor } from './interceptor/auth.interceptor';
 
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
