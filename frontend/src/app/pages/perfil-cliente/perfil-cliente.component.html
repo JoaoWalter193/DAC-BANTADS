@@ -47,15 +47,15 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>Telefone</mat-label>
-            <input matInput formControlName="telefone" mask="(00) 00000-0000" />
+            <mat-label>CEP</mat-label>
+            <input matInput formControlName="cep" mask="00000-000" />
             <mat-error
               *ngIf="
-                profileForm.get('telefone')?.touched &&
-                profileForm.get('telefone')?.invalid
+                profileForm.get('cep')?.touched &&
+                profileForm.get('cep')?.invalid
               "
             >
-              O telefone é obrigatório
+              O CEP é obrigatório
             </mat-error>
           </mat-form-field>
 

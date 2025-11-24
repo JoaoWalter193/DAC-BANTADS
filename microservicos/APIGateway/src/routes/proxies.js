@@ -118,6 +118,7 @@ function setupProxies(app) {
           proxyReq.setHeader("Content-Type", "application/json");
           proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
           proxyReq.write(bodyData);
+          proxyReq.end(); 
         }
       },
 
@@ -480,6 +481,10 @@ function setupProxies(app) {
         JSON.stringify(dadosOriginais, null, 2)
       );
 
+      // correcao no cep, estava enviando com um "-"
+      const cepAtual = dadosAtualizados.cep || dadosOriginais.cep;
+      const cepCorrigido = cepAtual ? cepAtual.replace(/\D/g, "") : "";
+
       const sagaPayload = {
         dadosOriginais: {
           cpf: dadosOriginais.cpf,
@@ -499,7 +504,7 @@ function setupProxies(app) {
             dadosAtualizados.salario || dadosOriginais.salario
           ),
           endereco: dadosAtualizados.endereco || dadosOriginais.endereco,
-          cep: dadosAtualizados.cep || dadosOriginais.cep,
+          cep: cepCorrigido,
           cidade: dadosAtualizados.cidade || dadosOriginais.cidade,
           estado: dadosAtualizados.estado || dadosOriginais.estado,
         },

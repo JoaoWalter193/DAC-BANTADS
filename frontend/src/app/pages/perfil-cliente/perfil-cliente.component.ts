@@ -54,7 +54,7 @@ export class PerfilClienteComponent implements OnInit {
       estado: ['', [Validators.required]],
       salario: ['', [Validators.required, Validators.min(0)]],
       email: ['', [Validators.required, Validators.email]],
-      telefone: ['', [Validators.required]],
+      cep: ['', [Validators.required]],
 
       // Campos informativos (desabilitados)
       conta: [{ value: '', disabled: true }],
@@ -110,7 +110,6 @@ export class PerfilClienteComponent implements OnInit {
     const clienteAtualizado: ClienteAutocadastroDTO = {
       ...this.cliente,
       ...dadosForm,
-      cep: '00000-000', // Valor padrão caso tenha sido removido do form visual
     };
 
     // Chama o serviço de atualização e se inscreve na resposta
