@@ -555,44 +555,70 @@ function setupProxies(app) {
     })
   );
 
-  const contaActions = ["saldo", "depositar", "sacar", "transferir", "extrato"];
+  app.get(
+    "/contas/:id",
+    verifyJWT,
+    createProxyMiddleware({
+      target: CONTA,
+      changeOrigin: true,
+      pathRewrite: (path, req) => `/contas/${req.params.id}`,
+      onProxyReq: (proxyReq) => {
+        proxyReq.method = "GET";
+        proxyReq.removeHeader("Content-Type");
+        proxyReq.removeHeader("Content-Length");
+      },
+    })
+  );
 
-  contaActions.forEach((act) => {
-    app.post(
-      `/contas/:numero/${act}`,
+  const contaActions = [
+    { path: "saldo", method: "get" },
+    { path: "extrato", method: "get" },
+    { path: "depositar", method: "put" },
+    { path: "sacar", method: "put" },
+    { path: "transferir", method: "put" },
+  ];
+
+  contaActions.forEach((item) => {
+    app[item.method](
+      `/contas/:numero/${item.path}`,
       verifyJWT,
       createProxyMiddleware({
         target: CONTA,
         changeOrigin: true,
         selfHandleResponse: true,
-
-        pathRewrite: (_, req) => `/contas/${req.params.numero}/${act}`,
+        pathRewrite: (_, req) => `/contas/${req.params.numero}/${item.path}`,
 
         onProxyReq(proxyReq, req) {
-          if (act === "saldo" || act === "extrato") {
-            proxyReq.method = "GET";
+          const isGet = item.method === "get";
+          proxyReq.method = item.method.toUpperCase();
+
+          if (isGet) {
             proxyReq.removeHeader("Content-Type");
             proxyReq.removeHeader("Content-Length");
             return;
           }
 
-          proxyReq.method = "PUT";
-
           if (req.body) {
             let newBody = { ...req.body };
 
-            if (act === "transferir" && newBody.destino) {
-              newBody = {
-                valor: newBody.valor,
-                numeroConta: newBody.destino,
-              };
+            if (item.path === "transferir") {
+              const destino =
+                newBody.contaDestino || newBody.destino || newBody.numeroConta;
+              if (destino) {
+                newBody = {
+                  valor: newBody.valor,
+                  numeroConta: destino,
+                  destino: destino,
+                  contaDestino: destino,
+                };
+              }
             }
 
-            if (act === "depositar" || act === "sacar") {
-              const raw = String(newBody.valor);
+            if (item.path === "depositar" || item.path === "sacar") {
+              const valorRaw = String(newBody.valor);
               proxyReq.setHeader("Content-Type", "application/json");
-              proxyReq.setHeader("Content-Length", Buffer.byteLength(raw));
-              proxyReq.write(raw);
+              proxyReq.setHeader("Content-Length", Buffer.byteLength(valorRaw));
+              proxyReq.write(valorRaw);
               return;
             }
 
@@ -607,60 +633,33 @@ function setupProxies(app) {
           let body = "";
           proxyRes.on("data", (chunk) => (body += chunk.toString()));
           proxyRes.on("end", () => {
-            let data;
+            let data = {};
             try {
               data = body ? JSON.parse(body) : {};
             } catch {
-              return res.status(proxyRes.statusCode).send(body);
+              data = { mensagem: body.toString() };
             }
+
+            if (proxyRes.statusCode !== 200)
+              return res.status(proxyRes.statusCode).json(data);
 
             const numeroConta = req.params.numero;
-
-            if (proxyRes.statusCode !== 200) {
-              return res.status(proxyRes.statusCode).json(data);
-            }
-
-            switch (act) {
-              case "saldo":
-                return res.status(200).json({
+            if (item.path === "saldo") {
+              return res
+                .status(200)
+                .json({
                   cliente: data?.cpfCliente,
                   conta: numeroConta,
                   saldo: data?.saldo,
                 });
-
-              case "depositar":
-                return res.status(200).json({
-                  conta: numeroConta,
-                  data: data?.data,
-                  saldo: data?.saldo,
-                });
-
-              case "sacar":
-                return res.status(200).json({
-                  conta: numeroConta,
-                  data: data?.data,
-                  saldo: data?.saldo,
-                });
-
-              case "transferir":
-                return res.status(200).json({
-                  conta: numeroConta,
-                  data: data?.data,
-                  destino: data?.destino,
-                  saldo: data?.saldo,
-                  valor: data?.valor,
-                });
-
-              case "extrato":
-                return res.status(200).json({
-                  conta: numeroConta,
-                  saldo: data?.saldo,
-                  movimentacoes: data?.movimentacoes ?? [],
-                });
-
-              default:
-                return res.status(200).json(data);
             }
+            return res
+              .status(200)
+              .json({
+                ...data,
+                conta: numeroConta,
+                mensagem: "Operação realizada com sucesso",
+              });
           });
         },
       })

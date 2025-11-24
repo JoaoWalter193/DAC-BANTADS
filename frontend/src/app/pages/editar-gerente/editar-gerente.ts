@@ -1,112 +1,119 @@
 import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GerenteService } from '../../services/gerente.service';
 import { AtualizarGerenteDTO } from '../../models/gerente/dto/gerente-atualizar.dto';
-import { Gerente } from '../../models/gerente/gerente.interface';
 
 @Component({
   selector: 'app-editar-gerente',
   templateUrl: './editar-gerente.html',
   styleUrls: ['./editar-gerente.css'],
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, ReactiveFormsModule],
 })
 export class EditarGerente implements OnInit {
-  gerente!: Gerente;
+  form!: FormGroup;
   cpf: string = '';
-
-  mensagem: string = '';
-  tipoMensagem: 'sucesso' | 'erro' | '' = '';
   carregando: boolean = false;
-  private cpfOriginal: string = '';
+  mensagem: string = '';
+  tipoMensagem: 'sucesso' | 'erro' = 'sucesso';
 
-  constructor(private router: Router, private gerenteService: GerenteService) {}
+  constructor(
+    private gerenteService: GerenteService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private fb: FormBuilder
+  ) {}
 
   ngOnInit(): void {
-    this.gerenteService.getGerenteByCpf(this.cpf).subscribe((data) => {
-      this.gerente = data;
+    this.cpf = this.route.snapshot.paramMap.get('cpf') || '';
+
+    this.form = this.fb.group({
+      nome: ['', Validators.required],
+      cpf: [{ value: this.cpf, disabled: true }, Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      tipo: ['GERENTE', Validators.required],
+      senha: [''],
+    });
+
+    if (this.cpf) {
+      this.carregarDadosGerente(this.cpf);
+    }
+  }
+
+  /**
+   * Busca os dados do gerente e preenche o FormGroup (PATCH VALUE).
+   * @param cpf CPF do gerente.
+   */
+  carregarDadosGerente(cpf: string): void {
+    this.carregando = true;
+    this.gerenteService.getGerenteByCpf(cpf).subscribe({
+      next: (gerente) => {
+        this.carregando = false;
+        this.form.patchValue({
+          nome: gerente.nome,
+          email: gerente.email,
+          tipo: gerente.tipo,
+        });
+        console.log('Dados do gerente carregados e preenchidos no formulário.');
+      },
+      error: (err) => {
+        this.carregando = false;
+        this.mensagem = 'Erro ao carregar dados do gerente.';
+        this.tipoMensagem = 'erro';
+        console.error('ERRO ao carregar gerente:', err);
+      },
     });
   }
 
-  formatarCPF(event: any) {
-    let value = event.target.value.replace(/\D/g, '');
-    if (value.length > 11) value = value.slice(0, 11);
-    if (value.length > 9)
-      value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-    else if (value.length > 6)
-      value = value.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
-    else if (value.length > 3)
-      value = value.replace(/(\d{3})(\d{1,3})/, '$1.$2');
-    this.gerente.cpf = value;
-  }
-
-  validarCPF(cpf: string): boolean {
-    cpf = cpf.replace(/\D/g, '');
-    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
-
-    let soma = 0;
-    for (let i = 0; i < 9; i++) soma += Number(cpf.charAt(i)) * (10 - i);
-    let resto = (soma * 10) % 11;
-    if (resto === 10 || resto === 11) resto = 0;
-    if (resto !== Number(cpf.charAt(9))) return false;
-
-    soma = 0;
-    for (let i = 0; i < 10; i++) soma += Number(cpf.charAt(i)) * (11 - i);
-    resto = (soma * 10) % 11;
-    if (resto === 10 || resto === 11) resto = 0;
-    if (resto !== Number(cpf.charAt(10))) return false;
-
-    return true;
-  }
-
-  validarEmail(email: string): boolean {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-  }
-
-  validarFormulario(): boolean {
-    const cpfNumerico = this.gerente.cpf.replace(/\D/g, '');
-    return (
-      cpfNumerico.length === 11 &&
-      this.gerente.nome.trim() !== '' &&
-      this.validarEmail(this.gerente.email) &&
-      this.gerente.senha?.trim() !== ''
-    );
-  }
-
   onSubmit() {
-    if (!this.validarFormulario()) {
-      this.mostrarMensagem(
-        'Por favor, preencha todos os campos obrigatórios.',
-        'erro'
-      );
+    if (this.form.invalid) {
+      this.mensagem = 'Verifique os campos obrigatórios (Nome, E-mail, Tipo).';
+      this.tipoMensagem = 'erro';
       return;
     }
 
+    const formValue = this.form.getRawValue();
+
+    const dto: AtualizarGerenteDTO & { senha?: string } = {
+      nome: formValue.nome,
+      email: formValue.email,
+      tipo: formValue.tipo,
+    };
+
+    const senha = formValue.senha ? String(formValue.senha).trim() : '';
+
+    if (senha) {
+      dto.senha = senha;
+      console.log('Senha será atualizada.');
+    } else {
+      console.log('Campo de senha vazio. A senha existente será mantida.');
+    }
+
     this.carregando = true;
-
-    setTimeout(() => {
-      const gerenteAtualizado: AtualizarGerenteDTO = {
-        nome: this.gerente.nome,
-        email: this.gerente.email,
-        senha: this.gerente.senha,
-      };
-
-      this.gerenteService.atualizarGerente(this.gerente.cpf, gerenteAtualizado);
-      this.carregando = false;
-      this.mostrarMensagem('Gerente atualizado com sucesso!', 'sucesso');
-      this.router.navigate(['/tela-administrador/gerentes']);
-    }, 1000);
+    this.gerenteService.atualizarGerente(this.cpf, dto).subscribe({
+      next: (gerenteAtualizado) => {
+        this.carregando = false;
+        this.mensagem = `Gerente ${gerenteAtualizado.nome} atualizado com sucesso!`;
+        this.tipoMensagem = 'sucesso';
+      },
+      error: (err) => {
+        this.carregando = false;
+        this.mensagem = 'Falha na atualização. Erro interno do servidor.';
+        this.tipoMensagem = 'erro';
+        console.error('Erro na atualização:', err);
+      },
+    });
   }
 
-  mostrarMensagem(mensagem: string, tipo: 'sucesso' | 'erro'): void {
-    this.mensagem = mensagem;
-    this.tipoMensagem = tipo;
-    setTimeout(() => {
-      this.mensagem = '';
-      this.tipoMensagem = '';
-    }, 5000);
+  voltarParaLista() {
+    window.history.back();
   }
 }

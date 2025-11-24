@@ -11,139 +11,225 @@ if (!CLIENTE || !CONTA || !GERENTE) {
   );
 }
 
+// Caminho de listagem dos gerentes no microserviço
+const GERENTES_LIST_PATH = "/gerentes/lista";
+
 // Middleware para GET /gerentes
 const getGerentes = async (req, res, next) => {
   const { filtro } = req.query;
   console.log("🔍 GET /gerentes - Filtro:", filtro);
 
-  if (filtro !== "dashboard") {
+  // A requisição R16 é uma exceção ao proxy e deve ser tratada como composition
+  if (filtro !== "dashboard" && filtro !== "adm_relatorio_clientes") {
     console.log("🔍 Usando proxy direto para GERENTE service");
+
+    // NOVO LOG: Confirma o alvo e a reescrita antes de criar o proxy
+    console.log(`[LOG PROXY] Destino (Target): ${GERENTE}`);
+    console.log(
+      `[LOG PROXY] Reescrita (Rewrite): ^/gerentes$ -> ${GERENTES_LIST_PATH}`
+    );
+
     return createProxyMiddleware({
       target: GERENTE,
       changeOrigin: true,
-      pathRewrite: (path, req) => {
-        const newPath = path.split("?")[0];
-        console.log("🔍 Path rewrite:", path, "->", newPath);
-        return newPath;
-      },
-      onError: (err, req, res) => {
-        console.error("❌ Erro no proxy para serviço de gerente:", err);
-        res.status(502).json({
-          mensagem: "Serviço de gerentes indisponível",
-          detalhes: err.message,
-        });
+      pathRewrite: {
+        "^/gerentes$": GERENTES_LIST_PATH,
       },
     })(req, res, next);
   }
 
   try {
-    console.log("🔍 Processando composition para dashboard");
-
-    const gerentesResp = await axiosInstance.get(`${GERENTE}/gerentes`);
-    if (gerentesResp.status >= 400) {
-      console.error("❌ Erro ao buscar gerentes:", gerentesResp.status);
-      return propagateRemoteError(res, gerentesResp);
-    }
-
-    const gerentes = gerentesResp.data || []; // ✅ MOVER para ANTES do uso
-    console.log("🔍 Gerentes encontrados:", gerentes.length);
-
-    // ✅ AGORA podemos verificar o length
-    if (gerentes.length === 0) {
-      console.log("🔍 Nenhum gerente encontrado, retornando array vazio");
-      return res.status(200).json([]);
-    }
-
-    const clientesResp = await axiosInstance.get(
-      `${CLIENTE}/clientes?filtro=adm_relatorio_clientes`
-    );
-    if (clientesResp.status >= 400) {
-      return propagateRemoteError(res, clientesResp);
-    }
-
-    const clientes = clientesResp.data || [];
-    console.log("🔍 Clientes encontrados:", clientes.length);
-
-    // Se não há clientes, retornar gerentes sem clientes
-    if (clientes.length === 0) {
+    // =========================================================================
+    // NOVO BLOCO: COMPOSITION PARA RELATÓRIO DE CLIENTES (R16)
+    // Este bloco garante que todos os dados sejam agregados antes de retornar.
+    // =========================================================================
+    if (filtro === "adm_relatorio_clientes") {
       console.log(
-        "🔍 Nenhum cliente encontrado, retornando gerentes sem clientes"
+        "🔍 Processando composition para Relatório de Clientes (R16)"
       );
-      const final = gerentes.map((gerente) => ({
-        gerente: {
-          cpf: gerente.cpf,
-          nome: gerente.nome,
-          email: gerente.email,
-          tipo: gerente.tipo,
-        },
-        clientes: [],
-        saldo_positivo: 0,
-        saldo_negativo: 0,
-      }));
-      return res.status(200).json(final);
+
+      // 1. Buscar todos os gerentes para mapeamento rápido
+      const gerentesResp = await axiosInstance.get(
+        `${GERENTE}${GERENTES_LIST_PATH}`
+      );
+      if (gerentesResp.status >= 400)
+        return propagateRemoteError(res, gerentesResp);
+
+      const gerentes = gerentesResp.data || [];
+      // Mapeia gerentes por CPF para lookup instantâneo
+      const gerentesMap = new Map(gerentes.map((g) => [g.cpf, g]));
+
+      // 2. Buscar todos os clientes (usando o endpoint básico do Cliente)
+      const clientesResp = await axiosInstance.get(`${CLIENTE}/clientes`);
+      if (clientesResp.status >= 400)
+        return propagateRemoteError(res, clientesResp);
+
+      const clientes = clientesResp.data || [];
+      console.log("🔍 Clientes encontrados:", clientes.length);
+
+      // 3. Buscar todas as contas concorrentemente
+      const contasResponses = await Promise.all(
+        clientes.map((c) =>
+          axiosInstance
+            .get(`${CONTA}/contas/${encodeURIComponent(c.cpf)}`)
+            .catch((error) => {
+              // Trata o erro 404 (conta não encontrada) como esperado, retornando o objeto de resposta
+              if (error.response && error.response.status === 404)
+                return error.response;
+              if (error.response) return error.response;
+              throw error;
+            })
+        )
+      );
+
+      const relatorioFinal = [];
+
+      for (let i = 0; i < clientes.length; i++) {
+        const cliente = clientes[i];
+        const contaResp = contasResponses[i];
+
+        let conta = null;
+        let gerenteData = {};
+
+        if (contaResp.status === 200) {
+          conta = contaResp.data;
+          const gerente = gerentesMap.get(conta.cpfGerente);
+
+          if (gerente) {
+            gerenteData = {
+              gerente: gerente.cpf, // CPF do Gerente
+              gerente_nome: gerente.nome, // Nome do Gerente
+              gerente_email: gerente.email, // Email do Gerente
+            };
+          }
+        }
+
+        // 4. Composição da ClienteRelatorioDTO completa
+        relatorioFinal.push({
+          cpf: cliente.cpf,
+          nome: cliente.nome,
+          email: cliente.email,
+          salario: cliente.salario,
+          endereco: cliente.endereco,
+          cidade: cliente.cidade,
+          estado: cliente.estado,
+          // Dados da Conta (usando valores padrão se a conta não for encontrada)
+          conta: conta ? conta.numConta : "",
+          saldo: conta ? conta.saldo : 0,
+          limite: conta ? conta.limite : 0,
+          ...gerenteData,
+        });
+      }
+
+      // 5. Ordenação crescente por nome do cliente (conforme R16)
+      relatorioFinal.sort((a, b) => a.nome.localeCompare(b.nome));
+
+      console.log("✅ Relatório de clientes composto e ordenado com sucesso.");
+      return res.status(200).json(relatorioFinal);
     }
+    // =========================================================================
+    // FIM R16 BLOCK
+    // =========================================================================
 
-    const contasResponses = await Promise.all(
-      clientes.map((c) =>
-        axiosInstance.get(`${CONTA}/contas/${encodeURIComponent(c.cpf)}`)
-      )
-    );
+    if (filtro === "dashboard") {
+      console.log("🔍 Processando composition para dashboard");
 
-    for (const r of contasResponses) {
-      if (r.status >= 400) return propagateRemoteError(res, r);
-    }
+      const gerentesResp = await axiosInstance.get(
+        `${GERENTE}${GERENTES_LIST_PATH}`
+      );
+      if (gerentesResp.status >= 400)
+        return propagateRemoteError(res, gerentesResp);
 
-    const contas = contasResponses.map((r) => r.data);
-    console.log("🔍 Contas encontradas:", contas.length);
+      const gerentes = gerentesResp.data || [];
+      console.log("🔍 Gerentes encontrados:", gerentes.length);
 
-    const contasPorGerente = {};
-    contas.forEach((conta) => {
-      const cpfGerente = conta.cpfGerente;
-      if (!contasPorGerente[cpfGerente]) contasPorGerente[cpfGerente] = [];
-      contasPorGerente[cpfGerente].push(conta);
-    });
+      // CORREÇÃO: Usar o endpoint básico '/clientes' para evitar o bug de filtro
+      // Se este endpoint não retornar a lista básica, use um filtro específico para lista simples.
+      const clientesResp = await axiosInstance.get(`${CLIENTE}/clientes`);
+      if (clientesResp.status >= 400)
+        return propagateRemoteError(res, clientesResp);
 
-    const final = gerentes.map((gerente) => {
-      const contasDoGerente = contasPorGerente[gerente.cpf] || [];
+      const clientes = clientesResp.data || [];
+      console.log("🔍 Clientes encontrados:", clientes.length); // A partir daqui, a lógica do dashboard continua a mesma, agregando contas
 
-      const clientesDoGerente = contasDoGerente.map((c) => ({
-        cliente: c.cpfCliente,
-        numero: String(c.numConta),
-        saldo: c.saldo,
-        limite: c.limite,
-        gerente: c.cpfGerente,
-        criacao: c.dataCriacao,
-      }));
+      // e gerando os saldos positivo/negativo.
 
-      let saldoPositivo = 0;
-      let saldoNegativo = 0;
+      const contasResponses = await Promise.all(
+        clientes.map((c) =>
+          axiosInstance
+            .get(`${CONTA}/contas/${encodeURIComponent(c.cpf)}`)
+            .catch((error) => {
+              // Se o erro tiver uma resposta HTTP (ex: 404), retornamos o objeto de resposta.
+              // Se for um erro de rede/timeout, re-lançamos.
+              if (error.response) return error.response;
+              throw error;
+            })
+        )
+      );
 
-      contasDoGerente.forEach((c) => {
-        const s = Number(c.saldo) || 0;
-        if (s >= 0) saldoPositivo += s;
-        else saldoNegativo += s;
+      for (const r of contasResponses) {
+        // Propagamos erros apenas se for um erro interno do servidor (>= 500)
+        if (r.status >= 500 || (r.status >= 400 && r.status !== 404)) {
+          console.error(
+            `❌ Erro inesperado na busca de conta. Status: ${r.status}`
+          );
+          return propagateRemoteError(res, r);
+        }
+      }
+
+      const contas = contasResponses
+        .filter((r) => r.status === 200)
+        .map((r) => r.data);
+      console.log("🔍 Contas encontradas:", contas.length);
+
+      const contasPorGerente = {};
+      contas.forEach((conta) => {
+        const cpfGerente = conta.cpfGerente;
+        if (!contasPorGerente[cpfGerente]) contasPorGerente[cpfGerente] = [];
+        contasPorGerente[cpfGerente].push(conta);
       });
 
-      return {
-        gerente: {
-          cpf: gerente.cpf,
-          nome: gerente.nome,
-          email: gerente.email,
-          tipo: gerente.tipo,
-        },
-        clientes: clientesDoGerente,
-        saldo_positivo: Number(saldoPositivo.toFixed(2)),
-        saldo_negativo: Number(saldoNegativo.toFixed(2)),
-      };
-    });
+      const final = gerentes.map((gerente) => {
+        const contasDoGerente = contasPorGerente[gerente.cpf] || [];
 
-    // ✅ Ordenar por nome do gerente
-    final.sort((a, b) => a.gerente.nome.localeCompare(b.gerente.nome));
+        const clientesDoGerente = contasDoGerente.map((c) => ({
+          cliente: c.cpfCliente,
+          numero: String(c.numConta),
+          saldo: c.saldo,
+          limite: c.limite,
+          gerente: c.cpfGerente,
+          criacao: c.dataCriacao,
+        }));
 
-    console.log("✅ Dashboard gerado com sucesso");
-    return res.status(200).json(final);
+        let saldoPositivo = 0;
+        let saldoNegativo = 0;
+
+        contasDoGerente.forEach((c) => {
+          const s = Number(c.saldo) || 0;
+          if (s >= 0) saldoPositivo += s;
+          else saldoNegativo += s;
+        });
+
+        return {
+          gerente: {
+            cpf: gerente.cpf,
+            nome: gerente.nome,
+            email: gerente.email,
+            tipo: gerente.tipo,
+          },
+          clientes: clientesDoGerente,
+          saldo_positivo: Number(saldoPositivo.toFixed(2)),
+          saldo_negativo: Number(saldoNegativo.toFixed(2)),
+        };
+      }); // FIX 3: Adiciona a ordenação por saldo positivo (R15)
+
+      final.sort((a, b) => b.saldo_positivo - a.saldo_positivo);
+
+      console.log("✅ Dashboard gerado com sucesso");
+      return res.status(200).json(final);
+    } // Fim do bloco dashboard
   } catch (err) {
-    console.error("❌ Erro composition GET /gerentes?filtro=dashboard", err);
+    console.error("❌ Erro composition GET /gerentes", err);
     if (err && err.remote) return propagateRemoteError(res, err.remote);
     return res.status(500).json({ mensagem: "Erro interno no API Gateway" });
   }
@@ -151,6 +237,7 @@ const getGerentes = async (req, res, next) => {
 
 // O restante do código (getClientesDoGerente) permanece igual...
 const getClientesDoGerente = async (req, res, next) => {
+  // ... (função inalterada) ...
   const { cpfGerente } = req.params;
   const { busca } = req.query;
 

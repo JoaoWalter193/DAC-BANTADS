@@ -5,7 +5,7 @@
   padding: 40px 30px;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 .tela-gerente-editar h2 {
@@ -36,15 +36,20 @@
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
+.button-group {
+  display: flex;
+  flex-direction: column;
+}
+
 .form-gerente input:focus {
-  border-color: #EDE654;
+  border-color: #ede654;
   box-shadow: 0 0 0 2px rgba(237, 230, 84, 0.3);
   outline: none;
 }
 
 button {
   padding: 12px;
-  background-color: #EDE654;
+  background-color: #ede654;
   color: #0c2464;
   font-weight: 600;
   border: none;
@@ -52,6 +57,7 @@ button {
   cursor: pointer;
   font-size: 16px;
   transition: background 0.3s;
+  margin-bottom: 0.5rem;
 }
 
 button:hover:not(:disabled) {
