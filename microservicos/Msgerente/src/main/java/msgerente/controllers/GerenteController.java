@@ -36,6 +36,11 @@ public class GerenteController {
         return gerenteService.listarGerentes();
     }
 
+    @GetMapping("/email/{email}")
+    public ResponseEntity<GerenteDTO> buscarClienteEmail(@PathVariable String email) {
+        return gerenteService.buscarGerenteEmail(email);
+    }
+
     @GetMapping("/{cpf}")
     public ResponseEntity<GerenteDTO> infoGerente(@PathVariable String cpf) {
         return gerenteService.infoGerente(cpf);
