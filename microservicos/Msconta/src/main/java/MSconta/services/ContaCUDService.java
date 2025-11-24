@@ -76,8 +76,8 @@ public class ContaCUDService {
             double novoSaldo = contaCUDTemp.getSaldo() + valorDepositar;
             contaCUDTemp.setSaldo(novoSaldo);
 
-             Movimentacoes movimentacoesTemp = new Movimentacoes("depósito",contaCUDTemp.getNomeCliente(),
-                     contaCUDTemp.getCpfCliente(), valorDepositar, contaCUDTemp.getNumConta());
+            Movimentacoes movimentacoesTemp = new Movimentacoes("depósito",contaCUDTemp.getNomeCliente(),
+                    contaCUDTemp.getCpfCliente(), valorDepositar, contaCUDTemp.getNumConta());
 
             movimentacaoRepository.save(movimentacoesTemp);
             contaCUDRepository.save(contaCUDTemp);
@@ -292,7 +292,7 @@ public class ContaCUDService {
     }
 
 
-// teste pedro alteracaoperfil
+    // teste pedro alteracaoperfil
 // no atualizarLimite ele recebe o numConta, 
 // na saga de alteracao só tenho os dados do cliente entao usei cpf
     public ContaCUD alteracaoPerfilLimite(String cpfCliente, double novoSalario) {
