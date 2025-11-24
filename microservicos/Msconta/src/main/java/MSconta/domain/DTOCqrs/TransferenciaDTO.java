@@ -1,5 +1,6 @@
 package MSconta.domain.DTOCqrs;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 
@@ -8,7 +9,7 @@ import java.time.LocalDateTime;
 public record TransferenciaDTO(int numConta,
                                double saldo,
                                int idMov,
-                               LocalDateTime dataHora,
+                               Instant dataHora,
                                String tipo,
                                String clienteOrigemNome,
                                String clienteOrigameCpf,

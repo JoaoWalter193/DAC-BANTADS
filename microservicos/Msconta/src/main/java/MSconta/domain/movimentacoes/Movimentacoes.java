@@ -7,8 +7,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 
 @Table(name = "movimentacao", schema = "dbcontacud")
 @Entity(name = "movimentacao")
@@ -21,7 +23,7 @@ public class Movimentacoes {
     // para saques e depositos
     public Movimentacoes (String tipo, String clienteOrigemNome, String clienteOrigemCpf,
                           double valor, int origem){
-        this.data = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"));
+        this.data = Instant.now().truncatedTo(ChronoUnit.MILLIS);
         this.tipo = tipo;
         this.clienteOrigemNome = clienteOrigemNome;
         this.clienteOrigemCpf = clienteOrigemCpf;
@@ -33,7 +35,7 @@ public class Movimentacoes {
     public Movimentacoes(String tipo, String clienteOrigemNome, String clienteOrigemCpf,
                          String clienteDestinoNome, String clienteDestinoCpf,
                          double valor, int origem){
-        this.data = LocalDateTime.now();
+        this.data = Instant.now().truncatedTo(ChronoUnit.MILLIS);
         this.tipo = tipo;
         this.clienteOrigemNome = clienteOrigemNome;
         this.clienteOrigemCpf = clienteOrigemCpf;
@@ -50,7 +52,7 @@ public class Movimentacoes {
     private int id;
 
     @Column(name = "datahora")
-    private LocalDateTime data;
+    private Instant data;
 
     @Column(name = "tipo")
     private String tipo;

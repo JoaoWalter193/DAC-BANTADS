@@ -1,11 +1,12 @@
 package MSconta.domain.DTOCqrs;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 public record SaqueDepositoDTO(int numConta,
                                double saldo,
                                int idMov,
-                               LocalDateTime dataHora,
+                               Instant dataHora,
                                String tipo,
                                String clienteOrigemNome,
                                String clienteOrigameCpf,

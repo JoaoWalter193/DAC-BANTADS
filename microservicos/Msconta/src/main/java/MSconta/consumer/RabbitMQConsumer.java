@@ -19,6 +19,8 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Optional;
 
@@ -151,7 +153,7 @@ public class RabbitMQConsumer {
                 if (optContaTemp.isPresent()) {
                     ContaR contaTemp = optContaTemp.get();
                     contaTemp.setSaldo(data.saldo());
-                    MovimentacoesR movimentacaoTemp = new MovimentacoesR(data.dataHora(), data.tipo(),
+                    MovimentacoesR movimentacaoTemp = new MovimentacoesR(Instant.now().truncatedTo(ChronoUnit.MILLIS), data.tipo(),
                             data.clienteOrigemNome(), data.clienteOrigameCpf(),
                             data.clienteDestinoNome(), data.clieneDestinoCpf(),
                             data.valor(), contaTemp.getNumConta());
@@ -178,7 +180,7 @@ public class RabbitMQConsumer {
                     ContaR contaTemp2 = optContaTemp2.get();
                     contaTemp2.setSaldo(data.saldo2());
 
-                    MovimentacoesR movimentacaoTemp = new MovimentacoesR(data.dataHora(), data.tipo(),
+                    MovimentacoesR movimentacaoTemp = new MovimentacoesR(Instant.now().truncatedTo(ChronoUnit.MILLIS), data.tipo(),
                             data.clienteOrigemNome(), data.clienteOrigameCpf(),
                             data.clienteDestinoNome(), data.clieneDestinoCpf(),
                             data.valor(),contaTemp.getNumConta());
