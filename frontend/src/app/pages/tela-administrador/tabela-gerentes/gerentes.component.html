@@ -11,7 +11,7 @@
     <tbody>
       <tr *ngFor="let gerente of gerentes">
         <td>{{ gerente.gerente.nome }}</td>
-        <td>{{ qtdClientes }}</td>
+        <td>{{ gerente.clientes ? gerente.clientes.length : 0 }}</td>
         <td>{{ gerente.saldo_positivo | currency : "BRL" }}</td>
         <td>{{ gerente.saldo_negativo | currency : "BRL" }}</td>
       </tr>

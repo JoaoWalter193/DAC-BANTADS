@@ -1,6 +1,5 @@
 package msgerente.controllers;
 
-
 import jakarta.validation.Valid;
 import msgerente.domain.AdicionarGerenteDTO;
 import msgerente.domain.AtualizarGerenteDTO;
@@ -12,14 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+
 import msgerente.producer.RabbitMQProducer;
 
 import java.util.List;
@@ -34,6 +26,11 @@ public class GerenteController {
     @Autowired
     private GerenteService gerenteService;
 
+    @GetMapping("/lista")
+    public ResponseEntity<List<Gerente>> listarGerentesLista() {
+        return gerenteService.listarGerentes();
+    }
+
     @GetMapping
     public ResponseEntity<List<Gerente>> listarGerentes() {
         return gerenteService.listarGerentes();
@@ -45,7 +42,8 @@ public class GerenteController {
     }
 
     @PutMapping("/{cpf}")
-    public ResponseEntity<GerenteDTO> atualizarGerente(@PathVariable String cpf, @RequestBody AtualizarGerenteDTO data) {
+    public ResponseEntity<GerenteDTO> atualizarGerente(@PathVariable String cpf,
+            @RequestBody AtualizarGerenteDTO data) {
         return gerenteService.atualizarGerente(cpf, data);
     }
 
@@ -58,6 +56,5 @@ public class GerenteController {
     public ResponseEntity<GerenteDTO> adicionarGerente(@RequestBody @Valid AdicionarGerenteDTO data) {
         return gerenteService.inserirGerente(data);
     }
-
 
 }

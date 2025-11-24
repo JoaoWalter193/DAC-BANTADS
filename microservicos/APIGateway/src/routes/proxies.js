@@ -587,7 +587,6 @@ function setupProxies(app) {
         changeOrigin: true,
         selfHandleResponse: true,
         pathRewrite: (_, req) => `/contas/${req.params.numero}/${item.path}`,
-
         onProxyReq(proxyReq, req) {
           const isGet = item.method === "get";
           proxyReq.method = item.method.toUpperCase();
@@ -621,7 +620,7 @@ function setupProxies(app) {
               proxyReq.write(valorRaw);
               return;
             }
-
+            
             const bodyData = JSON.stringify(newBody);
             proxyReq.setHeader("Content-Type", "application/json");
             proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));

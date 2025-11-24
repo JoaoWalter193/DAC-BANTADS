@@ -5,31 +5,10 @@ const CLIENTE = process.env.CLIENTE_SERVICE_URL;
 const CONTA = process.env.CONTA_SERVICE_URL;
 const GERENTE = process.env.GERENTE_SERVICE_URL;
 
-async function fetchCliente(cpf) {
-  const url = `${CLIENTE}/clientes/${encodeURIComponent(cpf)}`;
-  console.log("🔍 Fetching cliente from:", url);
-  const resp = await axiosInstance.get(url);
-  console.log("🔍 Cliente response status:", resp.status);
-  if (resp.status >= 400) throw { remote: resp };
-  return resp.data;
-}
-
-async function fetchConta(cpf) {
-  const url = `${CONTA}/contas/${encodeURIComponent(cpf)}`;
-  console.log("🔍 Fetching conta from:", url);
-  const resp = await axiosInstance.get(url);
-  console.log("🔍 Conta response status:", resp.status);
-  if (resp.status >= 400) throw { remote: resp };
-  return resp.data;
-}
-
-async function fetchGerente(cpf) {
-  const url = `${GERENTE}/gerentes/${encodeURIComponent(cpf)}`;
-  console.log("🔍 Fetching gerente from:", url);
-  const resp = await axiosInstance.get(url);
-  console.log("🔍 Gerente response status:", resp.status);
-  if (resp.status >= 400) throw { remote: resp };
-  return resp.data;
+if (!CLIENTE || !CONTA || !GERENTE) {
+  console.warn(
+    "⚠️ Composition (cliente): alguma SERVICE_URL não está definida."
+  );
 }
 
 const getClienteByCpf = async (req, res) => {
@@ -37,27 +16,65 @@ const getClienteByCpf = async (req, res) => {
   console.log("🔍 GET /clientes/:cpf - CPF:", cpf);
 
   try {
-    const cliente = await fetchCliente(cpf);
-    const conta = await fetchConta(cpf);
-    const gerente = await fetchGerente(conta.cpfGerente);
+    const clienteResp = await axiosInstance.get(
+      `${CLIENTE}/clientes/${encodeURIComponent(cpf)}`
+    );
+    if (clienteResp.status !== 200)
+      return propagateRemoteError(res, clienteResp);
+    const cliente = clienteResp.data;
 
-    return res.status(200).json({
+    let conta = null;
+    try {
+      const contaResp = await axiosInstance.get(
+        `${CONTA}/contas/${encodeURIComponent(cpf)}`
+      );
+      if (contaResp.status === 200) conta = contaResp.data;
+    } catch (e) {
+      if (e.response && e.response.status === 404) {
+        console.log(`🔍 Cliente ${cpf} sem conta.`);
+      } else {
+        throw e;
+      }
+    }
+
+    let gerente = null;
+    if (conta && conta.cpfGerente) {
+      try {
+        const gerenteResp = await axiosInstance.get(
+          `${GERENTE}/gerentes/${encodeURIComponent(conta.cpfGerente)}`
+        );
+        if (gerenteResp.status === 200) gerente = gerenteResp.data;
+      } catch (e) {
+        if (e.response && e.response.status === 404) {
+          console.warn(`⚠️ Gerente CPF ${conta.cpfGerente} não encontrado.`);
+        } else {
+          throw e;
+        }
+      }
+    }
+
+    const finalData = {
       cpf: cliente.cpf,
       nome: cliente.nome,
       email: cliente.email,
+      salario: cliente.salario,
       endereco: cliente.endereco,
+      cep: cliente.cep,
       cidade: cliente.cidade,
       estado: cliente.estado,
-      salario: cliente.salario,
-      conta: String(conta.numConta),
-      saldo: conta.saldo,
-      limite: conta.limite,
-      gerente: gerente.cpf,
-      gerente_nome: gerente.nome,
-      gerente_email: gerente.email,
-    });
+
+      conta: conta?.numConta || null,
+      saldo: conta?.saldo ?? 0,
+      limite: conta?.limite ?? 0,
+
+      gerente: conta?.cpfGerente || null,
+      nome_gerente: gerente?.nome || "Não Atribuído",
+      gerente_email: gerente?.email || null,
+    };
+
+    return res.status(200).json(finalData);
   } catch (err) {
-    console.error("❌ Erro em getClienteByCpf:", err);
+    console.error(`❌ Erro composition GET /clientes/${cpf}:`, err);
     if (err && err.remote) return propagateRemoteError(res, err.remote);
     return res.status(500).json({ mensagem: "Erro interno no API Gateway" });
   }
@@ -74,35 +91,130 @@ const getClientes = async (req, res, next) => {
   // Verificações de role já foram feitas no proxies.js, então só processamos
 
   if (filtro === "adm_relatorio_clientes") {
+    console.log("🔍 Processando composition para Relatório de Clientes (R16)");
     try {
-      const clientesUrl = `${CLIENTE}/clientes?filtro=adm_relatorio_clientes`;
+      // 1. Buscar Clientes (Dados base)
+      const clientesUrl = `${CLIENTE}/clientes?filtro=${filtro}`;
       console.log("🔍 Fetching clientes from:", clientesUrl);
       const clientesResp = await axiosInstance.get(clientesUrl);
       if (clientesResp.status >= 400)
         return propagateRemoteError(res, clientesResp);
 
       const clientes = clientesResp.data || [];
-      console.log("🔍 Clientes encontrados:", clientes.length);
 
-      const final = clientes
-        .map((c) => ({
-          cpf: c.cpf,
-          nome: c.nome,
-          email: c.email,
-          salario: c.salario ?? null,
-          endereco: c.endereco,
-          cidade: c.cidade,
-          estado: c.estado,
-        }))
-        .sort((a, b) => a.nome.localeCompare(b.nome));
+      if (clientes.length === 0) {
+        console.log("✅ Nenhum cliente encontrado, retornando lista vazia.");
+        return res.status(200).json([]);
+      }
+      console.log(`🔍 Clientes base encontrados: ${clientes.length}`);
 
-      return res.status(200).json(final);
+      // 2. Buscar Contas para todos os clientes em paralelo (Handle 404 gracefully)
+      const contasResponses = await Promise.all(
+        clientes.map((c) =>
+          axiosInstance
+            .get(`${CONTA}/contas/${encodeURIComponent(c.cpf)}`)
+            .catch((error) => {
+              if (error.response) return error.response;
+              throw error;
+            })
+        )
+      );
+
+      // Mapear Contas e Coletar CPFs de Gerentes Únicos
+      const contasMap = new Map();
+      const uniqueGerenteCpfs = new Set();
+
+      for (const r of contasResponses) {
+        if (r.status === 200) {
+          const conta = r.data;
+          contasMap.set(conta.cpfCliente, conta);
+          if (conta.cpfGerente) {
+            uniqueGerenteCpfs.add(conta.cpfGerente);
+          }
+        } else if (r.status >= 500 || (r.status >= 400 && r.status !== 404)) {
+          // Propaga erros críticos de servidor (>= 500)
+          console.error(
+            `❌ Erro crítico na busca de conta. Status: ${r.status}`
+          );
+          throw { remote: r };
+        }
+      }
+      console.log(
+        `🔍 Contas válidas encontradas: ${contasMap.size}. Gerentes únicos: ${uniqueGerenteCpfs.size}`
+      );
+
+      // 3. Buscar Dados dos Gerentes Únicos em paralelo (Handle 404 gracefully)
+      const gerenteCpfArray = Array.from(uniqueGerenteCpfs);
+      const gerentesResponses = await Promise.all(
+        gerenteCpfArray.map((cpf) =>
+          axiosInstance
+            .get(`${GERENTE}/gerentes/${encodeURIComponent(cpf)}`)
+            .catch((error) => {
+              if (error.response && error.response.status === 404) {
+                console.warn(`⚠️ Gerente CPF ${cpf} não encontrado (404).`);
+                // Retorna um objeto de fallback para ser mapeado
+                return {
+                  status: 404,
+                  data: { cpf: cpf, nome: "GERENTE NÃO ENCONTRADO" },
+                };
+              }
+              throw error;
+            })
+        )
+      );
+
+      // Mapear Gerentes por CPF
+      const gerentesMap = new Map();
+      for (const r of gerentesResponses) {
+        if (r.status === 200 || r.status === 404) {
+          const gerente = r.data;
+          gerentesMap.set(gerente.cpf, gerente);
+        } else if (r.status >= 500) {
+          // Propaga erros críticos
+          throw { remote: r };
+        }
+      }
+
+      // 4. Combinar e Formatar o Relatório (R16)
+      const finalReport = clientes.map((cliente) => {
+        const conta = contasMap.get(cliente.cpf);
+        const cpfGerente = conta?.cpfGerente;
+        const gerente = gerentesMap.get(cpfGerente);
+
+        return {
+          cpf: cliente.cpf,
+          nome: cliente.nome,
+          email: cliente.email,
+          salario: cliente.salario,
+
+          // Dados da Conta (R16) - USANDO CHAVE 'conta'
+          conta: conta?.numConta || null,
+          saldo: conta?.saldo ?? 0,
+          limite: conta?.limite ?? 0,
+
+          // Dados do Gerente (R16) - USANDO CHAVE 'gerente'
+          gerente: cpfGerente || null,
+          nome_gerente: gerente?.nome || "Não Atribuído",
+        };
+      });
+
+      // 5. Ordenar por Nome do Cliente (crescente) - Requisito R16
+      finalReport.sort((a, b) => a.nome.localeCompare(b.nome));
+
+      console.log("✅ Relatório de Clientes (R16) gerado com sucesso.");
+      return res.status(200).json(finalReport);
     } catch (err) {
-      console.error("❌ Erro em adm_relatorio_clientes:", err);
+      console.error(
+        "❌ Erro composition GET /clientes?filtro=adm_relatorio_clientes",
+        err
+      );
       if (err && err.remote) return propagateRemoteError(res, err.remote);
       return res.status(500).json({ mensagem: "Erro interno no API Gateway" });
     }
   }
+
+  // O restante da lógica para outros filtros foi mantido
+  // ... (melhores_clientes, sem filtro, para_aprovar, etc.)
 
   if (filtro === "melhores_clientes") {
     try {
@@ -116,25 +228,36 @@ const getClientes = async (req, res, next) => {
       const contas = contasResp.data || [];
       console.log("🔍 Melhores contas encontradas:", contas.length);
 
+      // Fetching cliente info for best clients
       const clientesResp = await Promise.all(
-        contas.map((c) => fetchCliente(c.cpfCliente))
+        contas.map((c) =>
+          axiosInstance
+            .get(`${CLIENTE}/clientes/${encodeURIComponent(c.cpfCliente)}`)
+            .catch((error) => {
+              if (error.response) return error.response;
+              throw error;
+            })
+        )
       );
 
-      const final = clientesResp.map((cliente, index) => {
-        const conta = contas[index];
-        return {
-          cpf: cliente.cpf,
-          nome: cliente.nome,
-          email: cliente.email,
-          salario: cliente.salario ?? null,
-          endereco: cliente.endereco,
-          cidade: cliente.cidade,
-          estado: cliente.estado,
-          saldo: conta.saldo,
-        };
-      });
+      const final = clientesResp
+        .filter((r) => r.status === 200)
+        .map((clienteResp, index) => {
+          const cliente = clienteResp.data;
+          const conta = contas[index];
+          return {
+            cpf: cliente.cpf,
+            nome: cliente.nome,
+            email: cliente.email,
+            salario: cliente.salario ?? null,
+            endereco: cliente.endereco,
+            cidade: cliente.cidade,
+            estado: cliente.estado,
+            saldo: conta.saldo,
+          };
+        });
 
-      console.log("🔍 Melhores clientes processados:", final);
+      console.log("🔍 Melhores clientes processados:", final.length);
       return res.status(200).json(final);
     } catch (err) {
       console.error("❌ Erro em melhores_clientes:", err);
@@ -157,10 +280,16 @@ const getClientes = async (req, res, next) => {
 
       for (const c of clientes) {
         try {
-          await fetchConta(c.cpf);
+          await axiosInstance.get(
+            `${CONTA}/contas/${encodeURIComponent(c.cpf)}`
+          );
           clientesComConta.push(c);
-        } catch (_) {
-          console.log(`🔍 Cliente ${c.cpf} sem conta, ignorando`);
+        } catch (e) {
+          if (e.response && e.response.status === 404) {
+            console.log(`🔍 Cliente ${c.cpf} sem conta, ignorando`);
+          } else {
+            throw e;
+          }
         }
       }
 
@@ -189,9 +318,8 @@ const getClientes = async (req, res, next) => {
       target: CLIENTE,
       changeOrigin: true,
     })(req, res, next);
-  }
+  } // Fallback para outros filtros
 
-  // Fallback para outros filtros
   console.log("🔍 Usando proxy direto para filtro desconhecido:", filtro);
   return createProxyMiddleware({
     target: CLIENTE,

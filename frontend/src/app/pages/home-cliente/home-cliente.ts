@@ -38,7 +38,7 @@ export class HomeCliente implements OnInit {
     nome: 'Carregando...',
     saldo: 0,
     conta: null,
-    cpf: null
+    cpf: null,
   };
 
   contaEncontrada: boolean = false;
@@ -81,63 +81,72 @@ export class HomeCliente implements OnInit {
     const sessao = JSON.parse(currentUserStr);
 
     if (!sessao.usuario) {
-        this.router.navigate(['/login']);
-        return;
+      this.router.navigate(['/login']);
+      return;
     }
 
-    if(sessao.usuario.nome) this.cliente.nome = sessao.usuario.nome;
-    else if(sessao.usuario.email) this.cliente.nome = sessao.usuario.email;
+    if (sessao.usuario.nome) this.cliente.nome = sessao.usuario.nome;
+    else if (sessao.usuario.email) this.cliente.nome = sessao.usuario.email;
 
     if (sessao.usuario.cpf) {
-        console.log('CPF recuperado da sessão:', sessao.usuario.cpf);
-        this.cliente.cpf = sessao.usuario.cpf;
-        this.buscarContaDoCliente(this.cliente.cpf);
+      console.log('CPF recuperado da sessão:', sessao.usuario.cpf);
+      this.cliente.cpf = sessao.usuario.cpf;
+      this.buscarContaDoCliente(this.cliente.cpf);
     } else {
-        console.warn('Usuário logado sem CPF na sessão:', sessao.usuario);
-        this.mostrarMensagem('Erro: Dados de login incompletos (CPF ausente).', 'erro');
+      console.warn('Usuário logado sem CPF na sessão:', sessao.usuario);
+      this.mostrarMensagem(
+        'Erro: Dados de login incompletos (CPF ausente).',
+        'erro'
+      );
     }
   }
 
   buscarContaDoCliente(cpf: string) {
-      this.contaService.buscarContaPorCpf(cpf).subscribe({
-          next: (dadosConta: any) => {
-              console.log('Conta encontrada:', dadosConta);
-              this.cliente.conta = dadosConta.id || dadosConta.numero || dadosConta.numeroConta || dadosConta.numConta;
-              this.cliente.saldo = dadosConta.saldo;
-              this.contaEncontrada = true;
+    this.contaService.buscarContaPorCpf(cpf).subscribe({
+      next: (dadosConta: any) => {
+        console.log('Conta encontrada:', dadosConta);
+        this.cliente.conta =
+          dadosConta.id ||
+          dadosConta.numero ||
+          dadosConta.numeroConta ||
+          dadosConta.numConta;
+        this.cliente.saldo = dadosConta.saldo;
+        this.contaEncontrada = true;
 
-              if (dadosConta.cliente && dadosConta.cliente.nome) {
-                  this.cliente.nome = dadosConta.cliente.nome;
-              }
-          },
-          error: (err: any) => {
-              console.error('Erro ao buscar conta:', err);
-              if (err.status === 404) {
-                  this.mostrarMensagem('Sua conta está em aprovação ou não existe.', 'erro');
-                  this.cliente.saldo = 0;
-                  this.contaEncontrada = false;
-              } else {
-                  this.mostrarMensagem('Erro de conexão ao buscar conta.', 'erro');
-              }
-          }
-      });
+        if (dadosConta.cliente && dadosConta.cliente.nome) {
+          this.cliente.nome = dadosConta.cliente.nome;
+        }
+      },
+      error: (err: any) => {
+        console.error('Erro ao buscar conta:', err);
+        if (err.status === 404) {
+          this.mostrarMensagem(
+            'Sua conta está em aprovação ou não existe.',
+            'erro'
+          );
+          this.cliente.saldo = 0;
+          this.contaEncontrada = false;
+        } else {
+          this.mostrarMensagem('Erro de conexão ao buscar conta.', 'erro');
+        }
+      },
+    });
   }
 
   atualizarSaldo() {
     if (!this.cliente.conta) return;
     this.contaService.obterSaldo(this.cliente.conta).subscribe({
-      next: (res: any) => this.cliente.saldo = res.saldo,
-      error: (err: any) => console.error('Erro ao atualizar saldo', err)
+      next: (res: any) => (this.cliente.saldo = res.saldo),
+      error: (err: any) => console.error('Erro ao atualizar saldo', err),
     });
   }
 
-
   validarOperacao(): boolean {
-      if (!this.contaEncontrada || !this.cliente.conta) {
-          this.mostrarMensagem('Conta indisponível.', 'erro');
-          return false;
-      }
-      return true;
+    if (!this.contaEncontrada || !this.cliente.conta) {
+      this.mostrarMensagem('Conta indisponível.', 'erro');
+      return false;
+    }
+    return true;
   }
 
   expandirOperacao(
@@ -183,16 +192,18 @@ export class HomeCliente implements OnInit {
        return;
     }
 
-    this.contaService.depositar(this.cliente.conta, this.valorDeposito).subscribe({
-      next: (res: any) => {
-        this.mostrarMensagem('Depósito realizado com sucesso!', 'sucesso');
-        this.valorDeposito = null;
-        this.atualizarSaldo();
-      },
-      error: (err: any) => {
-        this.mostrarMensagem('Erro ao realizar depósito.', 'erro');
-      }
-    });
+    this.contaService
+      .depositar(this.cliente.conta, this.valorDeposito)
+      .subscribe({
+        next: (res: any) => {
+          this.mostrarMensagem('Depósito realizado com sucesso!', 'sucesso');
+          this.valorDeposito = null;
+          this.atualizarSaldo();
+        },
+        error: (err: any) => {
+          this.mostrarMensagem('Erro ao realizar depósito.', 'erro');
+        },
+      });
   }
 
   realizarTransferencia(): void {
@@ -202,51 +213,56 @@ export class HomeCliente implements OnInit {
       return;
     }
 
-    this.contaService.transferir(
-      this.cliente.conta,
-      this.contaDestino,
-      this.valorTransferencia
-    ).subscribe({
-      next: (res: any) => {
-        this.mostrarMensagem('Transferência realizada!', 'sucesso');
-        this.valorTransferencia = null;
-        this.contaDestino = null;
-        this.atualizarSaldo();
-      },
-      error: (err: any) => {
-        this.mostrarMensagem('Erro na transferência.', 'erro');
-      }
-    });
+    this.contaService
+      .transferir(
+        this.cliente.conta,
+        this.contaDestino,
+        this.valorTransferencia
+      )
+      .subscribe({
+        next: (res: any) => {
+          this.mostrarMensagem('Transferência realizada!', 'sucesso');
+          this.valorTransferencia = null;
+          this.contaDestino = null;
+          this.atualizarSaldo();
+        },
+        error: (err: any) => {
+          this.mostrarMensagem('Erro na transferência.', 'erro');
+        },
+      });
   }
 
   gerarExtrato(): void {
     if (this.formExtrato.invalid) {
-        this.mostrarMensagem('Selecione as datas.', 'erro');
-        return;
+      this.mostrarMensagem('Selecione as datas.', 'erro');
+      return;
     }
 
     const { dataInicio, dataFim } = this.formExtrato.value;
 
-    this.contaService.obterExtrato(this.cliente.conta, dataInicio, dataFim).subscribe({
+    this.contaService
+      .obterExtrato(this.cliente.conta, dataInicio, dataFim)
+      .subscribe({
         next: (dadosApi: any) => {
-            const dadosCompletos = {
-                ...dadosApi,
-                periodo: {
-                    inicio: dataInicio,
-                    fim: dataFim
-                }
-            };
+          const dadosCompletos = {
+            ...dadosApi,
+            periodo: {
+              inicio: dataInicio,
+              fim: dataFim,
+            },
+          };
 
-            this.dialog.open(ExtratoComponent, {
-                width: '800px',
-                data: {
-                    extrato: dadosCompletos,
-                    nomeCliente: this.cliente.nome
-                }
-            });
+          this.dialog.open(ExtratoComponent, {
+            width: '800px',
+            data: {
+              extrato: dadosCompletos,
+              nomeCliente: this.cliente.nome,
+            },
+          });
         },
-        error: (err: any) => this.mostrarMensagem('Erro ao obter extrato.', 'erro')
-    });
+        error: (err: any) =>
+          this.mostrarMensagem('Erro ao obter extrato.', 'erro'),
+      });
   }
 
   private mostrarMensagem(texto: string, tipo: 'sucesso' | 'erro') {

@@ -40,7 +40,7 @@ public class AdminUserConfig implements CommandLineRunner {
 
                 new UserSeedData("ger1@bantads.com.br", "tads", Role.GERENTE, "98574307084"),
                 new UserSeedData("ger2@bantads.com.br", "tads", Role.GERENTE, "64065268052"),
-                new UserSeedData("ger1@bantads.com.br", "tads", Role.GERENTE, "23862179060"));
+                new UserSeedData("ger3@bantads.com.br", "tads", Role.GERENTE, "23862179060"));
 
         initialUsers.forEach(this::processarUsuario);
     }

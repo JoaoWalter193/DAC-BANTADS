@@ -31,55 +31,56 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @Tag(name = "Login", description = "Endpoints para autenticação de usuários (cliente, gerente e admin)")
 public class TokenController {
-    private final JwtEncoder jwtEncoder;
-    private final UsuarioRepository usuarioRepository;
-    private PasswordEncoder passwordEncoder;
+        private final JwtEncoder jwtEncoder;
+        private final UsuarioRepository usuarioRepository;
+        private PasswordEncoder passwordEncoder;
 
-    public TokenController(JwtEncoder jwtEncoder, UsuarioRepository usuarioRepository,
-            PasswordEncoder passwordEncoder) {
-        this.jwtEncoder = jwtEncoder;
-        this.usuarioRepository = usuarioRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    @Operation(summary = "Efetua o login do usuário", description = "Autentica o usuário e retorna um token")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Login efetuado com sucesso"),
-            @ApiResponse(responseCode = "401", description = "Usuário e/ou senha inválidos", content = @Content)
-    })
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
-
-        UsuarioEntity user = usuarioRepository.findByEmail(loginRequest.email())
-                .orElseThrow(() -> new BadCredentialsException("Usuário ou senha inválidos."));
-
-        if (!passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
-            throw new BadCredentialsException("Usuário ou senha inválidos.");
+        public TokenController(JwtEncoder jwtEncoder, UsuarioRepository usuarioRepository,
+                        PasswordEncoder passwordEncoder) {
+                this.jwtEncoder = jwtEncoder;
+                this.usuarioRepository = usuarioRepository;
+                this.passwordEncoder = passwordEncoder;
         }
 
-        var now = Instant.now();
-        var scopes = user.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(" "));
+        @Operation(summary = "Efetua o login do usuário", description = "Autentica o usuário e retorna um token")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Login efetuado com sucesso"),
+                        @ApiResponse(responseCode = "401", description = "Usuário e/ou senha inválidos", content = @Content)
+        })
+        @PostMapping("/login")
+        public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
 
-        var claims = JwtClaimsSet.builder()
-                .issuer("mybackend")
-                .subject(user.getId())
-                .issuedAt(now)
-                .expiresAt(now.plusSeconds(3600L))
-                .claim("cpf", user.getCpf())
-                .claim("scope", scopes)
-                .build();
+                UsuarioEntity user = usuarioRepository.findByEmail(loginRequest.email())
+                                .orElseThrow(() -> new BadCredentialsException("Usuário ou senha inválidos."));
 
-        var jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-        String roleUsuario = user.getRoles().stream()
-                .findFirst()
-                .map(Role::name)
-                .orElse("INDEFINIDO");
+                if (!passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
+                        throw new BadCredentialsException("Usuário ou senha inválidos.");
+                }
 
-        var usuarioResponse = new UsuarioResponse(user.getId(), user.getEmail());
+                var now = Instant.now();
+                var scopes = user.getAuthorities().stream()
+                                .map(GrantedAuthority::getAuthority)
+                                .collect(Collectors.joining(" "));
 
-        return ResponseEntity.ok(new LoginResponse(jwtValue, "Bearer", roleUsuario, usuarioResponse));
-    }
+                var claims = JwtClaimsSet.builder()
+                                .issuer("mybackend")
+                                .subject(user.getId())
+                                .issuedAt(now)
+                                .expiresAt(now.plusSeconds(3600L))
+                                .claim("cpf", user.getCpf())
+                                .claim("scope", scopes)
+                                .build();
+
+                var jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+                String roleUsuario = user.getRoles().stream()
+                                .findFirst()
+                                .map(Role::name)
+                                .orElse("INDEFINIDO");
+
+                var usuarioResponse = new UsuarioResponse(user.getId(), user.getEmail(), user.getCpf());
+
+                return ResponseEntity
+                                .ok(new LoginResponse(jwtValue, "Bearer", roleUsuario, usuarioResponse));
+        }
 
 }

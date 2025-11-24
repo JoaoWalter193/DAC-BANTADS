@@ -26,15 +26,14 @@ export class ContaService {
 
     return new HttpHeaders({
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     });
   }
-
 
   // @GetMapping("/{numConta}/saldo")
   obterSaldo(numero: string): Observable<ContaSaldo> {
     return this.http.get<ContaSaldo>(`${this.api}/${numero}/saldo`, {
-      headers: this.getHeaders()
+      headers: this.getHeaders(),
     });
   }
 
@@ -57,23 +56,25 @@ export class ContaService {
   }
 
   // @PutMapping("/{numConta}/transferir")
-  transferir(numeroOrigem: string, destino: string, valor: number): Observable<any> {
+  transferir(
+    numeroOrigem: string,
+    destino: string,
+    valor: number
+  ): Observable<any> {
     const body = {
       contaDestino: destino,
-      valor: valor
+      valor: valor,
     };
-    return this.http.put<any>(
-      `${this.api}/${numeroOrigem}/transferir`,
-      body,
-      { headers: this.getHeaders() }
-    );
+    return this.http.put<any>(`${this.api}/${numeroOrigem}/transferir`, body, {
+      headers: this.getHeaders(),
+    });
   }
 
   // @GetMapping("/{numConta}/extrato")
   obterExtrato(numero: string, inicio?: string, fim?: string): Observable<any> {
     let url = `${this.api}/${numero}/extrato`;
     if (inicio && fim) {
-        url += `?inicio=${inicio}&fim=${fim}`;
+      url += `?inicio=${inicio}&fim=${fim}`;
     }
     return this.http.get<any>(url, { headers: this.getHeaders() });
   }
@@ -81,7 +82,7 @@ export class ContaService {
   // @GetMapping("/{cpf}")
   buscarContaPorCpf(cpf: string): Observable<any> {
     return this.http.get<any>(`${this.api}/${cpf}`, {
-      headers: this.getHeaders()
+      headers: this.getHeaders(),
     });
   }
 }
