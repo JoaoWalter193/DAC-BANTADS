@@ -9,6 +9,8 @@ const {
   salvarEmailParaLogoutPorId,
   removerEmailDoStorage,
   removerEmailDoStoragePorId,
+  invalidateToken,
+  getTokenFromRequest,
 } = require("../middlewares/verifyJWT");
 const {
   getClienteByCpf,
@@ -238,6 +240,14 @@ function setupProxies(app) {
       role: user.role,
     });
 
+    const token = getTokenFromRequest(req);
+    if (token) {
+      invalidateToken(token);
+      console.log("✅ Token invalidado na blacklist");
+    } else {
+      console.log("⚠️ Nenhum token encontrado para invalidar");
+    }
+
     if (user.cpf) {
       removerEmailDoStorage(user.cpf);
     }
@@ -252,6 +262,7 @@ function setupProxies(app) {
       mensagem: "Logout efetuado com sucesso",
     });
   });
+
   app.get("/clientes/:cpf", verifyJWT, getClienteByCpf);
 
   app.get(
@@ -450,12 +461,163 @@ function setupProxies(app) {
     }
   });
 
-app.post(
-  "/clientes/:cpf/aprovar",
-  verifyJWT,
-  requireRoles(["GERENTE", "ADMINISTRADOR"]),
-  createProxyMiddleware(proxyOptions(SAGA))
-);
+  app.put("/clientes/:cpf", verifyJWT, async (req, res) => {
+    const { cpf } = req.params;
+    const dadosAtualizados = req.body;
+
+    console.log("🔍 === INICIANDO ALTERAÇÃO DE PERFIL ===");
+    console.log("🔍 CPF:", cpf);
+    console.log(
+      "🔍 Dados atualizados recebidos:",
+      JSON.stringify(dadosAtualizados, null, 2)
+    );
+
+    try {
+      // 1. Primeiro buscar os dados originais do cliente
+      console.log("🔍 Buscando dados originais do cliente...");
+      const clienteOriginalResponse = await axiosInstance.get(
+        `${CLIENTE}clientes/${encodeURIComponent(cpf)}`,
+        {
+          headers: {
+            Authorization: req.headers["authorization"],
+          },
+          timeout: 5000,
+        }
+      );
+
+      if (clienteOriginalResponse.status !== 200) {
+        console.log(
+          "❌ Erro ao buscar dados originais do cliente:",
+          clienteOriginalResponse.status
+        );
+        return res
+          .status(clienteOriginalResponse.status)
+          .json(clienteOriginalResponse.data);
+      }
+
+      const dadosOriginais = clienteOriginalResponse.data;
+      console.log(
+        "🔍 Dados originais encontrados:",
+        JSON.stringify(dadosOriginais, null, 2)
+      );
+
+      // 2. Preparar o payload para o SAGA no formato esperado
+      const sagaPayload = {
+        dadosOriginais: {
+          cpf: dadosOriginais.cpf,
+          nome: dadosOriginais.nome,
+          email: dadosOriginais.email,
+          salario: parseFloat(dadosOriginais.salario),
+          endereco: dadosOriginais.endereco,
+          cep: dadosOriginais.cep,
+          cidade: dadosOriginais.cidade,
+          estado: dadosOriginais.estado,
+        },
+        dadosAtualizados: {
+          cpf: cpf, // Mantém o mesmo CPF
+          nome: dadosAtualizados.nome || dadosOriginais.nome,
+          email: dadosAtualizados.email || dadosOriginais.email,
+          salario: parseFloat(
+            dadosAtualizados.salario || dadosOriginais.salario
+          ),
+          endereco: dadosAtualizados.endereco || dadosOriginais.endereco,
+          cep: dadosAtualizados.cep || dadosOriginais.cep,
+          cidade: dadosAtualizados.cidade || dadosOriginais.cidade,
+          estado: dadosAtualizados.estado || dadosOriginais.estado,
+        },
+      };
+
+      console.log(
+        "🔍 Payload para SAGA:",
+        JSON.stringify(sagaPayload, null, 2)
+      );
+
+      // 3. Chamar o SAGA para processar a alteração
+      console.log("🔍 Chamando SAGA para alteração de perfil...");
+      const sagaResponse = await axiosInstance.post(
+        `${SAGA}alterar-perfil`,
+        sagaPayload,
+        {
+          headers: {
+            Authorization: req.headers["authorization"],
+            "Content-Type": "application/json",
+          },
+          timeout: 10000,
+        }
+      );
+
+      console.log(
+        "🔍 Resposta do SAGA:",
+        sagaResponse.status,
+        sagaResponse.data
+      );
+
+      // 4. Buscar os dados atualizados para retornar
+      await sleep(1000); // Aguardar a consistência dos dados
+
+      console.log("🔍 Buscando dados atualizados do cliente...");
+      const clienteAtualizadoResponse = await axiosInstance.get(
+        `${CLIENTE}clientes/${encodeURIComponent(cpf)}`,
+        {
+          headers: {
+            Authorization: req.headers["authorization"],
+          },
+          timeout: 5000,
+        }
+      );
+
+      if (clienteAtualizadoResponse.status !== 200) {
+        console.log(
+          "❌ Erro ao buscar dados atualizados:",
+          clienteAtualizadoResponse.status
+        );
+        return res
+          .status(clienteAtualizadoResponse.status)
+          .json(clienteAtualizadoResponse.data);
+      }
+
+      const clienteAtualizado = clienteAtualizadoResponse.data;
+
+      // 5. Retornar resposta no formato esperado pelo teste
+      const responseData = {
+        cpf: clienteAtualizado.cpf,
+        nome: clienteAtualizado.nome,
+        salario: parseFloat(clienteAtualizado.salario),
+      };
+
+      console.log("✅ Alteração de perfil concluída com sucesso");
+      console.log("🔍 Dados retornados:", responseData);
+
+      return res.status(200).json(responseData);
+    } catch (error) {
+      console.error("❌ Erro na alteração de perfil:", error.message);
+
+      if (error.response) {
+        console.log("🔍 Erro response - Status:", error.response.status);
+        console.log("🔍 Erro response - Data:", error.response.data);
+        return res.status(error.response.status).json(error.response.data);
+      } else if (error.request) {
+        console.error("❌ Sem resposta do serviço");
+        return res.status(503).json({
+          erro: "Serviço indisponível",
+          detalhes: error.message,
+        });
+      } else {
+        console.error("❌ Erro interno:", error.message);
+        return res.status(500).json({
+          erro: "Erro interno do servidor",
+          detalhes: error.message,
+        });
+      }
+    }
+  });
+
+  app.post(
+    "/clientes/:cpf/aprovar",
+    verifyJWT,
+    requireRoles(["GERENTE", "ADMINISTRADOR"]),
+    createProxyMiddleware(proxyOptions(SAGA))
+  );
   app.post(
     "/clientes/:cpf/rejeitar",
     verifyJWT,
@@ -527,103 +689,176 @@ app.post(
       changeOrigin: true,
       pathRewrite: (path, req) => `/contas/${req.params.id}`,
       onProxyReq: (proxyReq) => {
-        proxyReq.method = "GET";
         proxyReq.removeHeader("Content-Type");
         proxyReq.removeHeader("Content-Length");
       },
     })
   );
 
-  const contaActions = [
-    { path: "saldo", method: "get" },
-    { path: "extrato", method: "get" },
-    { path: "depositar", method: "put" },
-    { path: "sacar", method: "put" },
-    { path: "transferir", method: "put" },
-  ];
+  // Rota GET /contas/:numero/saldo
+  app.get(
+    "/contas/:numero/saldo",
+    verifyJWT,
+    createProxyMiddleware({
+      target: CONTA,
+      changeOrigin: true,
+      pathRewrite: (path, req) => `/contas/${req.params.numero}/saldo`,
+      onProxyReq: (proxyReq) => {
+        proxyReq.removeHeader("Content-Type");
+        proxyReq.removeHeader("Content-Length");
+      },
+    })
+  );
 
-  contaActions.forEach((item) => {
-    app[item.method](
-      `/contas/:numero/${item.path}`,
-      verifyJWT,
-      createProxyMiddleware({
-        target: CONTA,
-        changeOrigin: true,
-        selfHandleResponse: true,
-        pathRewrite: (_, req) => `/contas/${req.params.numero}/${item.path}`,
-        onProxyReq(proxyReq, req) {
-          const isGet = item.method === "get";
-          proxyReq.method = item.method.toUpperCase();
+  // Rota GET /contas/:numero/extrato
+  app.get(
+    "/contas/:numero/extrato",
+    verifyJWT,
+    createProxyMiddleware({
+      target: CONTA,
+      changeOrigin: true,
+      pathRewrite: (path, req) => `/contas/${req.params.numero}/extrato`,
+      onProxyReq: (proxyReq) => {
+        proxyReq.removeHeader("Content-Type");
+        proxyReq.removeHeader("Content-Length");
+      },
+    })
+  );
 
-          if (isGet) {
-            proxyReq.removeHeader("Content-Type");
-            proxyReq.removeHeader("Content-Length");
-            return;
-          }
+  // Rota PUT /contas/:numero/depositar
+  app.put(
+    "/contas/:numero/depositar",
+    verifyJWT,
+    createProxyMiddleware({
+      target: CONTA,
+      changeOrigin: true,
+      pathRewrite: (path, req) => `/contas/${req.params.numero}/depositar`,
+      onProxyReq(proxyReq, req) {
+        console.log("🔍 PUT /contas/:numero/depositar");
+        console.log("🔍 Número conta:", req.params.numero);
+        console.log("🔍 Body original:", req.body);
 
-          if (req.body) {
-            let newBody = { ...req.body };
+        if (req.body) {
+          // Para depósito, envia apenas o valor como string
+          const valor = String(req.body.valor || req.body);
+          console.log("🔍 Enviando valor:", valor);
 
-            if (item.path === "transferir") {
-              const destino =
-                newBody.contaDestino || newBody.destino || newBody.numeroConta;
-              if (destino) {
-                newBody = {
-                  valor: newBody.valor,
-                  numeroConta: destino,
-                  destino: destino,
-                  contaDestino: destino,
-                };
-              }
-            }
+          proxyReq.setHeader("Content-Type", "application/json");
+          proxyReq.setHeader("Content-Length", Buffer.byteLength(valor));
+          proxyReq.write(valor);
+        }
+      },
+    })
+  );
 
-            if (item.path === "depositar" || item.path === "sacar") {
-              const valorRaw = String(newBody.valor);
-              proxyReq.setHeader("Content-Type", "application/json");
-              proxyReq.setHeader("Content-Length", Buffer.byteLength(valorRaw));
-              proxyReq.write(valorRaw);
-              return;
-            }
+  // Rota PUT /contas/:numero/sacar
+  app.put(
+    "/contas/:numero/sacar",
+    verifyJWT,
+    createProxyMiddleware({
+      target: CONTA,
+      changeOrigin: true,
+      pathRewrite: (path, req) => `/contas/${req.params.numero}/sacar`,
+      onProxyReq(proxyReq, req) {
+        console.log("🔍 PUT /contas/:numero/sacar");
+        console.log("🔍 Número conta:", req.params.numero);
+        console.log("🔍 Body original:", req.body);
 
-            const bodyData = JSON.stringify(newBody);
-            proxyReq.setHeader("Content-Type", "application/json");
-            proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
-            proxyReq.write(bodyData);
-          }
-        },
+        if (req.body) {
+          // Para saque, envia apenas o valor como string
+          const valor = String(req.body.valor || req.body);
+          console.log("🔍 Enviando valor:", valor);
 
-        onProxyRes: async (proxyRes, req, res) => {
-          let body = "";
-          proxyRes.on("data", (chunk) => (body += chunk.toString()));
-          proxyRes.on("end", () => {
-            let data = {};
-            try {
-              data = body ? JSON.parse(body) : {};
-            } catch {
-              data = { mensagem: body.toString() };
-            }
+          proxyReq.setHeader("Content-Type", "application/json");
+          proxyReq.setHeader("Content-Length", Buffer.byteLength(valor));
+          proxyReq.write(valor);
+        }
+      },
+    })
+  );
 
-            if (proxyRes.statusCode !== 200)
+  // Rota PUT /contas/:numero/transferir - VERSÃO FINAL CORRIGIDA
+  app.put(
+    "/contas/:numero/transferir",
+    verifyJWT,
+    createProxyMiddleware({
+      target: CONTA,
+      changeOrigin: true,
+      selfHandleResponse: true, // ✅ Importante: nós vamos tratar a resposta
+      pathRewrite: (path, req) => `/contas/${req.params.numero}/transferir`,
+      onProxyReq(proxyReq, req) {
+        console.log("🔍 PUT /contas/:numero/transferir");
+        console.log("🔍 Número conta origem:", req.params.numero);
+        console.log("🔍 Body original:", req.body);
+
+        if (req.body) {
+          const transferData = {
+            numeroConta:
+              req.body.destino || req.body.numeroConta || req.body.contaDestino,
+            valor: parseFloat(req.body.valor),
+          };
+
+          console.log("🔍 Dados mapeados para transferência:", transferData);
+
+          const bodyData = JSON.stringify(transferData);
+          proxyReq.setHeader("Content-Type", "application/json");
+          proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
+          proxyReq.write(bodyData);
+        }
+      },
+      onProxyRes: async (proxyRes, req, res) => {
+        let body = "";
+        proxyRes.on("data", (chunk) => (body += chunk.toString()));
+
+        proxyRes.on("end", () => {
+          console.log(`🔍 Resposta transferir (${proxyRes.statusCode}):`, body);
+
+          // ✅ CONFIGURAR HEADERS CORS APENAS UMA VEZ
+          res.header("Access-Control-Allow-Origin", "http://localhost");
+          res.header(
+            "Access-Control-Allow-Methods",
+            "GET,POST,PUT,DELETE,OPTIONS"
+          );
+          res.header(
+            "Access-Control-Allow-Headers",
+            "Content-Type, Authorization"
+          );
+          res.header("Access-Control-Allow-Credentials", "true");
+
+          try {
+            const data = body ? JSON.parse(body) : {};
+
+            if (proxyRes.statusCode !== 200) {
               return res.status(proxyRes.statusCode).json(data);
-
-            const numeroConta = req.params.numero;
-            if (item.path === "saldo") {
-              return res.status(200).json({
-                cliente: data?.cpfCliente,
-                conta: numeroConta,
-                saldo: data?.saldo,
-              });
             }
-            return res.status(200).json({
+
+            const response = {
               ...data,
-              conta: numeroConta,
-              mensagem: "Operação realizada com sucesso",
+              conta: parseInt(req.params.numero, 10),
+              mensagem: data.mensagem || "Transferência realizada com sucesso",
+            };
+
+            // ✅ ENVIAR RESPOSTA APENAS UMA VEZ
+            return res.status(200).json(response);
+          } catch (e) {
+            console.error("❌ Erro ao processar resposta da transferência:", e);
+            // ✅ Se der erro no parse, retornar resposta simples
+            return res.status(200).json({
+              mensagem: "Transferência realizada com sucesso",
+              conta: parseInt(req.params.numero, 10),
             });
-          });
-        },
-      })
-    );
-  });
+          }
+        });
+      },
+      onError: (err, req, res) => {
+        console.error("❌ Erro transferir:", err.message);
+        res.status(502).json({
+          error: "Serviço indisponível",
+          details: err.message,
+        });
+      },
+    })
+  );
 
   app.get(
     "/gerentes",

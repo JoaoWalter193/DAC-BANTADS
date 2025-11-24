@@ -42,7 +42,7 @@ public class ContaController {
     }
 
     @PutMapping("/{numConta}/transferir")
-    public ResponseEntity<String> transferirDinheiro(@PathVariable String numConta, @RequestBody TransferirDTO data) {
+    public ResponseEntity<MensagemDTO> transferirDinheiro(@PathVariable String numConta, @RequestBody TransferirDTO data) {
         return contaCUDService.transferir(numConta, data);
     }
 

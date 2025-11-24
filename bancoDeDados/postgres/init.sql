@@ -125,14 +125,14 @@ INSERT INTO dbcliente.cliente (cpf, nome, email, senha, salario, endereco, cep, 
 
 INSERT INTO dbContaCUD.conta (cpfCliente, nomeCliente, numConta, saldo, limite, cpfGerente, nomeGerente, dataCriacao, ativa) VALUES
 ('12912861012', 'Catharyna', 1291, 800.00, 5000.00, '98574307084', 'Geniéve', '2000-01-01', true),
-('09506382000', 'Cleuddônio', 950, -10000.00, 10000.00, '23862179060', 'Gyândula', '1990-10-10', true),
+('09506382000', 'Cleuddônio', 950, -10000.00, 10000.00, '64065268052', 'Godophredo', '1990-10-10', true),
 ('85733854057', 'Catianna', 8573, -1000.00, 1500.00, '23862179060', 'Gyândula', '2012-12-12', true),
 ('58872160006', 'Cutardo', 5887, 150000.00, 250.00, '98574307084', 'Geniéve', '2022-02-22', true),
 ('76179646090', 'Coândrya', 7617, 1500.00, 750.00, '64065268052', 'Godophredo', '2025-01-01', true);
 
 INSERT INTO dbContaR.conta (cpfCliente, nomeCliente, numConta, saldo, limite, cpfGerente, nomeGerente, dataCriacao, ativa) VALUES
 ('12912861012', 'Catharyna', 1291, 800.00, 5000.00, '98574307084', 'Geniéve', '2000-01-01',true),
-('09506382000', 'Cleuddônio', 950, -10000.00, 10000.00, '23862179060', 'Gyândula', '1990-10-10',true),
+('09506382000', 'Cleuddônio', 950, -10000.00, 10000.00, '64065268052', 'Godophredo', '1990-10-10',true),
 ('85733854057', 'Catianna', 8573, -1000.00, 1500.00, '23862179060', 'Gyândula', '2012-12-12',true),
 ('58872160006', 'Cutardo', 5887, 150000.00, 250.00, '98574307084', 'Geniéve', '2022-02-22',true),
 ('76179646090', 'Coândrya', 7617, 1500.00, 750.00, '64065268052', 'Godophredo', '2025-01-01',true);

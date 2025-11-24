@@ -8,10 +8,8 @@ const PUBLIC_KEY = fs.readFileSync(
   "utf8"
 );
 
-// ✅ DEFINIR O MAPA AQUI (fora das funções)
 const emailStorage = new Map();
 
-// ✅ NOVO: Token blacklist para logout
 const tokenBlacklist = new Set();
 
 function verifyJWT(req, res, next) {
@@ -46,7 +44,6 @@ function verifyJWT(req, res, next) {
     return res.status(401).json({ mensagem: "O usuário não está logado" });
   }
 
-  // ✅ NOVA VERIFICAÇÃO: Check token blacklist
   if (tokenBlacklist.has(token)) {
     console.log("❌ VerifyJWT - Token invalidado via logout");
     return res.status(401).json({ mensagem: "Token inválido - logout realizado" });
@@ -121,13 +118,11 @@ function verifyJWT(req, res, next) {
   }
 }
 
-// ✅ NOVA FUNÇÃO: Adicionar token à blacklist
 function invalidateToken(token) {
   if (token) {
     tokenBlacklist.add(token);
     console.log("✅ Token adicionado à blacklist:", token.substring(0, 10) + "...");
 
-    // Opcional: Limpar token após expiração
     try {
       const decoded = jwt.decode(token);
       if (decoded && decoded.exp) {
@@ -145,7 +140,6 @@ function invalidateToken(token) {
   }
 }
 
-// ✅ NOVA FUNÇÃO: Obter token do request
 function getTokenFromRequest(req) {
   const authHeader = req.headers["authorization"] || req.headers["Authorization"];
   if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -161,7 +155,6 @@ function salvarEmailParaLogout(cpf, email) {
   }
 }
 
-// ✅ FUNÇÃO PARA SALVAR POR ID TAMBÉM (caso não tenha CPF)
 function salvarEmailParaLogoutPorId(id, email) {
   if (id && email) {
     emailStorage.set(id, email);
@@ -184,7 +177,6 @@ function removerEmailDoStorage(cpf) {
   return "";
 }
 
-// ✅ FUNÇÃO PARA REMOVER POR ID TAMBÉM
 function removerEmailDoStoragePorId(id) {
   if (id && emailStorage.has(id)) {
     const emailRemovido = emailStorage.get(id);

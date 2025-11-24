@@ -134,7 +134,7 @@ public class ContaCUDService {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
-    public ResponseEntity<String> transferir (String numConta, TransferirDTO data){
+    public ResponseEntity<MensagemDTO> transferir (String numConta, TransferirDTO data){
         Optional<ContaR> contaVerificaDono = contaRRepository.findByNumConta(numConta);
         Optional<ContaR> contaVerificaRecebedor = contaRRepository.findByNumConta(data.numeroConta());
         if (contaVerificaDono.isPresent() && contaVerificaRecebedor.isPresent()){
@@ -156,7 +156,7 @@ public class ContaCUDService {
 
 
 
-            return ResponseEntity.ok("Saldo transferido com sucesso");
+            return ResponseEntity.ok(new MensagemDTO("Saldo transferido com sucesso"));
         }
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

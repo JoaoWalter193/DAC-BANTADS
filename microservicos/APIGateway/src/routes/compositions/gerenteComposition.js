@@ -12,7 +12,7 @@ if (!CLIENTE || !CONTA || !GERENTE) {
 }
 
 // Caminho de listagem dos gerentes no microserviço
-const GERENTES_LIST_PATH = "/gerentes/lista";
+const GERENTES_LIST_PATH = "gerentes/lista";
 
 // Middleware para GET /gerentes
 const getGerentes = async (req, res, next) => {
@@ -60,7 +60,7 @@ const getGerentes = async (req, res, next) => {
       const gerentesMap = new Map(gerentes.map((g) => [g.cpf, g]));
 
       // 2. Buscar todos os clientes (usando o endpoint básico do Cliente)
-      const clientesResp = await axiosInstance.get(`${CLIENTE}/clientes`);
+      const clientesResp = await axiosInstance.get(`${CLIENTE}clientes`);
       if (clientesResp.status >= 400)
         return propagateRemoteError(res, clientesResp);
 
@@ -71,7 +71,7 @@ const getGerentes = async (req, res, next) => {
       const contasResponses = await Promise.all(
         clientes.map((c) =>
           axiosInstance
-            .get(`${CONTA}/contas/${encodeURIComponent(c.cpf)}`)
+            .get(`${CONTA}contas/${encodeURIComponent(c.cpf)}`)
             .catch((error) => {
               // Trata o erro 404 (conta não encontrada) como esperado, retornando o objeto de resposta
               if (error.response && error.response.status === 404)
@@ -145,7 +145,7 @@ const getGerentes = async (req, res, next) => {
 
       // CORREÇÃO: Usar o endpoint básico '/clientes' para evitar o bug de filtro
       // Se este endpoint não retornar a lista básica, use um filtro específico para lista simples.
-      const clientesResp = await axiosInstance.get(`${CLIENTE}/clientes`);
+      const clientesResp = await axiosInstance.get(`${CLIENTE}clientes`);
       if (clientesResp.status >= 400)
         return propagateRemoteError(res, clientesResp);
 
@@ -157,7 +157,7 @@ const getGerentes = async (req, res, next) => {
       const contasResponses = await Promise.all(
         clientes.map((c) =>
           axiosInstance
-            .get(`${CONTA}/contas/${encodeURIComponent(c.cpf)}`)
+            .get(`${CONTA}contas/${encodeURIComponent(c.cpf)}`)
             .catch((error) => {
               // Se o erro tiver uma resposta HTTP (ex: 404), retornamos o objeto de resposta.
               // Se for um erro de rede/timeout, re-lançamos.
@@ -249,7 +249,7 @@ const getClientesDoGerente = async (req, res, next) => {
 
   try {
     const gerenteResp = await axiosInstance.get(
-      `${GERENTE}/gerentes/${cpfGerente}`
+      `${GERENTE}gerentes/${cpfGerente}`
     );
     if (gerenteResp.status >= 400)
       return propagateRemoteError(res, gerenteResp);
@@ -257,7 +257,7 @@ const getClientesDoGerente = async (req, res, next) => {
     const gerente = gerenteResp.data;
     console.log("🔍 Gerente encontrado:", gerente.nome);
 
-    const clientesResp = await axiosInstance.get(`${CLIENTE}/clientes`);
+    const clientesResp = await axiosInstance.get(`${CLIENTE}clientes`);
     if (clientesResp.status >= 400)
       return propagateRemoteError(res, clientesResp);
 
@@ -266,7 +266,7 @@ const getClientesDoGerente = async (req, res, next) => {
 
     const contasResponses = await Promise.all(
       clientes.map((c) =>
-        axiosInstance.get(`${CONTA}/contas/${encodeURIComponent(c.cpf)}`)
+        axiosInstance.get(`${CONTA}contas/${encodeURIComponent(c.cpf)}`)
       )
     );
 
