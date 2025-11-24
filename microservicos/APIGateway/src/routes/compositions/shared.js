@@ -8,7 +8,7 @@ const axiosInstance = axios.create({
 });
 
 function propagateRemoteError(res, remoteResponse) {
-  console.error("❌ Erro remoto:", remoteResponse.status, remoteResponse.data);
+  console.error("Erro remoto:", remoteResponse.status, remoteResponse.data);
   try {
     return res.status(remoteResponse.status).json(remoteResponse.data);
   } catch (e) {

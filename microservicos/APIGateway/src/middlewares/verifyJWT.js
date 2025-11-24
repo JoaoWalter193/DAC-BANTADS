@@ -16,7 +16,7 @@ function verifyJWT(req, res, next) {
   const enabled =
     String(process.env.ENABLE_AUTH || "false").toLowerCase() === "true";
   if (!enabled) {
-    console.log("🔐 Autenticação desabilitada");
+    console.log("Autenticação desabilitada");
     return next();
   }
 
@@ -24,29 +24,31 @@ function verifyJWT(req, res, next) {
     req.headers["authorization"] || req.headers["Authorization"];
 
   console.log(
-    "🔍 VerifyJWT - Header Authorization:",
+    "VerifyJWT - Header Authorization:",
     authHeader ? "Presente" : "Ausente"
   );
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    console.log("❌ VerifyJWT - Header Authorization inválido ou ausente");
+    console.log("VerifyJWT - Header Authorization inválido ou ausente");
     return res.status(401).json({ mensagem: "O usuário não está logado" });
   }
 
   const token = authHeader.split(" ")[1];
   console.log(
-    "🔍 VerifyJWT - Token recebido:",
+    "VerifyJWT - Token recebido:",
     token ? `Presente (${token.length} chars)` : "Ausente"
   );
 
   if (!token) {
-    console.log("❌ VerifyJWT - Token vazio");
+    console.log("VerifyJWT - Token vazio");
     return res.status(401).json({ mensagem: "O usuário não está logado" });
   }
 
   if (tokenBlacklist.has(token)) {
-    console.log("❌ VerifyJWT - Token invalidado via logout");
-    return res.status(401).json({ mensagem: "Token inválido - logout realizado" });
+    console.log("VerifyJWT - Token invalidado via logout");
+    return res
+      .status(401)
+      .json({ mensagem: "Token inválido - logout realizado" });
   }
 
   try {
@@ -55,38 +57,31 @@ function verifyJWT(req, res, next) {
       issuer: "mybackend",
     });
 
-    console.log("🔍 VerifyJWT - Token decodificado:", {
+    console.log("VerifyJWT - Token decodificado:", {
       sub: decoded.sub,
       email: decoded.email,
       scope: decoded.scope,
       exp: decoded.exp,
     });
 
-    // Extrair role
     let role = "";
     if (decoded.scope) {
       role = decoded.scope.replace("ROLE_", "");
     }
 
-    console.log("🔍 VerifyJWT - Role extraído:", role);
+    console.log("VerifyJWT - Role extraído:", role);
 
     let email = "";
 
-    // ✅ AGORA emailStorage ESTÁ DEFINIDO
-    // Tenta buscar do storage por CPF (se existir CPF no token)
     if (decoded.cpf && emailStorage.has(decoded.cpf)) {
       email = emailStorage.get(decoded.cpf);
-      console.log("✅ Email recuperado do storage:", email);
-    }
-    // Se não encontrou CPF, tenta por ID (sub)
-    else if (decoded.sub && emailStorage.has(decoded.sub)) {
+      console.log("Email recuperado do storage:", email);
+    } else if (decoded.sub && emailStorage.has(decoded.sub)) {
       email = emailStorage.get(decoded.sub);
-      console.log("✅ Email recuperado do storage por ID:", email);
-    }
-    // Se não encontrou, usa string vazia
-    else {
+      console.log("Email recuperado do storage por ID:", email);
+    } else {
       email = "";
-      console.log("🔍 Email não encontrado no storage, usando string vazia");
+      console.log("Email não encontrado no storage, usando string vazia");
     }
 
     req.user = {
@@ -97,14 +92,14 @@ function verifyJWT(req, res, next) {
     };
 
     console.log(
-      "✅ VerifyJWT - Token válido. Email:",
+      "VerifyJWT - Token válido. Email:",
       req.user.email ? req.user.email : "(vazio)",
       "Role:",
       req.user.role
     );
     next();
   } catch (err) {
-    console.error("❌ VerifyJWT - Erro ao verificar token:", err.message);
+    console.error("VerifyJWT - Erro ao verificar token:", err.message);
 
     if (err.name === "TokenExpiredError") {
       return res.status(401).json({ mensagem: "Token expirado" });
@@ -121,7 +116,10 @@ function verifyJWT(req, res, next) {
 function invalidateToken(token) {
   if (token) {
     tokenBlacklist.add(token);
-    console.log("✅ Token adicionado à blacklist:", token.substring(0, 10) + "...");
+    console.log(
+      "Token adicionado à blacklist:",
+      token.substring(0, 10) + "..."
+    );
 
     try {
       const decoded = jwt.decode(token);
@@ -130,18 +128,19 @@ function invalidateToken(token) {
         if (expiresIn > 0) {
           setTimeout(() => {
             tokenBlacklist.delete(token);
-            console.log("🕒 Token removido da blacklist (expirou)");
+            console.log("Token removido da blacklist (expirou)");
           }, expiresIn);
         }
       }
     } catch (e) {
-      console.log("⚠️ Não foi possível decodificar token para limpeza automática");
+      console.log("Não foi possível decodificar token para limpeza automática");
     }
   }
 }
 
 function getTokenFromRequest(req) {
-  const authHeader = req.headers["authorization"] || req.headers["Authorization"];
+  const authHeader =
+    req.headers["authorization"] || req.headers["Authorization"];
   if (authHeader && authHeader.startsWith("Bearer ")) {
     return authHeader.split(" ")[1];
   }
@@ -151,14 +150,14 @@ function getTokenFromRequest(req) {
 function salvarEmailParaLogout(cpf, email) {
   if (cpf && email) {
     emailStorage.set(cpf, email);
-    console.log("✅ Email salvo para logout - CPF:", cpf, "Email:", email);
+    console.log("Email salvo para logout - CPF:", cpf, "Email:", email);
   }
 }
 
 function salvarEmailParaLogoutPorId(id, email) {
   if (id && email) {
     emailStorage.set(id, email);
-    console.log("✅ Email salvo para logout - ID:", id, "Email:", email);
+    console.log("Email salvo para logout - ID:", id, "Email:", email);
   }
 }
 
@@ -167,7 +166,7 @@ function removerEmailDoStorage(cpf) {
     const emailRemovido = emailStorage.get(cpf);
     emailStorage.delete(cpf);
     console.log(
-      "✅ Email removido do storage - CPF:",
+      "Email removido do storage - CPF:",
       cpf,
       "Email:",
       emailRemovido
@@ -181,12 +180,7 @@ function removerEmailDoStoragePorId(id) {
   if (id && emailStorage.has(id)) {
     const emailRemovido = emailStorage.get(id);
     emailStorage.delete(id);
-    console.log(
-      "✅ Email removido do storage - ID:",
-      id,
-      "Email:",
-      emailRemovido
-    );
+    console.log("Email removido do storage - ID:", id, "Email:", emailRemovido);
     return emailRemovido;
   }
   return "";
@@ -197,26 +191,26 @@ function requireRoles(roles = []) {
     const enabled =
       String(process.env.ENABLE_AUTH || "false").toLowerCase() === "true";
     if (!enabled) {
-      console.log("🔐 Verificação de roles desabilitada");
+      console.log("Verificação de roles desabilitada");
       return next();
     }
 
     const user = req.user;
-    console.log("🔍 requireRoles - User:", user);
-    console.log("🔍 requireRoles - Roles exigidos:", roles);
+    console.log("requireRoles - User:", user);
+    console.log("requireRoles - Roles exigidos:", roles);
 
     if (!user || !user.role) {
-      console.log("❌ requireRoles - Usuário não autenticado ou sem role");
+      console.log("requireRoles - Usuário não autenticado ou sem role");
       return res.status(401).json({ mensagem: "O usuário não está logado" });
     }
 
     if (roles.length === 0 || roles.includes(user.role)) {
-      console.log("✅ requireRoles - Acesso permitido para role:", user.role);
+      console.log("requireRoles - Acesso permitido para role:", user.role);
       return next();
     }
 
     console.log(
-      "❌ requireRoles - Acesso negado. Role:",
+      "requireRoles - Acesso negado. Role:",
       user.role,
       "não está em",
       roles
@@ -234,6 +228,6 @@ module.exports = {
   salvarEmailParaLogoutPorId,
   removerEmailDoStorage,
   removerEmailDoStoragePorId,
-  invalidateToken,           // ✅ EXPORTAR NOVAS FUNÇÕES
-  getTokenFromRequest,       // ✅ EXPORTAR NOVAS FUNÇÕES
+  invalidateToken,
+  getTokenFromRequest,
 };

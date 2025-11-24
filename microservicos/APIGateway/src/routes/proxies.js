@@ -22,7 +22,7 @@ const {
 } = require("./compositions/gerenteComposition");
 const { axiosInstance } = require("./compositions/shared");
 const PUBLIC_KEY = fs.readFileSync(
-  path.join(__dirname, "../middlewares/keys/public-key.pem"), // Ajuste o caminho
+  path.join(__dirname, "../middlewares/keys/public-key.pem"),
   "utf8"
 );
 
@@ -107,10 +107,9 @@ function setupProxies(app) {
             JSON.stringify(req.body)
           );
 
-          // ✅ MAPEAMENTO DOS CAMPOS: login -> email, senha -> password
           const mappedBody = {
-            email: req.body.login || req.body.email, // Aceita ambos
-            password: req.body.senha || req.body.password, // Aceita ambos
+            email: req.body.login || req.body.email,
+            password: req.body.senha || req.body.password,
           };
 
           console.log("🔍 Body mapeado para auth:", JSON.stringify(mappedBody));
@@ -131,7 +130,6 @@ function setupProxies(app) {
         });
 
         proxyRes.on("end", () => {
-          // Configurar headers CORS
           res.header("Access-Control-Allow-Origin", "http://localhost");
           res.header("Access-Control-Allow-Methods", "POST,OPTIONS");
           res.header(
@@ -140,9 +138,8 @@ function setupProxies(app) {
           );
           res.header("Access-Control-Allow-Credentials", "true");
 
-          // Se o auth service retornar 401, mantemos 401
           if (proxyRes.statusCode === 401) {
-            console.log("❌ Login falhou - credenciais inválidas (status 401)");
+            console.log("Login falhou - credenciais inválidas (status 401)");
             return res.status(401).json({
               mensagem: "Credenciais inválidas",
             });
@@ -150,7 +147,7 @@ function setupProxies(app) {
 
           if (!responseBody || responseBody.trim() === "") {
             console.log(
-              "❌ Login falhou - resposta vazia do serviço de autenticação"
+              "Login falhou - resposta vazia do serviço de autenticação"
             );
             return res.status(401).json({
               mensagem: "Credenciais inválidas",
@@ -168,49 +165,44 @@ function setupProxies(app) {
                 data.mensagem === "Login realizado com sucesso");
 
             if (!isValidLoginResponse) {
-              console.log("❌ Login falhou - resposta inválida:", data);
+              console.log("Login falhou - resposta inválida:", data);
               return res.status(401).json({
                 mensagem: "Credenciais inválidas",
               });
             }
 
-            // ✅ CORRIGIDO: SALVAR EMAIL PARA USO FUTURO NO LOGOUT
             const emailDoLogin = req.body.email || req.body.login;
             if (emailDoLogin) {
               const token = data.access_token || data.token;
               if (token) {
                 try {
-                  // ✅ AGORA jwt ESTÁ DEFINIDO
                   const decoded = jwt.verify(token, PUBLIC_KEY, {
                     algorithms: ["RS256"],
                     issuer: "mybackend",
                   });
 
-                  console.log("🔍 Token decodificado no login:", decoded);
+                  console.log("Token decodificado no login:", decoded);
 
-                  // Tenta salvar por CPF se existir
                   if (decoded.cpf) {
                     salvarEmailParaLogout(decoded.cpf, emailDoLogin);
-                  }
-                  // Se não tem CPF, salva por ID (sub)
-                  else if (decoded.sub) {
+                  } else if (decoded.sub) {
                     salvarEmailParaLogoutPorId(decoded.sub, emailDoLogin);
-                    console.log("✅ Email salvo usando ID:", decoded.sub);
+                    console.log("Email salvo usando ID:", decoded.sub);
                   }
                 } catch (e) {
                   console.log(
-                    "❌ Erro ao decodificar token para salvar email:",
+                    "Erro ao decodificar token para salvar email:",
                     e.message
                   );
                 }
               }
             }
 
-            console.log("✅ Login realizado com sucesso para:", emailDoLogin);
+            console.log("Login realizado com sucesso para:", emailDoLogin);
             res.status(proxyRes.statusCode).json(data);
           } catch (e) {
             console.log(
-              "❌ Login falhou - resposta não é JSON válido:",
+              "Login falhou - resposta não é JSON válido:",
               responseBody
             );
             return res.status(401).json({
@@ -221,7 +213,7 @@ function setupProxies(app) {
       },
 
       onError: (err, req, res) => {
-        console.error("❌ Login Error:", err.message);
+        console.error("Login Error:", err.message);
         res.status(502).json({
           error: "Serviço de autenticação indisponível",
           details: err.message,
@@ -233,7 +225,7 @@ function setupProxies(app) {
   app.post("/logout", verifyJWT, (req, res) => {
     const user = req.user;
 
-    console.log("🔍 Logout - User object:", {
+    console.log("Logout - User object:", {
       sub: user.sub,
       email: user.email,
       cpf: user.cpf,
@@ -243,9 +235,9 @@ function setupProxies(app) {
     const token = getTokenFromRequest(req);
     if (token) {
       invalidateToken(token);
-      console.log("✅ Token invalidado na blacklist");
+      console.log("Token invalidado na blacklist");
     } else {
-      console.log("⚠️ Nenhum token encontrado para invalidar");
+      console.log("Nenhum token encontrado para invalidar");
     }
 
     if (user.cpf) {
@@ -290,16 +282,15 @@ function setupProxies(app) {
   );
 
   app.post("/clientes", async (req, res, next) => {
-    console.log("🔍 === INICIANDO AUTOCADASTRO ===");
+    console.log("=== INICIANDO AUTOCADASTRO ===");
 
     await sleep(1000);
 
-    console.log("🔍 Body recebido:", JSON.stringify(req.body, null, 2));
+    console.log("Body recebido:", JSON.stringify(req.body, null, 2));
 
     const { email, cpf, nome, salario, endereco, cep, cidade, estado } =
       req.body;
 
-    // Validação dos campos obrigatórios
     if (
       !email ||
       !cpf ||
@@ -309,7 +300,7 @@ function setupProxies(app) {
       !cidade ||
       !estado
     ) {
-      console.log("❌ Campos obrigatórios faltando");
+      console.log("Campos obrigatórios faltando");
       return res.status(400).json({
         erro: "Campos obrigatórios faltando",
         campos_obrigatorios: [
@@ -324,50 +315,46 @@ function setupProxies(app) {
       });
     }
 
-    console.log("🔍 Verificando se email já existe:", email);
+    console.log("Verificando se email já existe:", email);
 
     try {
       const emailCheckUrl = `${CLIENTE}clientes/email/${encodeURIComponent(
         email
       )}`;
-      console.log("🔍 Fazendo request para:", emailCheckUrl);
-      console.log("🔍 CLIENTE SERVICE URL:", CLIENTE);
+      console.log("Fazendo request para:", emailCheckUrl);
+      console.log("CLIENTE SERVICE URL:", CLIENTE);
 
-      // ✅ Configure timeout explícito e mais logs
       const startTime = Date.now();
 
       const emailResponse = await axiosInstance.get(emailCheckUrl, {
-        timeout: 5000, // 5 segundos timeout
+        timeout: 5000,
         validateStatus: (status) => {
-          console.log(`🔍 Status recebido na validação: ${status}`);
-          return true; // Aceita TODOS os status para podermos tratar manualmente
+          console.log(`Status recebido na validação: ${status}`);
+          return true;
         },
       });
 
       const endTime = Date.now();
-      console.log(`🔍 Resposta recebida em ${endTime - startTime}ms`);
-      console.log("🔍 Status da resposta:", emailResponse.status);
-      console.log("🔍 Data da resposta:", emailResponse.data);
+      console.log(`Resposta recebida em ${endTime - startTime}ms`);
+      console.log("Status da resposta:", emailResponse.status);
+      console.log("Data da resposta:", emailResponse.data);
 
-      // Se o email EXISTE (status 200), retorna erro
       if (emailResponse.status === 200) {
-        console.log("❌ Email já cadastrado no sistema");
+        console.log("Email já cadastrado no sistema");
         return res.status(409).json({
           erro: "Email já cadastrado",
           mensagem: "Já existe um cliente cadastrado com este email",
         });
       }
 
-      // Se retornou 404 (email não existe), continua
       if (emailResponse.status === 404) {
-        console.log("✅ Email disponível! Prosseguindo com cadastro...");
+        console.log("Email disponível! Prosseguindo com cadastro...");
 
-        // Encaminha para o SAGA
         return createProxyMiddleware({
           ...proxyOptions(SAGA),
           selfHandleResponse: false,
           onProxyReq(proxyReq, req) {
-            console.log("🔍 Encaminhando dados para SAGA...");
+            console.log("Encaminhando dados para SAGA...");
             if (req.body) {
               const bodyData = JSON.stringify(req.body);
               proxyReq.setHeader("Content-Type", "application/json");
@@ -376,10 +363,10 @@ function setupProxies(app) {
             }
           },
           onProxyRes(proxyRes, req, res) {
-            console.log("🔍 Resposta do SAGA recebida:", proxyRes.statusCode);
+            console.log("Resposta do SAGA recebida:", proxyRes.statusCode);
           },
           onError(err, req, res) {
-            console.error("❌ Erro no proxy SAGA:", err.message);
+            console.error("Erro no proxy SAGA:", err.message);
             res.status(502).json({
               erro: "Erro no serviço de cadastro",
               detalhes: err.message,
@@ -388,33 +375,29 @@ function setupProxies(app) {
         })(req, res, next);
       }
 
-      // Status inesperado
-      console.log("⚠️ Status inesperado do MS-Cliente:", emailResponse.status);
+      console.log("Status inesperado do MS-Cliente:", emailResponse.status);
       return res.status(500).json({
         erro: "Erro inesperado na verificação de email",
         status: emailResponse.status,
         data: emailResponse.data,
       });
     } catch (error) {
-      console.error("❌ ERRO CAPTURADO:", error.message);
-      console.error("❌ Código do erro:", error.code);
-      console.error("❌ Stack trace:", error.stack);
+      console.error("ERRO CAPTURADO:", error.message);
+      console.error("Código do erro:", error.code);
+      console.error("Stack trace:", error.stack);
 
       if (error.response) {
-        // O servidor respondeu com um status de erro
-        console.log("🔍 Response error - Status:", error.response.status);
-        console.log("🔍 Response error - Data:", error.response.data);
+        console.log("Response error - Status:", error.response.status);
+        console.log("Response error - Data:", error.response.data);
 
         if (error.response.status === 404) {
-          console.log(
-            "✅ Email disponível (via catch)! Prosseguindo com cadastro..."
-          );
+          console.log("Email disponível - Prosseguindo com cadastro...");
 
           return createProxyMiddleware({
             ...proxyOptions(SAGA),
             selfHandleResponse: false,
             onProxyReq(proxyReq, req) {
-              console.log("🔍 Encaminhando para SAGA após 404...");
+              console.log("Encaminhando para SAGA");
               if (req.body) {
                 const bodyData = JSON.stringify(req.body);
                 proxyReq.setHeader("Content-Type", "application/json");
@@ -434,8 +417,7 @@ function setupProxies(app) {
           detalhes: error.response.data,
         });
       } else if (error.request) {
-        // A requisição foi feita mas não houve resposta
-        console.error("❌ Sem resposta do MS-Cliente");
+        console.error("Sem resposta do MS-Cliente");
         return res.status(503).json({
           erro: "Serviço de verificação indisponível",
           mensagem:
@@ -443,16 +425,14 @@ function setupProxies(app) {
           detalhes: error.message,
         });
       } else if (error.code === "ECONNABORTED") {
-        // Timeout
-        console.error("❌ Timeout na verificação de email");
+        console.error("Timeout na verificação de email");
         return res.status(504).json({
           erro: "Timeout na verificação de email",
           mensagem: "A verificação demorou muito tempo",
           detalhes: error.message,
         });
       } else {
-        // Outros erros
-        console.error("❌ Erro inesperado:", error.message);
+        console.error("Erro inesperado:", error.message);
         return res.status(500).json({
           erro: "Erro interno do servidor",
           detalhes: error.message,
@@ -465,16 +445,15 @@ function setupProxies(app) {
     const { cpf } = req.params;
     const dadosAtualizados = req.body;
 
-    console.log("🔍 === INICIANDO ALTERAÇÃO DE PERFIL ===");
-    console.log("🔍 CPF:", cpf);
+    console.log("=== INICIANDO ALTERAÇÃO DE PERFIL ===");
+    console.log("CPF:", cpf);
     console.log(
-      "🔍 Dados atualizados recebidos:",
+      "Dados atualizados recebidos:",
       JSON.stringify(dadosAtualizados, null, 2)
     );
 
     try {
-      // 1. Primeiro buscar os dados originais do cliente
-      console.log("🔍 Buscando dados originais do cliente...");
+      console.log("Buscando dados originais do cliente...");
       const clienteOriginalResponse = await axiosInstance.get(
         `${CLIENTE}clientes/${encodeURIComponent(cpf)}`,
         {
@@ -487,7 +466,7 @@ function setupProxies(app) {
 
       if (clienteOriginalResponse.status !== 200) {
         console.log(
-          "❌ Erro ao buscar dados originais do cliente:",
+          "Erro ao buscar dados originais do cliente:",
           clienteOriginalResponse.status
         );
         return res
@@ -497,11 +476,10 @@ function setupProxies(app) {
 
       const dadosOriginais = clienteOriginalResponse.data;
       console.log(
-        "🔍 Dados originais encontrados:",
+        "Dados originais encontrados:",
         JSON.stringify(dadosOriginais, null, 2)
       );
 
-      // 2. Preparar o payload para o SAGA no formato esperado
       const sagaPayload = {
         dadosOriginais: {
           cpf: dadosOriginais.cpf,
@@ -514,7 +492,7 @@ function setupProxies(app) {
           estado: dadosOriginais.estado,
         },
         dadosAtualizados: {
-          cpf: cpf, // Mantém o mesmo CPF
+          cpf: cpf,
           nome: dadosAtualizados.nome || dadosOriginais.nome,
           email: dadosAtualizados.email || dadosOriginais.email,
           salario: parseFloat(
@@ -527,13 +505,9 @@ function setupProxies(app) {
         },
       };
 
-      console.log(
-        "🔍 Payload para SAGA:",
-        JSON.stringify(sagaPayload, null, 2)
-      );
+      console.log("Payload para SAGA:", JSON.stringify(sagaPayload, null, 2));
 
-      // 3. Chamar o SAGA para processar a alteração
-      console.log("🔍 Chamando SAGA para alteração de perfil...");
+      console.log("Chamando SAGA para alteração de perfil...");
       const sagaResponse = await axiosInstance.post(
         `${SAGA}alterar-perfil`,
         sagaPayload,
@@ -552,10 +526,9 @@ function setupProxies(app) {
         sagaResponse.data
       );
 
-      // 4. Buscar os dados atualizados para retornar
-      await sleep(1000); // Aguardar a consistência dos dados
+      await sleep(1000);
 
-      console.log("🔍 Buscando dados atualizados do cliente...");
+      console.log("Buscando dados atualizados do cliente...");
       const clienteAtualizadoResponse = await axiosInstance.get(
         `${CLIENTE}clientes/${encodeURIComponent(cpf)}`,
         {
@@ -568,7 +541,7 @@ function setupProxies(app) {
 
       if (clienteAtualizadoResponse.status !== 200) {
         console.log(
-          "❌ Erro ao buscar dados atualizados:",
+          "Erro ao buscar dados atualizados:",
           clienteAtualizadoResponse.status
         );
         return res
@@ -578,32 +551,31 @@ function setupProxies(app) {
 
       const clienteAtualizado = clienteAtualizadoResponse.data;
 
-      // 5. Retornar resposta no formato esperado pelo teste
       const responseData = {
         cpf: clienteAtualizado.cpf,
         nome: clienteAtualizado.nome,
         salario: parseFloat(clienteAtualizado.salario),
       };
 
-      console.log("✅ Alteração de perfil concluída com sucesso");
-      console.log("🔍 Dados retornados:", responseData);
+      console.log("Alteração de perfil concluída com sucesso");
+      console.log("Dados retornados:", responseData);
 
       return res.status(200).json(responseData);
     } catch (error) {
-      console.error("❌ Erro na alteração de perfil:", error.message);
+      console.error("Erro na alteração de perfil:", error.message);
 
       if (error.response) {
-        console.log("🔍 Erro response - Status:", error.response.status);
-        console.log("🔍 Erro response - Data:", error.response.data);
+        console.log("Erro response - Status:", error.response.status);
+        console.log("Erro response - Data:", error.response.data);
         return res.status(error.response.status).json(error.response.data);
       } else if (error.request) {
-        console.error("❌ Sem resposta do serviço");
+        console.error("Sem resposta do serviço");
         return res.status(503).json({
           erro: "Serviço indisponível",
           detalhes: error.message,
         });
       } else {
-        console.error("❌ Erro interno:", error.message);
+        console.error("Erro interno:", error.message);
         return res.status(500).json({
           erro: "Erro interno do servidor",
           detalhes: error.message,
@@ -627,9 +599,9 @@ function setupProxies(app) {
       selfHandleResponse: true,
 
       onProxyReq(proxyReq, req) {
-        console.log("🔍 REJEIÇÃO - Headers:", req.headers);
-        console.log("🔍 REJEIÇÃO - Body:", req.body);
-        console.log("🔍 REJEIÇÃO - CPF:", req.params.cpf);
+        console.log("REJEIÇÃO - Headers:", req.headers);
+        console.log("REJEIÇÃO - Body:", req.body);
+        console.log("REJEIÇÃO - CPF:", req.params.cpf);
 
         if (req.body) {
           const bodyData =
@@ -643,10 +615,7 @@ function setupProxies(app) {
       },
 
       onProxyRes: async (proxyRes, req, res) => {
-        console.log(
-          "🔍 REJEIÇÃO - Resposta do MS-Cliente:",
-          proxyRes.statusCode
-        );
+        console.log("REJEIÇÃO - Resposta do MS-Cliente:", proxyRes.statusCode);
 
         let body = "";
         proxyRes.on("data", (chunk) => {
@@ -654,7 +623,7 @@ function setupProxies(app) {
         });
 
         proxyRes.on("end", () => {
-          console.log("🔍 REJEIÇÃO - Body da resposta:", body);
+          console.log("REJEIÇÃO - Body da resposta:", body);
 
           if (proxyRes.statusCode === 200) {
             res.status(200).json({
@@ -672,7 +641,7 @@ function setupProxies(app) {
       },
 
       onError: (err, req, res) => {
-        console.error("❌ REJEIÇÃO - Erro no proxy:", err.message);
+        console.error("REJEIÇÃO - Erro no proxy:", err.message);
         res.status(502).json({
           erro: "Serviço de clientes indisponível",
           detalhes: err.message,
@@ -695,7 +664,6 @@ function setupProxies(app) {
     })
   );
 
-  // Rota GET /contas/:numero/saldo
   app.get(
     "/contas/:numero/saldo",
     verifyJWT,
@@ -715,7 +683,6 @@ function setupProxies(app) {
         proxyRes.on("end", () => {
           console.log(`🔍 Resposta saldo (${proxyRes.statusCode}):`, body);
 
-          // Configurar CORS
           res.header("Access-Control-Allow-Origin", "http://localhost");
           res.header(
             "Access-Control-Allow-Methods",
@@ -736,12 +703,8 @@ function setupProxies(app) {
 
             const numeroConta = parseInt(req.params.numero, 10);
 
-            // ✅ MAPEAMENTO FLEXÍVEL DE CAMPOS
             const cpfCliente =
-              data.cpfCliente || // Campo esperado
-              data.cliente || // Campo alternativo
-              data.cpf || // Outra possibilidade
-              data.idCliente; // Mais uma possibilidade
+              data.cpfCliente || data.cliente || data.cpf || data.idCliente;
 
             const saldo =
               data.saldo !== undefined
@@ -753,15 +716,15 @@ function setupProxies(app) {
                 : 0;
 
             const response = {
-              cliente: cpfCliente, // ✅ Campo obrigatório para o teste
+              cliente: cpfCliente,
               conta: numeroConta,
               saldo: saldo,
             };
 
-            console.log("✅ Resposta formatada para saldo:", response);
+            console.log("Resposta formatada para saldo:", response);
             return res.status(200).json(response);
           } catch (e) {
-            console.error("❌ Erro ao processar resposta do saldo:", e);
+            console.error("Erro ao processar resposta do saldo:", e);
             return res.status(500).json({
               error: "Erro ao processar resposta",
               details: e.message,
@@ -772,7 +735,6 @@ function setupProxies(app) {
     })
   );
 
-  // Rota GET /contas/:numero/extrato - VERSÃO SIMPLIFICADA
   app.get(
     "/contas/:numero/extrato",
     verifyJWT,
@@ -790,7 +752,7 @@ function setupProxies(app) {
         proxyRes.on("data", (chunk) => (body += chunk.toString()));
 
         proxyRes.on("end", () => {
-          console.log(`🔍 Resposta extrato (${proxyRes.statusCode}):`, body);
+          console.log(`Resposta extrato (${proxyRes.statusCode}):`, body);
 
           // Configurar CORS
           res.header("Access-Control-Allow-Origin", "http://localhost");
@@ -812,25 +774,21 @@ function setupProxies(app) {
               return res.status(proxyRes.statusCode).json(data);
             }
 
-            // ✅ CORREÇÃO: CONFIE NO QUE O MICROSERVIÇO RETORNA
             let response;
 
             if (Array.isArray(data)) {
-              // Se for array, buscar saldo separadamente
               response = {
                 conta: numeroConta,
-                saldo: data.saldo || 0, // Tenta extrair saldo se existir
+                saldo: data.saldo || 0,
                 movimentacoes: data,
               };
             } else if (data.movimentacoes !== undefined) {
-              // Se já tem estrutura completa
               response = {
                 conta: numeroConta,
                 saldo: data.saldo !== undefined ? data.saldo : 0,
                 movimentacoes: data.movimentacoes,
               };
             } else {
-              // Estrutura desconhecida
               response = {
                 conta: numeroConta,
                 saldo: data.saldo !== undefined ? data.saldo : 0,
@@ -838,13 +796,12 @@ function setupProxies(app) {
               };
             }
 
-            // Garantir arredondamento
             response.saldo = Math.round(response.saldo * 100) / 100;
 
-            console.log("✅ Resposta formatada para extrato:", response);
+            console.log("Resposta formatada para extrato:", response);
             return res.status(200).json(response);
           } catch (e) {
-            console.error("❌ Erro ao processar resposta do extrato:", e);
+            console.error("Erro ao processar resposta do extrato:", e);
             return res.status(200).json({
               conta: parseInt(req.params.numero, 10),
               saldo: 0,
@@ -856,7 +813,6 @@ function setupProxies(app) {
     })
   );
 
-  // Rota PUT /contas/:numero/depositar - VERSÃO SIMPLIFICADA
   app.post(
     "/contas/:numero/depositar",
     verifyJWT,
@@ -866,17 +822,15 @@ function setupProxies(app) {
       selfHandleResponse: true,
       pathRewrite: (path, req) => `/contas/${req.params.numero}/depositar`,
       onProxyReq(proxyReq, req) {
-        console.log(
-          "🔍 POST /contas/:numero/depositar -> convertendo para PUT"
-        );
-        console.log("🔍 Número conta:", req.params.numero);
-        console.log("🔍 Body original:", req.body);
+        console.log("POST /contas/:numero/depositar -> convertendo para PUT");
+        console.log("Número conta:", req.params.numero);
+        console.log("Body original:", req.body);
 
         proxyReq.method = "PUT";
 
         if (req.body) {
           const valor = String(req.body.valor || req.body);
-          console.log("🔍 Enviando valor:", valor);
+          console.log("Enviando valor:", valor);
 
           proxyReq.setHeader("Content-Type", "application/json");
           proxyReq.setHeader("Content-Length", Buffer.byteLength(valor));
@@ -888,9 +842,8 @@ function setupProxies(app) {
         proxyRes.on("data", (chunk) => (body += chunk.toString()));
 
         proxyRes.on("end", () => {
-          console.log(`🔍 Resposta depósito (${proxyRes.statusCode}):`, body);
+          console.log(`Resposta depósito (${proxyRes.statusCode}):`, body);
 
-          // Configurar CORS
           res.header("Access-Control-Allow-Origin", "http://localhost");
           res.header(
             "Access-Control-Allow-Methods",
@@ -909,7 +862,6 @@ function setupProxies(app) {
               return res.status(proxyRes.statusCode).json(data);
             }
 
-            // ✅ CONFIE NO SALDO DO MICROSERVIÇO
             const numeroConta = parseInt(req.params.numero, 10);
             const saldo = data.saldo !== undefined ? data.saldo : data.balance;
             const saldoArredondado = Math.round(saldo * 100) / 100;
@@ -921,10 +873,10 @@ function setupProxies(app) {
               mensagem: data.mensagem || "Depósito realizado com sucesso",
             };
 
-            console.log("✅ Resposta formatada para depósito:", response);
+            console.log("Resposta formatada para depósito:", response);
             return res.status(200).json(response);
           } catch (e) {
-            console.error("❌ Erro ao processar resposta do depósito:", e);
+            console.error("Erro ao processar resposta do depósito:", e);
             return res.status(500).json({
               error: "Erro ao processar resposta",
               details: e.message,
@@ -935,7 +887,6 @@ function setupProxies(app) {
     })
   );
 
-  // Rota PUT /contas/:numero/sacar - VERSÃO SIMPLIFICADA
   app.post(
     "/contas/:numero/sacar",
     verifyJWT,
@@ -953,7 +904,7 @@ function setupProxies(app) {
 
         if (req.body) {
           const valor = String(req.body.valor || req.body);
-          console.log("🔍 Enviando valor:", valor);
+          console.log("Enviando valor:", valor);
 
           proxyReq.setHeader("Content-Type", "application/json");
           proxyReq.setHeader("Content-Length", Buffer.byteLength(valor));
@@ -965,9 +916,8 @@ function setupProxies(app) {
         proxyRes.on("data", (chunk) => (body += chunk.toString()));
 
         proxyRes.on("end", () => {
-          console.log(`🔍 Resposta saque (${proxyRes.statusCode}):`, body);
+          console.log(`Resposta saque (${proxyRes.statusCode}):`, body);
 
-          // Configurar CORS
           res.header("Access-Control-Allow-Origin", "http://localhost");
           res.header(
             "Access-Control-Allow-Methods",
@@ -986,7 +936,6 @@ function setupProxies(app) {
               return res.status(proxyRes.statusCode).json(data);
             }
 
-            // ✅ CONFIE NO SALDO DO MICROSERVIÇO
             const numeroConta = parseInt(req.params.numero, 10);
             const saldo = data.saldo !== undefined ? data.saldo : data.balance;
             const saldoArredondado = Math.round(saldo * 100) / 100;
@@ -998,10 +947,10 @@ function setupProxies(app) {
               mensagem: data.mensagem || "Saque realizado com sucesso",
             };
 
-            console.log("✅ Resposta formatada para saque:", response);
+            console.log("Resposta formatada para saque:", response);
             return res.status(200).json(response);
           } catch (e) {
-            console.error("❌ Erro ao processar resposta do saque:", e);
+            console.error("Erro ao processar resposta do saque:", e);
             return res.status(500).json({
               error: "Erro ao processar resposta",
               details: e.message,
@@ -1012,7 +961,6 @@ function setupProxies(app) {
     })
   );
 
-  // Rota PUT /contas/:numero/transferir - VERSÃO SIMPLIFICADA
   app.post(
     "/contas/:numero/transferir",
     verifyJWT,
@@ -1025,8 +973,8 @@ function setupProxies(app) {
         console.log(
           "🔍 POST /contas/:numero/transferir -> convertendo para PUT"
         );
-        console.log("🔍 Número conta origem:", req.params.numero);
-        console.log("🔍 Body original:", req.body);
+        console.log("Número conta origem:", req.params.numero);
+        console.log("Body original:", req.body);
 
         proxyReq.method = "PUT";
 
@@ -1037,7 +985,7 @@ function setupProxies(app) {
             valor: parseFloat(req.body.valor),
           };
 
-          console.log("🔍 Dados mapeados para transferência:", transferData);
+          console.log("Dados mapeados para transferência:", transferData);
 
           const bodyData = JSON.stringify(transferData);
           proxyReq.setHeader("Content-Type", "application/json");
@@ -1052,7 +1000,6 @@ function setupProxies(app) {
         proxyRes.on("end", () => {
           console.log(`🔍 Resposta transferir (${proxyRes.statusCode}):`, body);
 
-          // Configurar CORS
           res.header("Access-Control-Allow-Origin", "http://localhost");
           res.header(
             "Access-Control-Allow-Methods",
@@ -1072,7 +1019,6 @@ function setupProxies(app) {
               return res.status(proxyRes.statusCode).json(data);
             }
 
-            // ✅ CORREÇÃO: CONFIE NO QUE O MICROSERVIÇO RETORNA
             const saldo =
               data.saldo !== undefined
                 ? data.saldo
@@ -1088,15 +1034,15 @@ function setupProxies(app) {
               conta: numeroConta,
               destino: data.destino || data.numeroConta || req.body.destino,
               valor: data.valor || parseFloat(req.body.valor),
-              saldo: saldoArredondado, // ✅ USA O SALDO DO MICROSERVIÇO
+              saldo: saldoArredondado,
               data: data.data || data.timestamp || new Date().toISOString(),
               mensagem: data.mensagem || "Transferência realizada com sucesso",
             };
 
-            console.log("✅ Resposta formatada para transferência:", response);
+            console.log("Resposta formatada para transferência:", response);
             return res.status(200).json(response);
           } catch (e) {
-            console.error("❌ Erro ao processar resposta da transferência:", e);
+            console.error("Erro ao processar resposta da transferência:", e);
             return res.status(200).json({
               conta: parseInt(req.params.numero, 10),
               destino: req.body.destino,
