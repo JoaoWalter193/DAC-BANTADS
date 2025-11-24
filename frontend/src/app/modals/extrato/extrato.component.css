@@ -3,6 +3,7 @@
   font-weight: normal;
   color: #666;
   margin-top: -10px;
+  margin-left: 1.75rem;
 }
 .conteudo-dialogo {
   font-family: Arial, sans-serif;
@@ -39,7 +40,8 @@
   width: 100%;
   border-collapse: collapse;
 }
-.tabela-transacoes th, .tabela-transacoes td {
+.tabela-transacoes th,
+.tabela-transacoes td {
   padding: 8px;
   text-align: left;
   border-bottom: 1px solid #ddd;
