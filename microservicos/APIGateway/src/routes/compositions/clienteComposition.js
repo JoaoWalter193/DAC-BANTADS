@@ -303,7 +303,7 @@ const getClientes = async (req, res, next) => {
         endereco: c.endereco,
         cidade: c.cidade,
         estado: c.estado,
-      }));
+      })).sort((a, b) => a.nome.localeCompare(b.nome));
 
       console.log("🔍 Clientes com conta:", final.length);
       return res.status(200).json(final);
