@@ -1080,7 +1080,51 @@ function setupProxies(app) {
     "/gerentes",
     verifyJWT,
     requireRoles(["GERENTE", "ADMINISTRADOR"]),
-    createProxyMiddleware(proxyOptions(SAGA))
+    createProxyMiddleware({
+      ...proxyOptions(SAGA),
+      selfHandleResponse: true,
+      onProxyReq(proxyReq, req) {
+        console.log("POST /gerentes - Headers:", req.headers);
+        console.log("POST /gerentes - Body:", JSON.stringify(req.body));
+      },
+      onProxyRes: async (proxyRes, req, res) => {
+        let body = "";
+        proxyRes.on("data", (chunk) => (body += chunk.toString()));
+
+        proxyRes.on("end", () => {
+          console.log(
+            "POST /gerentes - Resposta do SAGA:",
+            proxyRes.statusCode,
+            body
+          );
+
+          res.header("Access-Control-Allow-Origin", "http://localhost");
+          res.header(
+            "Access-Control-Allow-Methods",
+            "GET,POST,PUT,DELETE,OPTIONS"
+          );
+          res.header(
+            "Access-Control-Allow-Headers",
+            "Content-Type, Authorization"
+          );
+          res.header("Access-Control-Allow-Credentials", "true");
+
+          try {
+            const data = body ? JSON.parse(body) : {};
+
+            if (proxyRes.statusCode === 409) {
+              console.log("CPF de gerente já existe - retornando 409");
+              return res.status(409).json(data);
+            }
+
+            return res.status(proxyRes.statusCode).json(data);
+          } catch (e) {
+            console.error("Erro ao processar resposta do SAGA:", e);
+            return res.status(proxyRes.statusCode).send(body);
+          }
+        });
+      },
+    })
   );
 
   app.get(
@@ -1094,14 +1138,91 @@ function setupProxies(app) {
     "/gerentes/:cpf",
     verifyJWT,
     requireRoles(["GERENTE", "ADMINISTRADOR"]),
-    createProxyMiddleware(proxyOptions(SAGA))
+    createProxyMiddleware({
+      ...proxyOptions(SAGA),
+      selfHandleResponse: true,
+      onProxyReq(proxyReq, req) {
+        console.log("DELETE /gerentes/:cpf - CPF:", req.params.cpf);
+        console.log("DELETE /gerentes/:cpf - Headers:", req.headers);
+      },
+      onProxyRes: async (proxyRes, req, res) => {
+        let body = "";
+        proxyRes.on("data", (chunk) => (body += chunk.toString()));
+
+        proxyRes.on("end", () => {
+          console.log(
+            "DELETE /gerentes/:cpf - Resposta:",
+            proxyRes.statusCode,
+            body
+          );
+
+          res.header("Access-Control-Allow-Origin", "http://localhost");
+          res.header(
+            "Access-Control-Allow-Methods",
+            "GET,POST,PUT,DELETE,OPTIONS"
+          );
+          res.header(
+            "Access-Control-Allow-Headers",
+            "Content-Type, Authorization"
+          );
+          res.header("Access-Control-Allow-Credentials", "true");
+
+          try {
+            const data = body ? JSON.parse(body) : {};
+            return res.status(proxyRes.statusCode).json(data);
+          } catch (e) {
+            console.error("Erro ao processar resposta:", e);
+            return res.status(proxyRes.statusCode).send(body);
+          }
+        });
+      },
+    })
   );
 
   app.put(
     "/gerentes/:cpf",
     verifyJWT,
     requireRoles(["GERENTE", "ADMINISTRADOR"]),
-    createProxyMiddleware(proxyOptions(SAGA))
+    createProxyMiddleware({
+      ...proxyOptions(SAGA),
+      selfHandleResponse: true,
+      onProxyReq(proxyReq, req) {
+        console.log("PUT /gerentes/:cpf - CPF:", req.params.cpf);
+        console.log("PUT /gerentes/:cpf - Body:", JSON.stringify(req.body));
+        console.log("PUT /gerentes/:cpf - Headers:", req.headers);
+      },
+      onProxyRes: async (proxyRes, req, res) => {
+        let body = "";
+        proxyRes.on("data", (chunk) => (body += chunk.toString()));
+
+        proxyRes.on("end", () => {
+          console.log(
+            "PUT /gerentes/:cpf - Resposta:",
+            proxyRes.statusCode,
+            body
+          );
+
+          res.header("Access-Control-Allow-Origin", "http://localhost");
+          res.header(
+            "Access-Control-Allow-Methods",
+            "GET,POST,PUT,DELETE,OPTIONS"
+          );
+          res.header(
+            "Access-Control-Allow-Headers",
+            "Content-Type, Authorization"
+          );
+          res.header("Access-Control-Allow-Credentials", "true");
+
+          try {
+            const data = body ? JSON.parse(body) : {};
+            return res.status(proxyRes.statusCode).json(data);
+          } catch (e) {
+            console.error("Erro ao processar resposta:", e);
+            return res.status(proxyRes.statusCode).send(body);
+          }
+        });
+      },
+    })
   );
 
   console.log("✅ Proxies configurados.");
