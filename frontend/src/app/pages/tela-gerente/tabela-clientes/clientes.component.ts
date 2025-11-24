@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { GerenteService } from '../../../services/gerente.service';
 import { RouterModule } from '@angular/router';
 import { ClienteListaGerenteDTO } from '../../../models/cliente/dto/cliente-lista-gerente.dto';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-clientes',
@@ -17,7 +18,10 @@ export class ClientesComponent implements OnInit {
   clientes: ClienteListaGerenteDTO[] = [];
   filtro: string = '';
 
-  constructor(private gerenteService: GerenteService) {}
+  constructor(
+    private gerenteService: GerenteService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
     this.carregarClientesDoGerente();
@@ -62,6 +66,14 @@ export class ClientesComponent implements OnInit {
   }
 
   private obterCpfGerenteLogado(): string {
-    return '98574307084';
+    const cpf = this.authService.getCPF();
+
+    if (!cpf) {
+      console.error('❌ CPF do gerente não encontrado no token');
+      return '';
+    }
+
+    console.log('✅ CPF do gerente logado:', cpf);
+    return cpf;
   }
 }
